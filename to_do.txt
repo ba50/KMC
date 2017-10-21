@@ -1,0 +1,5 @@
+1. zrobic liczenie komorek elementarnych z pliku xyz
+2. zmienic nazwe _array_size_ bo jest mylaca
+3. periodyczne warunki dla kationow 
+4. zamienic gereracje komurec z c na python ok
+5. w when_witch_where trzeba pomieszac typu
