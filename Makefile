@@ -1,2 +1,2 @@
 all:
-	g++ Main.cpp -o ./build/KMC
+	g++ -Wall Main.cpp -o ./build/KMC

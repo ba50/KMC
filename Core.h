@@ -9,7 +9,7 @@
 class Core {
 	std::vector<Type> types;
 
-	const long steps;
+	long double time_end;
 
 	double*** oxygen_array_;
 	size_t oxygen_array_size_; 
@@ -32,8 +32,8 @@ class Core {
 public:
 	std::vector<std::vector<float>> when_which_where;
 
-	Core(const Configuration& configuration, const size_t cells, const long steps, const std::vector<Type> types, const double delta_energy)
-		:  types{ types }, steps{ steps }, delta_energy{ delta_energy } {
+	Core(const Configuration& configuration, const size_t cells, const long double time_end, const std::vector<Type> types, const double delta_energy)
+		:  types{ types }, time_end{ time_end }, delta_energy{ delta_energy } {
 
 		// Define OXYGENE
 		// with bourdery conditions
@@ -185,7 +185,7 @@ public:
 		for (size_t i = 0; i < direction_vector.size()+1; i++) 
 			jumpe_direction_sume_vector_.push_back(0.0);
 
-		when_which_where.reserve(steps);
+		when_which_where.reserve(1e8);
 	}
 
 	~Core() {
@@ -224,13 +224,11 @@ public:
 		std::vector<double>::iterator selected_atom_temp, selected_direction_temp;
 		size_t selected_atom, seleced_direction;
 
-		for(long i = 0; i < steps; i++)
-			when_which_where.push_back(std::vector<float>(3));
 
 		size_t id, i; 
 		long double time{ 0.0 };
-		for (long step = 0; step < steps; step++) {
-
+		std::vector<float> when_which_where_temp(3);
+		while(time < time_end){
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
 
 			for (id = 0; id < jump_rate_vector_.size(); id++) {
@@ -293,9 +291,10 @@ public:
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
 
-			when_which_where[step][0] = static_cast<float>(time);
-			when_which_where[step][1] = static_cast<float>(selected_atom);
-			when_which_where[step][2] = static_cast<float>(seleced_direction);
+			when_which_where_temp[0] = static_cast<float>(time);
+		        when_which_where_temp[1] = static_cast<float>(selected_atom);
+		        when_which_where_temp[2] = static_cast<float>(seleced_direction);
+			when_which_where.push_back(when_which_where_temp);
         }
 		std::cout << "Core exit." << "\n";
 	}

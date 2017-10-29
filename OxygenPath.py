@@ -3,63 +3,78 @@ import os
 import csv
 import numpy as np
 from vispy import app, scene, visuals
-
-steps = 100000  # sum(1 for line in open('when_which_where.dat'))
-atom_number = 10
+import click
 
 
 class OxygenPath:
-    def __init__(self, start_position_path):
+    def __init__(self, start_position_path, when_which_where_path, data_path='.', atom_number=None, steps=None):
+        if atom_number:
+            atom_number = int(atom_number)
+
+        if steps:
+            self.steps = int(steps)
+        else:
+            dat_path =  os.path.join(data_path, os.path.splitext(os.path.basename(when_which_where_path))[0]+'.dat')
+            self.steps = sum(1 for line in open(dat_path)) 
+
         self.start_positions = []
         with open(start_position_path) as file:
             next(file)
             next(file)
             for line in file:
+                if atom_number:
+                    if len(self.start_positions) >= atom_number:
+                        break
+
                 words = line.split()
                 if words[0] == 'O':
                     self.start_positions.append((float(words[1]), float(words[2]), float(words[3])))
-
+                
         self.start_positions = np.array(self.start_positions).astype(np.float32)
         self.direction_vector = [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)]
-        self.paths = None
+        
+        self.label = os.path.splitext(os.path.basename(when_which_where_path))[0].replace('when_which_where_', '')
+        self.atom_number = self.start_positions.shape[0]
 
-    def generate_data(self, atom_ids, when_which_where_path):
+        dimensions = self.start_positions.shape[0], self.steps, self.start_positions.shape[1]
+        self.when_which_where = np.memmap(when_which_where_path, dtype='float32', mode='r+', shape=(self.steps, 3))
 
-        dimensions = atom_number, self.start_positions.shape[1], steps
-        paths = np.memmap('paths.bin', dtype='float32', mode='w+', shape=dimensions)
+        data_file_name= 'paths_'+self.label+'.bin'
+        if not os.path.exists(os.path.join(data_path, data_file_name)):
+            print("Generate path file...", end='')
+            self.paths = np.memmap(os.path.join(data_path, data_file_name), dtype='float32', mode='w+', shape=dimensions)
 
-        for i in range(0, atom_number):
-            paths[i, :, 0] = self.start_positions[i]
-
-        when_which_where = np.memmap(when_which_where_path, dtype='float32', mode='r+', shape=(steps, 3))
-
-        for index in np.ndindex(when_which_where.shape[0]-1):
             for i in range(0, dimensions[0]):
-                paths[i, :, index[0]+1] += paths[i, :, index[0]]
-                if when_which_where[index[0], 1] == i:
-                    paths[i, 0, index[0]+1] += self.direction_vector[int(when_which_where[index[0], 2])][0]
-                    paths[i, 1, index[0]+1] += self.direction_vector[int(when_which_where[index[0], 2])][1]
-                    paths[i, 2, index[0]+1] += self.direction_vector[int(when_which_where[index[0], 2])][2]
+                self.paths[i, 0, :] = self.start_positions[i]
 
-        self.paths = []
-        for i in atom_ids:
-            self.paths.append(np.rot90(np.memmap('paths.bin',
-                                                 dtype='float32',
-                                                 mode='r',
-                                                 shape=(1, 3, steps),
-                                                 offset=int(i*3*steps*32/8))[0], 3))
+
+            for index in np.ndindex(self.when_which_where.shape[0]-1):
+                for i in range(0, dimensions[0]):
+                    self.paths[i, index[0]+1, :] += self.paths[i, index[0], :]
+                    if self.when_which_where[index[0], 1] == i:
+                        self.paths[i, index[0]+1, 0] += self.direction_vector[int(self.when_which_where[index[0], 2])][0]
+                        self.paths[i, index[0]+1, 1] += self.direction_vector[int(self.when_which_where[index[0], 2])][1]
+                        self.paths[i, index[0]+1, 2] += self.direction_vector[int(self.when_which_where[index[0], 2])][2]
+            print("Ok")
+        else:
+            print("Loading path file:", data_file_name, end=' ')
+            self.paths = np.memmap(os.path.join(data_path, data_file_name), dtype='float32', mode='r+', shape=dimensions)
+            print("Ok")
 
     def plot(self):
         plot = scene.visuals.create_visual_node(visuals.LineVisual)
-        canvas = scene.SceneCanvas(keys='interactive', title='plot3d', show=True)
+        canvas = scene.SceneCanvas(keys='interactive', title='Oxygen Paths', show=True)
         canvas.bgcolor = (1, 1, 1, 1)
         view = canvas.central_widget.add_view()
         view.camera = scene.cameras.FlyCamera(parent=view.scene, fov=60)
-        for path in self.paths:
-            r = np.random.uniform(0, 1)
-            g = np.random.uniform(0, 1)
-            b = np.random.uniform(0, 1)
-            plot(path, color=(r, g, b, 1), parent=view.scene)
+
+        r = np.random.uniform(0, 1)
+        g = np.random.uniform(0, 1)
+        b = np.random.uniform(0, 1)
+
+        for i in range(self.paths.shape[0]):
+            plot(self.paths[i], color=(r, g, b, 1), parent=view.scene)
+
         app.run()
 
     def make_csv(self, file_name, atom_id):
@@ -67,8 +82,16 @@ class OxygenPath:
             writer = csv.writer(file, delimiter='\t')
             writer.writerows(self.paths[atom_id])
 
-
 if __name__ == "__main__":
-    test = OxygenPath(sys.argv[1])
-    test.generate_data(range(0, atom_number), sys.argv[2])
-    test.plot()
+    @click.command()
+    @click.option('--start_path',prompt="Start position file: ", help="Start position file.")
+    @click.option('--when_path', prompt="Symulaion file: ", help="When which where file.")
+    @click.option('--data_path', default='.', help="Where data are.")
+    @click.option('--atom_number', default=None, help="Number of atoms.")
+    @click.option('--steps', default=None, help="Number of steps.")
+    def main(start_path, when_path, atom_number, steps):
+        path = OxygenPath(start_path, when_path, data_path, atom_number, steps)
+        path.plot()
+                
+    main()
+

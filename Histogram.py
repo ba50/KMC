@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -15,7 +16,7 @@ class Histogram:
         plt.hist(self.when_which_where[:, 2], bins=range(0, int(np.max(self.when_which_where[:, 2])+2)))
 
 
-hist = Histogram('when_which_where_7_random_02.bin', 1000000)
+hist = Histogram(sys.argv[1], int(sys.argv[2]))
 hist.atoms()
 plt.show()
 

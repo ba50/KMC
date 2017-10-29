@@ -18,11 +18,10 @@ int main(int argc, char *argv[]) {
 			std::cerr << "Invalid number " << argv[1] << '\n';
 	}
 
-	long steps;
+	long double time_end;
 	{
-		std::istringstream ss(argv[2]);
-		if (!(ss >> steps))
-			std::cerr << "Invalid number " << argv[2] << '\n';
+		std::string::size_type sz;
+		time_end = std::stold(argv[2], &sz); 
 	}
 
 	double delta_energy = std::atof(argv[3]);
@@ -38,7 +37,7 @@ int main(int argc, char *argv[]) {
 
 	std::unique_ptr<Configuration> sample = std::make_unique<Configuration>(positions, types);
 
-	std::unique_ptr<Core> core = std::make_unique<Core>(*sample, cells, steps, types, delta_energy);
+	std::unique_ptr<Core> core = std::make_unique<Core>(*sample, cells, time_end, types, delta_energy);
 	core->Run();
 
     std::ofstream file_out("when_which_where_"+file_name_out+".dat", std::ios::binary | std::ios::out);
