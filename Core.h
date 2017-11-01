@@ -31,6 +31,8 @@ class Core {
 
 public:
 	std::vector<std::vector<float>> when_which_where;
+	int*** heat_map_array_;
+	size_t heat_map_array_size_; 
 
 	Core(const Configuration& configuration, const size_t cells, const long double time_end, const std::vector<Type> types, const double delta_energy)
 		:  types{ types }, time_end{ time_end }, delta_energy{ delta_energy } {
@@ -69,6 +71,21 @@ public:
 				}
 			}
 		}
+
+		heat_map_array_size_ = 2 * cells;
+
+		heat_map_array_ = new int**[heat_map_array_size_];
+		for (size_t z = 0; z < heat_map_array_size_; z++)
+			heat_map_array_[z] = new int*[heat_map_array_size_];
+		for (size_t z = 0; z < heat_map_array_size_; z++)
+			for (size_t y = 0; y < heat_map_array_size_; y++)
+				heat_map_array_[z][y] = new int[heat_map_array_size_];
+
+		for (size_t z = 0; z < heat_map_array_size_; z++)
+			for (size_t y = 0; y < heat_map_array_size_; y++)
+				for (size_t x = 0; x < heat_map_array_size_; x++)
+					heat_map_array_[z][y][x] = 0;
+
 
 		std::vector<std::vector<double>> temp_vector;
 		for (size_t i = 0; i < configuration.GetKationNumber(); i++) {
@@ -198,6 +215,14 @@ public:
 		}
 		delete[] oxygen_array_;
 
+		for (size_t z = 0; z < heat_map_array_size_; z++) {
+			for (size_t y = 0; y < heat_map_array_size_; y++)
+				delete[] heat_map_array_[z][y];
+
+			delete[] heat_map_array_[z];
+		}
+		delete[] heat_map_array_;
+
 		for (size_t z = 0; z < kation_array_size_; z++) {
 			for (size_t y = 0; y < kation_array_size_; y++)
 				delete[] kation_array_[z][y];
@@ -286,7 +311,13 @@ public:
 
 			oxygen_array_[oxygen_positions_[selected_atom][2]]
 				[oxygen_positions_[selected_atom][1]]
-			[oxygen_positions_[selected_atom][0]] = 0;
+				[oxygen_positions_[selected_atom][0]] = 0;
+
+			heat_map_array_[oxygen_positions_[selected_atom][2]]
+				[oxygen_positions_[selected_atom][1]]
+				[oxygen_positions_[selected_atom][0]] = 1;
+
+
 
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
@@ -295,7 +326,7 @@ public:
 		        when_which_where_temp[1] = static_cast<float>(selected_atom);
 		        when_which_where_temp[2] = static_cast<float>(seleced_direction);
 			when_which_where.push_back(when_which_where_temp);
-        }
+		}
 		std::cout << "Core exit." << "\n";
 	}
 

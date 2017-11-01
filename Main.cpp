@@ -27,7 +27,6 @@ int main(int argc, char *argv[]) {
 	double delta_energy = std::atof(argv[3]);
 	std::string file_name_in(argv[4]);
 	std::string file_name_out(argv[5]);
-
 	srand(static_cast<unsigned>(time(NULL)));
 
 	std::vector<Type> types;
@@ -40,8 +39,20 @@ int main(int argc, char *argv[]) {
 	std::unique_ptr<Core> core = std::make_unique<Core>(*sample, cells, time_end, types, delta_energy);
 	core->Run();
 
-    std::ofstream file_out("when_which_where_"+file_name_out+".dat", std::ios::binary | std::ios::out);
-    for (auto pos : core->when_which_where) {
-        file_out << pos[0] << "\t" << pos[1] << "\t" << pos[2] << "\n";
-    }
+	std::ofstream file_out("when_which_where_"+file_name_out+".dat", std::ios::binary | std::ios::out);
+	for (auto pos : core->when_which_where) {
+		file_out << pos[0] << "\t" << pos[1] << "\t" << pos[2] << "\n";
+	}
+	
+	std::ofstream file_out_heat_map("heat_map_"+file_name_out+".dat", std::ios::binary | std::ios::out);
+	for (size_t z = 0; z < core->heat_map_array_size_; z++){
+		for (size_t y = 0; y < core->heat_map_array_size_; y++){
+			for (size_t x = 0; x < core->heat_map_array_size_; x++){
+				file_out_heat_map << core->heat_map_array_[z][y][x] << "\t"; 
+			}
+			file_out_heat_map << std::endl;
+		}
+		file_out_heat_map << std::endl << std::endl;
+	}
 }
+
