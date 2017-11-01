@@ -29,18 +29,18 @@ class Launcher:
                 break
             time.sleep(30)
 
-commands = [
-    './KMC     7          1000000     0.04        7_random.xyz    7_random_04',
-    './KMC     9          1000000     0.04        9_random.xyz    9_random_04',
-    './KMC     11         1000000     0.04        11_random.xyz   11_random_04',
 
-    './KMC     7          1000000     0.04        7_sphere.xyz        7_sphere_04',
-    './KMC     9          1000000     0.04        9_sphere.xyz        9_sphere_04',
-    './KMC     11         1000000     0.04        11_sphere.xyz       11_sphere_04',
+cells = ['7', '9', '11']
+energies = ['0.00', '0.01', '0.02', '0.04']
+cell_types = ['random', 'sphere', 'plane']
 
-    './KMC     7          1000000     0.04        7_plane.xyz    7_plane_04',
-    './KMC     9          1000000     0.04        9_plane.xyz    9_plane_04',
-    './KMC     11         1000000     0.04        11_plane.xyz   11_plane_04']
+commands = []
+for cell in cells:
+    for energy in energies:
+        for cell_type in cell_types:
+            commands.append(
+                './build/KMC.exe '+cell+' 1 '+energy+' '+cell+'_'+cell_type+'.xyz '+cell+'_'+cell_type+'_'+energy.replace('0.', '')
+            )
 
 test = Launcher(commands, 3)
 test.run()

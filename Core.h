@@ -72,7 +72,7 @@ public:
 			}
 		}
 
-		heat_map_array_size_ = 2 * cells;
+		heat_map_array_size_ = 2 * cells + 2;
 
 		heat_map_array_ = new int**[heat_map_array_size_];
 		for (size_t z = 0; z < heat_map_array_size_; z++)
@@ -202,7 +202,7 @@ public:
 		for (size_t i = 0; i < direction_vector.size()+1; i++) 
 			jumpe_direction_sume_vector_.push_back(0.0);
 
-		when_which_where.reserve(1e8);
+		when_which_where.reserve(static_cast<int>(1e6));
 	}
 
 	~Core() {
@@ -315,7 +315,7 @@ public:
 
 			heat_map_array_[oxygen_positions_[selected_atom][2]]
 				[oxygen_positions_[selected_atom][1]]
-				[oxygen_positions_[selected_atom][0]] = 1;
+				[oxygen_positions_[selected_atom][0]]++;
 
 
 

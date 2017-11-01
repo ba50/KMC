@@ -153,17 +153,9 @@ class GenerateXYZ:
                     for r in atom:
                         file_out.write("\t{}".format(r))
                     file_out.write("\n")
-
-    def genetate_ox_position(self):
-        return [(index[0]*self.cell_size + self.cell_size * 0.5,
-            index[1]*self.cell_size + self.cell_size * 0.5,
-            index[2]*self.cell_size + self.cell_size * 0.5)
-            for index, anion in np.ndenumerate(self.anions)]
-
-
+					
 
 if __name__ == "__main__":
-    """
     @click.command()
     @click.option('--cells',prompt="Number of cells", help="Number of cells in system.")
     @click.option('--cell_size',prompt="Size of cell", help="Size of cell in system.")
@@ -171,7 +163,5 @@ if __name__ == "__main__":
     def main(cells, cell_size, file_out_name):
         GenerateXYZ(int(cells), int(cell_size), file_out_name).generate_random()
     main()
-    """
-    pos = GenerateXYZ(7, 1, 'test_heat_map').genetate_ox_position()
-    print(pos[0]%(0.5, 0,5, 0,5))
+
 
