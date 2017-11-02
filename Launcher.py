@@ -42,5 +42,5 @@ for cell in cells:
                 './build/KMC.exe '+cell+' 1 '+energy+' '+cell+'_'+cell_type+'.xyz '+cell+'_'+cell_type+'_'+energy.replace('0.', '')
             )
 
-test = Launcher(commands, 3)
+test = Launcher(commands, 4)
 test.run()

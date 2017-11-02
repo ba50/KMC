@@ -42,7 +42,7 @@ def generate_MSD(simulation):
     cell_types = ['random', 'sphere', 'plane']
     cell_sizes = ['7', '9', '11']
     atom_number = None
-    steps = 10000
+    steps = None
 
     sim_data = os.path.splitext(os.path.basename(simulation))[0].replace('when_which_where_', '')
     for cell_type in cell_types:
@@ -53,11 +53,11 @@ def generate_MSD(simulation):
 
     
 if __name__ == "__main__":
-    data_path = 'data_KMC'
+    data_path = '/mnt/data_KMC'
     simulations = glob.glob(sys.argv[1])
     print("Loading data: ", simulations)
                
-    with Pool(4) as p:
+    with Pool(3) as p:
         msds = p.map(generate_MSD, simulations)
 
     fig = plt.figure()

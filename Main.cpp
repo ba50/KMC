@@ -45,14 +45,9 @@ int main(int argc, char *argv[]) {
 	}
 	
 	std::ofstream file_out_heat_map("heat_map_"+file_name_out+".dat", std::ios::binary | std::ios::out);
-	for (size_t z = 1; z < core->heat_map_array_size_-1; z++){
-		for (size_t y = 1; y < core->heat_map_array_size_-1; y++){
-			for (size_t x = 1; x < core->heat_map_array_size_-1; x++){
-				file_out_heat_map << core->heat_map_array_[z][y][x] << "\t"; 
-			}
-			file_out_heat_map << std::endl;
-		}
-		file_out_heat_map << std::endl << std::endl;
-	}
+	for (size_t z = 1; z < core->heat_map_array_size_-1; z++)
+		for (size_t y = 1; y < core->heat_map_array_size_-1; y++)
+			for (size_t x = 1; x < core->heat_map_array_size_-1; x++)
+				file_out_heat_map << x << " " << y << " " << z << " " << core->heat_map_array_[z][y][x] << std::endl;
 }
 
