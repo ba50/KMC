@@ -10,11 +10,12 @@ from multiprocessing import Pool
 class MSD:
     def __init__(self, start_position_path, when_which_where_path, data_path='.', atom_number=None, steps=None):
         self.oxygen_path = OxygenPath(start_position_path, when_which_where_path, data_path, atom_number, steps)
-
+        """
         self.data = np.zeros((self.oxygen_path.steps, self.oxygen_path.atom_number+1))
         self.time = self.oxygen_path.when_which_where[0:-2, 0]
         for index in range(self.oxygen_path.atom_number):
             self.data[:, index+1] = self.msd_fft(self.oxygen_path.paths[index, :, :])
+        """
 
     def autocorrFFT(self, x):
         N=len(x)
@@ -57,9 +58,10 @@ if __name__ == "__main__":
     simulations = glob.glob(sys.argv[1])
     print("Loading data: ", simulations)
                
-    with Pool(3) as p:
-        msds = p.map(generate_MSD, simulations)
+    with Pool(4) as p:
+        p.map(generate_MSD, simulations)
 
+    """
     fig = plt.figure()
     ax = fig.add_subplot(111)
     for msd in msds:
@@ -68,4 +70,5 @@ if __name__ == "__main__":
     ax.set_xlabel('Time /ps')
     ax.set_ylabel('MSD /au')
     plt.show()
+    """
 
