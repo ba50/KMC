@@ -8,31 +8,46 @@ from vispy.visuals.transforms import STTransform
 
 class HeatMap:
     def __init__(self, data_in):
-        self.array = []
+        self.canvas = None
+
+        array_temp = []
         with open(data_in) as heat_map_file:
             for line in heat_map_file:
-                self.array.append([int(word) for word in line.split()])
-        self.canvas = None
+                array_temp.append([int(word) for word in line.split()])
+
+        self.array = np.zeros(max(array_temp)[:3])
+        for pos in array_temp:
+            self.array[pos[0]-1, pos[1]-1, pos[2]-1] = pos[3]
+
+    @staticmethod
+    def getRGBfromI(RGBint):
+        RGBint = int(RGBint)
+        blue =  RGBint & 255
+        green = (RGBint >> 8) & 255
+        red =   (RGBint >> 16) & 255
+        return red/255, green/255, blue/255
+
 
     def plot(self):
 
         self.canvas = scene.SceneCanvas(keys='interactive', bgcolor='white',
-                                   size=(800, 600), show=True)
+                                   size=(640, 480), show=True)
 
         view = self.canvas.central_widget.add_view()
-        view.camera = 'fly'
+        view.camera = 'arcball'
 
         positions = []
-        for pos in self.array:
-            if pos[3] != 0:
-                positions.append(scene.visuals.Sphere(
-                    radius=pos[3]/10,
-                    method='latitude',
-                    parent=view.scene,
-                    edge_color='black'))
-                positions[-1].transform = STTransform(translate=[pos[0], pos[1], pos[2]])
+        for pos in np.ndenumerate(self.array[:, 6:8, :]):
+            positions.append(scene.visuals.Cube(size=0.2,
+                color=self.getRGBfromI(pos[1]*(pow(2,24)-1)/self.array.max()),
+                edge_color="black",
+                parent=view.scene))
 
-        view.camera.set_range(x=[-3, 3])
+            positions[-1].transform = STTransform(translate=[pos[0][0]-self.array.shape[0]/2,
+                pos[0][1]-self.array.shape[1]/2,
+                pos[0][2]-self.array.shape[2]/2])
+
+        view.camera.set_range(x=[-10, 10])
 
 
 if __name__ == '__main__' and sys.flags.interactive == 0:
