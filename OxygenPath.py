@@ -5,6 +5,8 @@ import numpy as np
 from vispy import app, scene, visuals
 import click
 
+from display_lines import *
+
 
 class OxygenPath:
     def __init__(self, start_position_path, when_which_where_path, data_path='.', atom_number=None, steps=None):
@@ -61,6 +63,10 @@ class OxygenPath:
             self.paths = np.memmap(os.path.join(data_path, data_file_name), dtype='float32', mode='r+', shape=dimensions)
             print("Ok")
 
+    def plot_test(self):
+        c = Canvas(self.paths)
+        app.run()
+
     def plot(self):
         plot = scene.visuals.create_visual_node(visuals.LineVisual)
         canvas = scene.SceneCanvas(keys='interactive', title='Oxygen Paths', show=True)
@@ -77,11 +83,6 @@ class OxygenPath:
 
         app.run()
 
-    def make_csv(self, file_name, atom_id):
-        with open(file_name, 'w') as file:
-            writer = csv.writer(file, delimiter='\t')
-            writer.writerows(self.paths[atom_id])
-
 if __name__ == "__main__":
     @click.command()
     @click.option('--start_path',prompt="Start position file: ", help="Start position file.")
@@ -89,9 +90,9 @@ if __name__ == "__main__":
     @click.option('--data_path', default='.', help="Where data are.")
     @click.option('--atom_number', default=None, help="Number of atoms.")
     @click.option('--steps', default=None, help="Number of steps.")
-    def main(start_path, when_path, atom_number, steps):
+    def main(start_path, when_path, data_path, atom_number, steps):
         path = OxygenPath(start_path, when_path, data_path, atom_number, steps)
-        path.plot()
+        path.plot_test()
                 
     main()
 

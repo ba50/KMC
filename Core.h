@@ -2,6 +2,8 @@
 
 #include <map>
 #include <algorithm>
+#include <fstream>
+#include <iterator>
 
 #include "Configuration.h"
 
@@ -30,7 +32,7 @@ class Core {
 	double delta_energy;
 
 public:
-	std::vector<std::vector<float>> when_which_where;
+	std::vector<float> update_vector;
 	int*** heat_map_array_;
 	size_t heat_map_array_size_; 
 
@@ -202,7 +204,7 @@ public:
 		for (size_t i = 0; i < direction_vector.size()+1; i++) 
 			jumpe_direction_sume_vector_.push_back(0.0);
 
-		when_which_where.reserve(static_cast<int>(1e6));
+		update_vector.reserve(configuration.GetOxygenNumber()+1);
 	}
 
 	~Core() {
@@ -252,7 +254,11 @@ public:
 
 		size_t id, i; 
 		long double time{ 0.0 };
-		std::vector<float> when_which_where_temp(3);
+		std::ofstream output_file("update_vector.dat");
+		std::ostream_iterator<std::string> output_iterator(output_file, "\n");
+
+		update_vector[0] = time;
+			
 		while(time < time_end){
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
 
@@ -307,7 +313,7 @@ public:
 			if (oxygen_positions_[selected_atom][0] == 0) {
 				oxygen_positions_[selected_atom][0] = static_cast<int>(oxygen_array_size_ - 2);
 			}
-			///////////////////////////////////////////
+			///////////////////////////////////////////////////////////////////////////
 
 			oxygen_array_[oxygen_positions_[selected_atom][2]]
 				[oxygen_positions_[selected_atom][1]]
@@ -322,10 +328,6 @@ public:
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
 
-			when_which_where_temp[0] = static_cast<float>(time);
-		        when_which_where_temp[1] = static_cast<float>(selected_atom);
-		        when_which_where_temp[2] = static_cast<float>(seleced_direction);
-			when_which_where.push_back(when_which_where_temp);
 		}
 		std::cout << "Core exit." << "\n";
 	}

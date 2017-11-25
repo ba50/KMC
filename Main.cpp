@@ -38,11 +38,6 @@ int main(int argc, char *argv[]) {
 
 	std::unique_ptr<Core> core = std::make_unique<Core>(*sample, cells, time_end, types, delta_energy);
 	core->Run();
-
-	std::ofstream file_out("when_which_where_"+file_name_out+".dat", std::ios::binary | std::ios::out);
-	for (auto pos : core->when_which_where) {
-		file_out << pos[0] << "\t" << pos[1] << "\t" << pos[2] << "\n";
-	}
 	
 	std::ofstream file_out_heat_map("heat_map_"+file_name_out+".dat", std::ios::binary | std::ios::out);
 	for (size_t z = 1; z < core->heat_map_array_size_-1; z++)

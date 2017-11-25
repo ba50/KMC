@@ -1,2 +1,2 @@
 all:
-	g++ -Wall Main.cpp -o ./build/KMC
+	g++ -Wall -std=c++17 Main.cpp -o ./build/KMC

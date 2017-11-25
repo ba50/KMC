@@ -208,7 +208,7 @@ void main()
 
 class HeatMap(app.Canvas):
     def __init__(self, data_in):
-        app.Canvas.__init__(self, keys='interactive', size=(1024, 800))
+        app.Canvas.__init__(self, keys='interactive', size=(640, 480))
         ps = self.pixel_scale
 
         array = []
@@ -216,7 +216,10 @@ class HeatMap(app.Canvas):
             for line in heat_map_file:
                 array.append([int(word) for word in line.split()])
 
-        array = np.array(array)
+        array = np.array(array) - 1
+
+        array = self.clip(array, 3, 1, 6)
+        array = self.clip(array, 0, 5, 9)
 
         positions = []
         color = []
@@ -266,6 +269,14 @@ class HeatMap(app.Canvas):
 
         self.show()
         self.canvas = None
+
+    @staticmethod
+    def clip(array, index, min_, max_):
+        temp_array = []
+        for pos in array:
+            if pos[index] >= min_ and pos[index] < max_:
+                temp_array.append(pos)
+        return np.array(temp_array)
 
     @staticmethod
     def getRGBfromI(RGBint):
