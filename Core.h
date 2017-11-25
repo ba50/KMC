@@ -255,11 +255,18 @@ public:
 		size_t id, i; 
 		long double time{ 0.0 };
 		std::ofstream output_file("update_vector.dat");
-		std::ostream_iterator<std::string> output_iterator(output_file, "\n");
+		std::ostream_iterator<float> output_iterator(output_file);
 
-		update_vector[0] = time;
-			
+		update_vector.push_back(time);
+		for(auto pos : oxygen_positions_){
+			update_vector.push_back(pos[0]);
+			update_vector.push_back(pos[1]);
+			update_vector.push_back(pos[2]);
+		}
+
 		while(time < time_end){
+			for(const float &e : update_vector) output_file << e << "\t";
+			output_file << "\n";
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
 
 			for (id = 0; id < jump_rate_vector_.size(); id++) {
@@ -298,6 +305,11 @@ public:
 			oxygen_positions_[selected_atom][1] += direction_vector[seleced_direction][1];
 			oxygen_positions_[selected_atom][0] += direction_vector[seleced_direction][0];
 
+			update_vector[selected_atom+3] += direction_vector[seleced_direction][2];
+			update_vector[selected_atom+2] += direction_vector[seleced_direction][1];
+			update_vector[selected_atom+1] += direction_vector[seleced_direction][0];
+
+
 			oxygen_positions_[selected_atom][2] %= oxygen_array_size_-1;
 			oxygen_positions_[selected_atom][1] %= oxygen_array_size_-1;
 			oxygen_positions_[selected_atom][0] %= oxygen_array_size_-1;
@@ -324,10 +336,9 @@ public:
 				[oxygen_positions_[selected_atom][0]]++;
 
 
-
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
-
+			update_vector[0] = time;
 		}
 		std::cout << "Core exit." << "\n";
 	}

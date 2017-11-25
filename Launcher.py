@@ -11,8 +11,9 @@ class Launcher:
 
     def __make_process(self):
         self.global_index += 1
-        print("Make new process: {}".format(self.global_index+1))
-        return subprocess.Popen((self.command[self.global_index]).split(), stdout=subprocess.PIPE)
+        if self.global_index < len(self.command):
+            print(self.command[self.global_index])
+            return subprocess.Popen((self.command[self.global_index]).split(), stdout=subprocess.PIPE)
 
     def __str__(self):
         temp = [str(i.poll()) + ", " for i in self.processes]
@@ -20,12 +21,17 @@ class Launcher:
 
     def run(self):
         self.processes = [self.__make_process() for i in range(self.n_processes)]
+        for i, proc in enumerate(self.processes):
+            if i < len(self.command):
+                print(proc.communicate())
+
         while True:
             for index in range(len(self.processes)):
-                if self.processes[index].poll() == 0:
-                    self.processes[index] = self.__make_process()
-            if self.global_index >= len(self.command):
-                break
+                if self.global_index < len(self.command):
+                    if self.processes[index].poll() == 0:
+                        self.processes[index] = self.__make_process()
+                else:
+                    exit()
             time.sleep(30)
 
 
