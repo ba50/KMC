@@ -1,22 +1,19 @@
-import sys
-import os
 import numpy as np
-from OxygenPath import OxygenPath
 import matplotlib.pyplot as plt
-import glob
-from multiprocessing import Pool
 
 
 class MSD:
-    def __init__(self, start_position_path, when_which_where_path, data_path='.', atom_number=None, steps=None):
-        self.oxygen_path = OxygenPath(start_position_path, when_which_where_path, data_path, atom_number, steps)
-        
-        self.data = np.zeros((self.oxygen_path.steps, self.oxygen_path.atom_number+1))
-        self.time = self.oxygen_path.when_which_where[0:-2, 0]
-        for index in range(self.oxygen_path.atom_number):
-            self.data[:, index+1] = self.msd_fft(self.oxygen_path.paths[index, :, :])
-        
+    def __init__(self):
+        shape = np.genfromtxt('param_11_random_00.dat').astype(np.int)
+        self.oxygen_path = np.memmap('update_vector.bin', dtype='float32', mode='r+', shape=(shape[0], shape[1]*3-2))
 
+        self.oxygen_path = self.oxygen_path[:1000]
+
+        self.time = self.oxygen_path[:-2, 0]
+        self.data = np.zeros(self.oxygen_path.shape)
+        for index in range(self.oxygen_path.shape[1]):
+            self.data[:, index] = self.msd_fft(self.oxygen_path[:,index:index+3])
+        
     def autocorrFFT(self, x):
         N=len(x)
         F = np.fft.fft(x, n=2*N)  #2*N because of zero-padding
@@ -24,8 +21,7 @@ class MSD:
         res = np.fft.ifft(PSD)
         res= (res[:N]).real   #now we have the autocorrelation in convention B
         n=N*np.ones(N)-np.arange(0,N) #divide res(m) by (N-m)
-
-        return res/n #this is the autocorrelation in convention 
+        return res/n #this is the autocorrelation in convention
 
     def msd_fft(self, r):
         N=len(r)
@@ -39,32 +35,13 @@ class MSD:
           S1[m]=Q/(N-m)
         return S1-2*S2
 
-def generate_MSD(simulation):
-    data_path = os.path.join('E:', 'data_KMC')
-    cell_types = ['random', 'sphere', 'plane']
-    cell_sizes = ['7', '9', '11']
-    atom_number = None
-    steps = None
 
-    sim_data = os.path.splitext(os.path.basename(simulation))[0].replace('when_which_where_', '')
-    for cell_type in cell_types:
-        if cell_type in sim_data.split('_'):
-            for cell_size in cell_sizes:
-                if cell_size in sim_data.split('_'):
-                    return MSD(os.path.join(data_path, cell_size+'_'+cell_type+'.xyz'), simulation, data_path, atom_number, steps)
-
-    
 if __name__ == "__main__":
-    simulations = glob.glob(sys.argv[1])
-    print("Loading data: ", simulations)
-               
-    with Pool(4) as p:
-        msds = p.map(generate_MSD, simulations)
+    msd = MSD()
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    for msd in msds:
-        ax.plot(msd.time, msd.data[1:-1].mean(axis=1), label=msd.oxygen_path.label)
+    ax.plot(msd.time, msd.data[1:-1].mean(axis=1))
     ax.legend()
     ax.set_xlabel('Time /ps')
     ax.set_ylabel('MSD /au')

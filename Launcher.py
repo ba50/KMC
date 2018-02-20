@@ -35,10 +35,10 @@ class Launcher:
             time.sleep(30)
 
 
-cells = ['7']
+cells = ['11']
 energies = ['0.00']
 cell_types = ['random']
-time_end = str(1)
+time_end = str(40)
 
 commands = []
 for cell in cells:
