@@ -11,7 +11,7 @@ class MSD:
 
         self.time = self.oxygen_path[:-2, 0]
         self.data = np.zeros(self.oxygen_path.shape)
-        for index in range(self.oxygen_path.shape[1]):
+        for index in range(1, self.oxygen_path.shape[1]):
             self.data[:, index] = self.msd_fft(self.oxygen_path[:,index:index+3])
         
     def autocorrFFT(self, x):

@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 
 	std::unique_ptr<Configuration> sample = std::make_unique<Configuration>(positions, types);
 
-	std::unique_ptr<Core> core = std::make_unique<Core>(*sample, cells, time_end, types, delta_energy);
+	std::unique_ptr<Core> core = std::make_unique<Core>(*sample, cells, time_end, types, delta_energy, file_name_out);
 	core->Run();
 	
 	std::ofstream file_out_heat_map("heat_map_"+file_name_out+".dat");

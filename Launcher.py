@@ -34,7 +34,7 @@ class Launcher:
                     exit()
             time.sleep(30)
 
-
+threads = 3
 cells = ['11']
 energies = ['0.00']
 cell_types = ['random']
@@ -53,5 +53,5 @@ for cell in cells:
                 cell+'_'+cell_type+'_'+energy.replace('0.', '')
             )
 
-test = Launcher(commands, 3)
+test = Launcher(commands, threads)
 test.run()

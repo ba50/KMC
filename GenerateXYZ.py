@@ -159,9 +159,10 @@ if __name__ == "__main__":
     @click.command()
     @click.option('--cells',prompt="Number of cells", help="Number of cells in system.")
     @click.option('--cell_size',prompt="Size of cell", help="Size of cell in system.")
-    @click.option('--file_out_name',prompt="Name of files out", help="Name of files out")
-    def main(cells, cell_size, file_out_name):
-        GenerateXYZ(int(cells), int(cell_size), file_out_name).generate_random()
+    @click.option('--structure',prompt="Type of structure", help="Type of structure (random, sphere, plane).")
+    def main(cells, cell_size, structure):
+        file_out_name = str(cells)+"_"++structure
+        if structure == 'random':
+            GenerateXYZ(int(cells), int(cell_size), file_out_name).generate_random()
     main()
-
 

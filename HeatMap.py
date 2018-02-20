@@ -218,8 +218,10 @@ class HeatMap(app.Canvas):
 
         array = np.array(array) - 1
 
+        """
         array = self.clip(array, 3, 1, 6)
         array = self.clip(array, 0, 5, 9)
+        """
 
         positions = []
         color = []
@@ -326,7 +328,7 @@ class HeatMap(app.Canvas):
 
 if __name__ == '__main__' and sys.flags.interactive == 0:
     @click.command()
-    @click.option('--data_in', prompt="Heat map data in: ", help="Heat map data in: ") 
+    @click.option('--data_in', prompt="Heat map data in: ", help="Heat map data in.") 
     def main(data_in):
         heat_map = HeatMap(data_in)
         app.run()

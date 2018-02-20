@@ -30,6 +30,7 @@ class Core {
 	std::vector<std::vector<int>> direction_vector;
 	std::vector<double> jumpe_direction_sume_vector_;
 	double delta_energy;
+	const std::string file_name_out;
 
 public:
 	std::vector<float> update_vector;
@@ -37,8 +38,13 @@ public:
 	size_t heat_map_array_size_; 
 	long int steps;
 
-	Core(const Configuration& configuration, const size_t cells, const long double time_end, const std::vector<Type> types, const double delta_energy)
-		:  types{ types }, time_end{ time_end }, delta_energy{ delta_energy }, steps{ 0 } {
+	Core(const Configuration& configuration, const size_t cells, const long double time_end, const std::vector<Type> types, const double delta_energy, const std::string& file_name_out):  
+		types{ types }, 
+		time_end{ time_end },
+	       	delta_energy{ delta_energy },
+	       	file_name_out{ file_name_out },
+	       	steps{ 0 }
+       	{
 
 		// Define OXYGENE
 		// with bourdery conditions
@@ -256,7 +262,7 @@ public:
 		size_t id, i; 
 		long double time{ 0.0 };
 		
-		std::ofstream output_file("update_vector.bin", std::ios::out | std::ios::binary);
+		std::ofstream output_file("update_vector_"+file_name_out+".bin", std::ios::out | std::ios::binary);
 
 		update_vector.push_back(time);
 		for(auto pos : oxygen_positions_){
