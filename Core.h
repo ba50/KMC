@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <fstream>
 
+#include"cnpy.h"
 #include "Configuration.h"
 
 
@@ -211,7 +212,7 @@ public:
 		for (size_t i = 0; i < direction_vector.size()+1; i++) 
 			jumpe_direction_sume_vector_.push_back(0.0);
 
-		update_vector.reserve(configuration.GetOxygenNumber()+1);
+		update_vector.reserve(configuration.GetOxygenNumber());
 	}
 
 	~Core() {
@@ -261,10 +262,7 @@ public:
 
 		size_t id, i; 
 		long double time{ 0.0 };
-		
-		std::ofstream output_file("update_vector_"+file_name_out+".bin", std::ios::out | std::ios::binary);
 
-		update_vector.push_back(time);
 		for(auto pos : oxygen_positions_){
 			update_vector.push_back(pos[0]);
 			update_vector.push_back(pos[1]);
@@ -272,8 +270,8 @@ public:
 		}
 
 		while(time < time_end){
-			for(size_t i = 0; i < update_vector.size(); i++)
-				output_file.write(reinterpret_cast<const char*>(&update_vector[i]), sizeof(float));
+			cnpy::npy_save("update_vector_"+file_name_out+".npy",&update_vector[0],{update_vector.size()},"a");
+			cnpy::npy_save("time_vector"+file_name_out+".npy",&time,{1},"a");
 
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
 
@@ -313,9 +311,9 @@ public:
 			oxygen_positions_[selected_atom][1] += direction_vector[seleced_direction][1];
 			oxygen_positions_[selected_atom][0] += direction_vector[seleced_direction][0];
 
-			update_vector[selected_atom+3] += direction_vector[seleced_direction][2];
-			update_vector[selected_atom+2] += direction_vector[seleced_direction][1];
-			update_vector[selected_atom+1] += direction_vector[seleced_direction][0];
+			update_vector[selected_atom+2] += direction_vector[seleced_direction][2];
+			update_vector[selected_atom+1] += direction_vector[seleced_direction][1];
+			update_vector[selected_atom] += direction_vector[seleced_direction][0];
 
 
 			oxygen_positions_[selected_atom][2] %= oxygen_array_size_-1;
@@ -346,11 +344,8 @@ public:
 
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
-			update_vector[0] = time;
 			steps++;
 		}
-		//fclose(output_file);
-		output_file.close();
 		std::cout << "Core exit." << "\n";
 	}
 

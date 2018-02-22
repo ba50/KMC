@@ -48,6 +48,6 @@ int main(int argc, char *argv[]) {
 
 	std::ofstream file_out_param("param_"+file_name_out+".dat");
 	file_out_param << core->steps << std::endl;
-	file_out_param << sample->GetOxygenNumber()+1 << std::endl;
+	file_out_param << sample->GetOxygenNumber() << std::endl;
 }
 
