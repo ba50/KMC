@@ -52,12 +52,22 @@ class PlotPaths(app.Canvas):
                                       float(self.size[1]), 1.0, 1000.0)
 
         self.program = gloo.Program(self.VERT_SHADER, self.FRAG_SHADER)
-        a_positons = np.copy(self.positions[:self.animation_step, 1:])
-        print(a_positons.shape)
-        exit()
+        a_positons = self.positions[:self.animation_step, :]
         self.program['a_position'] = gloo.VertexBuffer(a_positons)
-        self.a_color = np.append(np.random.rand(3), 1).reshape(1,4)
-        self.program['a_color'] = gloo.VertexBuffer([self.a_color[-1] for i in range(self.animation_step)])
+
+        self.alpha = np.array((0, 0, 0, 0)).astype(np.float32).reshape(1, 4)
+        self.a_color = [np.append(np.random.rand(3), 1).astype(np.float32).reshape(1,4) for i in range(self.positions.shape[1])]
+        color = []
+        for i in range(self.positions.shape[1]):
+            for j in range(self.animation_step):
+                if j == 0 or j == len(self.animation_step):
+                    color.append(self.alpha)
+                else:
+                    color.append(self.a_color[i])
+
+        color = np.array(color)
+        self.program['a_color'] = gloo.VertexBuffer(color)
+
         self.program['u_projection'] = self.projection
         self.program['u_model'] = self.model
         self.program['u_view'] = self.view
@@ -81,8 +91,16 @@ class PlotPaths(app.Canvas):
             print(self.animation_step)
             self.animation_step = np.clip(self.animation_step+step, 1, self.positions.shape[0])
 
-        self.program['a_position'] = gloo.VertexBuffer(np.copy(self.positions[:self.animation_step, 1:atom_number*3+3+1]))
-        self.program['a_color'] = gloo.VertexBuffer([self.a_color for i in range(self.animation_step)])
+        color = []
+        for i in range(self.positions.shape[1]):
+            for j in range(self.animation_step):
+                if j == 0 or j == range(self.animation_step-1):
+                    color.append(self.alpha)
+                else:
+                    color.append(self.a_color[i])
+
+        self.program['a_color'] = gloo.VertexBuffer(np.array(color))
+        self.program['a_position'] = gloo.VertexBuffer(np.copy(self.positions[:self.animation_step, :]))
 
     # ---------------------------------
     def on_timer(self, event):
@@ -90,6 +108,8 @@ class PlotPaths(app.Canvas):
         self.theta += np.clip(self.delta_theta, -1, 1)
         self.model = np.dot(rotate(self.theta, (0, 0, 1)),
                             rotate(self.phi, (0, 1, 0)))
+        self.program['u_model'] = self.model
+
         self.update()
 
     # ---------------------------------
@@ -98,8 +118,7 @@ class PlotPaths(app.Canvas):
         gloo.set_viewport(0, 0, self.resolution[0], self.resolution[1])
         self.projection = perspective(45.0, event.size[0] /
                                       float(event.size[1]), 1.0, 1000.0)
-        for program in self.program_list:
-            program['u_projection'] = self.projection
+        self.program['u_projection'] = self.projection
 
     # ---------------------------------
     def on_mouse_wheel(self, event):
@@ -116,7 +135,6 @@ class PlotPaths(app.Canvas):
 
     # ---------------------------------
     def on_mouse_move(self, event):
-        print(self.program_list[0]['u_model'], self.model)
         if self.mouse_press:
             speed = .001
             self.delta_phi += (event.pos[0] - self.mouse_press_point[0])*speed
@@ -142,10 +160,8 @@ if __name__ == '__main__':
     def main(param_file, update_vector_file, steps):
         shape = np.genfromtxt(param_file).astype(np.int)
         oxygen_path = np.load(update_vector_file)
-        print(oxygen_path.shape)
-        exit()
-        oxygen_path = oxygen_path[:int(steps)]
-        c = PlotPaths(oxygen_path, 10)
+        oxygen_path = oxygen_path[:int(steps)*shape[1]*3].reshape(int(steps), shape[1], 3)
+        c = PlotPaths(oxygen_path, shape[1])
         app.run()
 
     main()
