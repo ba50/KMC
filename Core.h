@@ -287,12 +287,13 @@ public:
 				jumpe_rate_sume_vector_[id + 1] = jumpe_rate_sume_vector_[id];
 				for (i = 0; i < jump_rate_vector_[0].size(); i++)
 					jumpe_rate_sume_vector_[id + 1] += jump_rate_vector_[id][i];
-
 			}
 
 			random_for_atom = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0) * jumpe_rate_sume_vector_.back();
 			selected_atom_temp = std::lower_bound(jumpe_rate_sume_vector_.begin(), jumpe_rate_sume_vector_.end(), random_for_atom);
 			selected_atom = selected_atom_temp - jumpe_rate_sume_vector_.begin() - 1;
+			if(selected_atom == 2000)
+				std::cout<<"text"<<std::endl;
 
 			for (id = 1; id < jumpe_direction_sume_vector_.size(); id++) {
 				jumpe_direction_sume_vector_[id] = jumpe_direction_sume_vector_[id-1] + jump_rate_vector_[selected_atom][id-1];
@@ -314,7 +315,6 @@ public:
 			update_vector[selected_atom+2] += direction_vector[seleced_direction][2];
 			update_vector[selected_atom+1] += direction_vector[seleced_direction][1];
 			update_vector[selected_atom] += direction_vector[seleced_direction][0];
-
 
 			oxygen_positions_[selected_atom][2] %= oxygen_array_size_-1;
 			oxygen_positions_[selected_atom][1] %= oxygen_array_size_-1;
@@ -340,7 +340,6 @@ public:
 			heat_map_array_[oxygen_positions_[selected_atom][2]]
 				[oxygen_positions_[selected_atom][1]]
 				[oxygen_positions_[selected_atom][0]]++;
-
 
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
