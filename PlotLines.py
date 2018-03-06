@@ -62,7 +62,7 @@ class PlotLines:
 
     # ---------------------------------
     def on_key_press(self, event):
-        step = 1000
+        step = 5000
         if event.key == 'Left':
             self.plot_paths.animation_step = np.clip(self.plot_paths.animation_step-step, 1, self.plot_paths.positions.shape[0])
 

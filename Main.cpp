@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
 	file_out_heat_map.close();
 
 	std::ofstream file_out_param("param_"+file_name_out+".dat");
-	file_out_param << core->steps << std::endl;
+	file_out_param << core->steps+1 << std::endl;
 	file_out_param << sample->GetOxygenNumber() << std::endl;
 }
 

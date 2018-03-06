@@ -161,7 +161,7 @@ if __name__ == "__main__":
     @click.option('--cell_size',prompt="Size of cell", help="Size of cell in system.")
     @click.option('--structure',prompt="Type of structure", help="Type of structure (random, sphere, plane).")
     def main(cells, cell_size, structure):
-        file_out_name = str(cells)+"_"++structure
+        file_out_name = str(cells)+"_"+structure+'.xyz'
         if structure == 'random':
             GenerateXYZ(int(cells), int(cell_size), file_out_name).generate_random()
     main()

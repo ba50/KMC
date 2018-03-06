@@ -12,7 +12,7 @@ class PlotPaths(app.Canvas):
     def __init__(self, positions, atoms_number=50, resolution=(800,600)):
         self.resolution = resolution
         app.Canvas.__init__(self, keys='interactive', size=self.resolution)
-        self.positions = positions #- positions[:1].mean()
+        self.positions = positions - positions[:1].mean()
         self.atoms_number = atoms_number
 
         self.mouse_press_point = 0, 0
@@ -107,13 +107,10 @@ if __name__ == '__main__':
     @click.command()
     @click.option('--param_file',prompt="File with parameters", help="File with parameters.")
     @click.option('--update_vector_file',prompt="File with update vector", help="File with update vector.")
-    @click.option('--steps',prompt="Steps", help="Numper of steps")
-    def main(param_file, update_vector_file, steps):
+    def main(param_file, update_vector_file):
         shape = np.genfromtxt(param_file).astype(np.int)
         oxygen_path = np.load(update_vector_file)
-        oxygen_path = oxygen_path[:int(steps)*shape[1]*3].reshape(int(steps), shape[1], 3)
-        print(oxygen_path[:, 2000])
-        exit()
+        oxygen_path = oxygen_path.reshape(shape[0], shape[1], 3)
         c = PlotPaths(oxygen_path, shape[1])
         app.run()
 

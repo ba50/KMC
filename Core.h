@@ -268,10 +268,20 @@ public:
 			update_vector.push_back(pos[1]);
 			update_vector.push_back(pos[2]);
 		}
+		
+		if( remove(std::string("update_vector_"+file_name_out+".npy").c_str()) != 0 )
+			std::cout<<"Error deleting file: update_vector_"+file_name_out+".npy"<<std::endl;
+		else
+			std::cout<< "File update_vector_"+file_name_out+".npy successfully deleted"<<std::endl;
 
+		if( remove(std::string("time_vector_"+file_name_out+".npy").c_str()) != 0 )
+			std::cout<< "Error deleting file: time_vector_"+file_name_out+".npy"<<std::endl;
+		else
+			std::cout<< "File time_vector_"+file_name_out+".npy successfully deleted" <<std::endl;
+
+		cnpy::npy_save("update_vector_"+file_name_out+".npy",&update_vector[0],{update_vector.size()},"a");
+		cnpy::npy_save("time_vector"+file_name_out+".npy",&time,{1},"a");
 		while(time < time_end){
-			cnpy::npy_save("update_vector_"+file_name_out+".npy",&update_vector[0],{update_vector.size()},"a");
-			cnpy::npy_save("time_vector"+file_name_out+".npy",&time,{1},"a");
 
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
 
@@ -292,9 +302,6 @@ public:
 			random_for_atom = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0) * jumpe_rate_sume_vector_.back();
 			selected_atom_temp = std::lower_bound(jumpe_rate_sume_vector_.begin(), jumpe_rate_sume_vector_.end(), random_for_atom);
 			selected_atom = selected_atom_temp - jumpe_rate_sume_vector_.begin() - 1;
-			if(selected_atom == 2000)
-				std::cout<<"text"<<std::endl;
-
 			for (id = 1; id < jumpe_direction_sume_vector_.size(); id++) {
 				jumpe_direction_sume_vector_[id] = jumpe_direction_sume_vector_[id-1] + jump_rate_vector_[selected_atom][id-1];
 			}
@@ -312,9 +319,9 @@ public:
 			oxygen_positions_[selected_atom][1] += direction_vector[seleced_direction][1];
 			oxygen_positions_[selected_atom][0] += direction_vector[seleced_direction][0];
 
-			update_vector[selected_atom+2] += direction_vector[seleced_direction][2];
-			update_vector[selected_atom+1] += direction_vector[seleced_direction][1];
-			update_vector[selected_atom] += direction_vector[seleced_direction][0];
+			update_vector[selected_atom*3+2] += direction_vector[seleced_direction][2];
+			update_vector[selected_atom*3+1] += direction_vector[seleced_direction][1];
+			update_vector[selected_atom*3] += direction_vector[seleced_direction][0];
 
 			oxygen_positions_[selected_atom][2] %= oxygen_array_size_-1;
 			oxygen_positions_[selected_atom][1] %= oxygen_array_size_-1;
@@ -343,6 +350,10 @@ public:
 
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
+
+			cnpy::npy_save("update_vector_"+file_name_out+".npy",&update_vector[0],{update_vector.size()},"a");
+			cnpy::npy_save("time_vector"+file_name_out+".npy",&time,{1},"a");
+
 			steps++;
 		}
 		std::cout << "Core exit." << "\n";
