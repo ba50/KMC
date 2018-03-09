@@ -153,16 +153,47 @@ class GenerateXYZ:
                     for r in atom:
                         file_out.write("\t{}".format(r))
                     file_out.write("\n")
-					
+
+    @staticmethod
+    def read_xyz(fin):
+        """ read a xyz file from file handle
+        Parameters
+        ----------
+        fin : file handle
+            file to read from
+        Returns
+        -------
+        fin : open file
+        xyz : namedtuple
+            returns a named tuple with coords, title and list of atomtypes.
+        See Also
+        --------
+        write_xyz
+        """
+        fin = open(fin)
+        natoms = int(fin.readline())
+        title = fin.readline()[:-1]
+        coords = np.zeros([natoms, 3], dtype="float64")
+        atomtypes = []
+        for x in coords:
+            line = fin.readline().split()
+            atomtypes.append(line[0])
+            x[:] = map(float, line[1:4])
+
+        return namedtuple("XYZFile", ["coords", "title", "atomtypes"]) \
+            (coords, title, atomtypes)
 
 if __name__ == "__main__":
     @click.command()
     @click.option('--cells',prompt="Number of cells", help="Number of cells in system.")
     @click.option('--cell_size',prompt="Size of cell", help="Size of cell in system.")
-    @click.option('--structure',prompt="Type of structure", help="Type of structure (random, sphere, plane).")
+    @click.option('--structure',prompt="Type of structure (random, sphere, plane): ", help="Type of structure (random, sphere, plane).")
     def main(cells, cell_size, structure):
         file_out_name = str(cells)+"_"+structure+'.xyz'
         if structure == 'random':
             GenerateXYZ(int(cells), int(cell_size), file_out_name).generate_random()
+        if structure == 'sphere':
+            GenerateXYZ(int(cells), int(cell_size), file_out_name).generate_sphere(float(cells)*.4)
+        if structure == 'plane':
+            GenerateXYZ(int(cells), int(cell_size), file_out_name).generate_plane(3)
     main()
-

@@ -35,17 +35,17 @@ class Launcher:
             time.sleep(30)
 
 threads = 3
-cells = ['11']
-energies = ['0.00']
-cell_types = ['random']
-time_end = str(40)
+cells = ['7', '9', '11']
+energies = ['0.00', '0.2']
+cell_types = ['random', 'sphere', 'plane']
+time_end = str(60)
 
 commands = []
 for cell in cells:
     for energy in energies:
         for cell_type in cell_types:
             commands.append(
-                './build/KMC '+
+                './data/KMC '+
                 cell+' '+
                 time_end + ' ' +
                 energy+' '+

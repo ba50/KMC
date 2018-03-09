@@ -3,13 +3,17 @@ from vispy import gloo
 from vispy import app
 from vispy.util.transforms import perspective, translate, rotate
 import click
+import os.path as path
 
 from PlotLines import PlotLines
 from PlotPoints import PlotPoints
+from PlotItrium import PlotItrium
 
 
 class PlotPaths(app.Canvas):
-    def __init__(self, positions, atoms_number=50, resolution=(800,600)):
+    def __init__(self, positions, path_to_data, file_name, atoms_number=50, resolution=(800,600)):
+        self.path_to_data = path_to_data
+        self.file_name = file_name
         self.resolution = resolution
         app.Canvas.__init__(self, keys='interactive', size=self.resolution)
         self.positions = positions - positions[:1].mean()
@@ -35,7 +39,10 @@ class PlotPaths(app.Canvas):
 
         self.plot_lines = PlotLines(self)
         self.plot_points = PlotPoints(self)
-        self.programs = [self.plot_lines.program, self.plot_points.program]
+        self.plot_itrium = PlotItrium(self)
+        self.programs = [self.plot_lines.program,
+                         self.plot_points.program,
+                         self.plot_itrium.program]
 
         self.context.set_clear_color('white')
         self.context.set_state('translucent')
@@ -83,6 +90,7 @@ class PlotPaths(app.Canvas):
         self.context.clear()
         self.plot_lines.on_draw(event)
         self.plot_points.on_draw(event)
+        self.plot_itrium.on_draw(event)
 
     # ---------------------------------
     def on_mouse_move(self, event):
@@ -105,13 +113,17 @@ class PlotPaths(app.Canvas):
 
 if __name__ == '__main__':
     @click.command()
-    @click.option('--param_file',prompt="File with parameters", help="File with parameters.")
-    @click.option('--update_vector_file',prompt="File with update vector", help="File with update vector.")
-    def main(param_file, update_vector_file):
+    @click.option('--path_to_data',prompt="Path to data", help=" Path to data.")
+    @click.option('--file_name',prompt="Filename", help="Filename.")
+    def main(path_to_data, file_name):
+        param_file = path.join(path_to_data, 'param_'+file_name+'.dat')
+        time_file = path.join(path_to_data, 'time_vector_'+file_name+'.npy')
+        data_file = path.join(path_to_data, 'update_vector_'+file_name+'.npy')
+
         shape = np.genfromtxt(param_file).astype(np.int)
-        oxygen_path = np.load(update_vector_file)
+        oxygen_path = np.load(data_file)
         oxygen_path = oxygen_path.reshape(shape[0], shape[1], 3)
-        c = PlotPaths(oxygen_path, shape[1])
+        c = PlotPaths(oxygen_path, path_to_data, file_name, shape[1])
         app.run()
 
     main()

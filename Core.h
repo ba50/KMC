@@ -280,7 +280,7 @@ public:
 			std::cout<< "File time_vector_"+file_name_out+".npy successfully deleted" <<std::endl;
 
 		cnpy::npy_save("update_vector_"+file_name_out+".npy",&update_vector[0],{update_vector.size()},"a");
-		cnpy::npy_save("time_vector"+file_name_out+".npy",&time,{1},"a");
+		cnpy::npy_save("time_vector_"+file_name_out+".npy",&time,{1},"a");
 		while(time < time_end){
 
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
@@ -352,7 +352,7 @@ public:
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
 
 			cnpy::npy_save("update_vector_"+file_name_out+".npy",&update_vector[0],{update_vector.size()},"a");
-			cnpy::npy_save("time_vector"+file_name_out+".npy",&time,{1},"a");
+			cnpy::npy_save("time_vector_"+file_name_out+".npy",&time,{1},"a");
 
 			steps++;
 		}
