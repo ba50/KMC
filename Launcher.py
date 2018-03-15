@@ -36,7 +36,7 @@ class Launcher:
 
 threads = 3
 cells = ['7', '9', '11']
-energies = ['0.00', '0.2']
+energies = ['0.02']
 cell_types = ['random', 'sphere', 'plane']
 time_end = str(60)
 

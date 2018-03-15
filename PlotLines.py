@@ -5,6 +5,7 @@ from vispy import gloo
 class PlotLines:
     def __init__(self, plot_paths):
         self.plot_paths = plot_paths
+        self.step = 5000
 
         VERT_SHADER = """
         uniform mat4 u_model;
@@ -62,18 +63,31 @@ class PlotLines:
 
     # ---------------------------------
     def on_key_press(self, event):
-        step = 5000
-        if event.key == 'Left':
-            self.plot_paths.animation_step = np.clip(self.plot_paths.animation_step-step, 1, self.plot_paths.positions.shape[0])
+        if event.key == 'Up':
+            self.step = np.clip(self.step+100,
+                                2,
+                                self.plot_paths.positions.shape[0])
+            print('Delta: ~', self.step)
+        if event.key == 'Down':
+            self.step = np.clip(self.step-100, 
+                                2,
+                                self.plot_paths.positions.shape[0])
+            print('Delta steps: ', self.step)
 
+        if event.key == 'Left':
+            self.plot_paths.animation_step = np.clip(self.plot_paths.animation_step-self.step,
+                                                     2,
+                                                     self.plot_paths.positions.shape[0])
         if event.key == 'Right':
-            self.plot_paths.animation_step = np.clip(self.plot_paths.animation_step+step, 1, self.plot_paths.positions.shape[0]) 
+            self.plot_paths.animation_step = np.clip(self.plot_paths.animation_step+self.step,
+                                                     2, 
+                                                     self.plot_paths.positions.shape[0]) 
 
         a_color, a_position = self.generate_paths()
 
         self.program['a_color'] = gloo.VertexBuffer(a_color)
         self.program['a_position'] = gloo.VertexBuffer(a_position)
-        print(self.plot_paths.animation_step)
+        print("Time: {:.2f} [ps]".format(self.plot_paths.time[self.plot_paths.animation_step]))
 
     # ---------------------------------
     def on_draw(self, event):

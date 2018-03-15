@@ -25,7 +25,6 @@ class MSD:
         else:
             atom_numbers = self.oxygen_path.shape[1]
 
-
         self.data = []
         for index in range(atom_numbers):
             self.data.append(self.msd_fft(self.oxygen_path[:, index]))

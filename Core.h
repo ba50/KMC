@@ -165,7 +165,8 @@ public:
 				+ kation_array[z+1][y][x] + kation_array[z+1][y][x+1] + kation_array[z+1][y+1][x] + kation_array[z+1][y+1][x+1] - 4.0);
 		};
 
-		residence_time_ = { 9.0, 16.0, 22.0, 33.0, 48.0 };
+		//residence_time_ = { 9.0, 16.0, 22.0, 33.0, 48.0 };
+		residence_time_ = { 9.0, 32.0, 44.0, 66.0, 96.0 };
 		for (size_t z = 0; z < residence_time_array_size_; z++) {
 			for (size_t y = 0; y < residence_time_array_size_; y++) {
 				for (size_t x = 0; x < residence_time_array_size_; x++) {

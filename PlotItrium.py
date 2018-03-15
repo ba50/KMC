@@ -2,7 +2,6 @@ from vispy import gloo
 from vispy import app
 from vispy.gloo import gl
 import numpy as np
-from GenerateXYZ import GenerateXYZ
 import os.path as path
 
 
@@ -12,10 +11,19 @@ class PlotItrium:
 
         self.filename = plot_paths.file_name.split('_')
         self.filename = self.filename[0]+'_'+self.filename[1]+'.xyz'
-        self.positions = GenerateXYZ.read_xyz(path.join(plot_paths.path_to_data,
-                                                        self.filename))
-        print(self.positions)
-        exit()
+
+        self.positions = []
+        with open(path.join(plot_paths.path_to_data,
+                            self.filename)) as file_in:
+            for line in file_in.readlines()[2:]:
+                line =  line.split('\t')
+                if line[0] == 'Y':
+                    self.positions.append((float(line[1]),
+                                           float(line[2]),
+                                           float(line[3])))
+
+        self.positions = (np.array(self.positions) - plot_paths.delta_pos)+(.5, .5, .5)
+        self.red = np.array((1, 0, 0, .75)).astype(np.float32).reshape(1, 4)
 
         VERT_SHADER = """
         uniform mat4 u_model;
@@ -82,9 +90,9 @@ class PlotItrium:
         self.program['a_size'] = gloo.VertexBuffer(a_size)
 
     def generate_points(self):
-        a_color = [self.plot_paths.a_color[i] for i in range(self.plot_paths.atoms_number)]
-        a_position = [self.plot_paths.positions[0, i] for i in range(self.plot_paths.atoms_number)]
-        a_size = [2 for i in range(self.plot_paths.atoms_number)]
+        a_color = [self.red for i in range(self.positions.shape[0])]
+        a_position = self.positions
+        a_size = [10 for i in range(self.positions.shape[0])]
 
         a_color = np.array(a_color).astype(np.float32)
         a_position = np.array(a_position).astype(np.float32)
