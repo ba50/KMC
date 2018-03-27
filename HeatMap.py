@@ -218,6 +218,13 @@ class HeatMap(app.Canvas):
 
         array = np.array(array) - 1
 
+        dim = np.max(array[:, :3])+1
+        heat_map = np.zeros((dim, dim, dim))
+        for pos in array:
+            heat_map[pos[0], pos[1], pos[2]] = pos[3]
+
+        mean_map = heat_map.mean(axis=2).mean(axis=1)
+
         """
         array = self.clip(array, 3, 1, 6)
         array = self.clip(array, 0, 5, 9)
@@ -227,7 +234,9 @@ class HeatMap(app.Canvas):
         color = []
         for pos in array:
             positions.append(pos[:3])
-            color.append(self.getRGBfromI(pos[3]*(pow(2, 24)-1)/array.max()))
+            #color.append(self.getRGBfromI(pos[3]*(pow(2, 24)-1)/array.max()))
+            color.append(self.getRGBfromI(mean_map[pos[2]]*(pow(2,
+                                                                24)-1)/mean_map.max()))
 
         positions = np.array(positions)
         positions = positions-positions.max()/2
