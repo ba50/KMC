@@ -1,22 +1,28 @@
-import sys
 import numpy as np
 import matplotlib.pyplot as plt
+import click
+from os import path
 
 
-class Histogram:
-    def __init__(self, when_which_where_path, steps):
-        self.when_which_where = np.memmap(when_which_where_path, dtype='float32', mode='r', shape=(steps, 3))
+@click.command()
+@click.option('--path_to_data', prompt="Path to data", help=" Path to data.")
+@click.option('--file_name', prompt="Filename", help="Filename.")
+def main(path_to_data, file_name):
+    param_file = path.join(path_to_data, 'param_'+file_name+'.dat')
+    time_file = path.join(path_to_data, 'time_vector_'+file_name+'.npy')
+    data_file = path.join(path_to_data, 'update_vector_'+file_name+'.npy')
 
-    def atoms(self):
-        plt.figure(1)
-        plt.hist(self.when_which_where[:, 1], bins=range(0, int(np.max(self.when_which_where)+10)))
+    shape = np.genfromtxt(param_file).astype(np.int)
+    oxygen_path = np.load(data_file, mmap_mode='r')
+    time = np.load(time_file)
+    oxygen_path = oxygen_path.reshape(shape[0], shape[1], 3)
+    plt.figure()
+    plt.plot(time)
+    plt.figure()
+    plt.plot(time, oxygen_path[:, :, 0].mean(axis=1))
+    plt.plot(time, oxygen_path[:, :, 1].mean(axis=1))
+    plt.plot(time, oxygen_path[:, :, 2].mean(axis=1))
+    plt.show()
 
-    def directions(self):
-        plt.figure(2)
-        plt.hist(self.when_which_where[:, 2], bins=range(0, int(np.max(self.when_which_where[:, 2])+2)))
 
-
-hist = Histogram(sys.argv[1], int(sys.argv[2]))
-hist.atoms()
-plt.show()
-
+main()
