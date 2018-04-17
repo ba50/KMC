@@ -46,6 +46,5 @@ namespace Load {
 
 			positions.push_back(temp_vector);
 		}
-
 	}
 }

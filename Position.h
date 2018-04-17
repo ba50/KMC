@@ -29,7 +29,7 @@ public:
 		type_(type)
 	{};
 
-	std::vector<double> Data() const {
+	std::vector<double> GetPosition() const {
 		std::vector<double> temp(3);
 		temp[0] = x_;
 		temp[1] = y_;
@@ -64,7 +64,7 @@ std::ostream& operator<<(std::ostream& os, const Position& position) {
 		break;
 	}
 	os << "\t";
-	for (auto position : position.Data()) {
+	for (auto position : position.GetPosition()) {
 		os << position << "\t";
 	}
 	os << "\n";

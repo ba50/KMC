@@ -5,17 +5,13 @@ import click
 
 
 class GenerateXYZ:
-    def __init__(self, cells, cell_size, file_out_name):
+    def __init__(self, cells, file_out_name):
 
-        self.cells = cells
-        self.cell_size = cell_size
+        self.cell_size = 1.0
         self.file_out_name = file_out_name
 
-        self.kations_size = 2*cells + 1
-        self.kations = np.zeros((self.kations_size, self.kations_size, self.kations_size)).astype(np.int)
-
-        self.anion_size = 2*cells
-        self.anions = np.zeros((self.anion_size, self.anion_size, self.anion_size)).astype(np.int)
+        self.kations = np.zeros(2*np.array(cells) + 1).astype(np.int)
+        self.anions = np.zeros(2*np.array(cells)).astype(np.int)
 
         self.positions = {'Bi': [], 'Y': [], 'O': []}
 
@@ -24,9 +20,7 @@ class GenerateXYZ:
         self.O = 0
 
     def generate_sphere(self, radius):
-        center = (self.kations_size*self.cell_size/2,
-                  self.kations_size*self.cell_size/2,
-                  self.kations_size*self.cell_size/2)
+        center = np.floor(np.array(self.kations.shape)*self.cell_size/2)
 
         to_change = True
         for index, kation in np.ndenumerate(self.kations):
@@ -117,9 +111,7 @@ class GenerateXYZ:
                     file_out.write("\n")
 
     def generate_plane(self, thickness):
-        center = (self.kations_size*self.cell_size/2,
-                  self.kations_size*self.cell_size/2,
-                  self.kations_size*self.cell_size/2)
+        center = np.floor(np.array(self.kations.shape)*self.cell_size/2)
 
         to_change = True
         for index, kation in np.ndenumerate(self.kations):
@@ -157,17 +149,14 @@ class GenerateXYZ:
 
 if __name__ == "__main__":
     @click.command()
-    @click.option('--cells',prompt="Number of cells", help="Number of cells in system.")
-    @click.option('--cell_size',prompt="Size of cell", help="Size of cell in system.")
-    @click.option('--structure',prompt="Type of structure (random, sphere, plane): ", help="Type of structure (random, sphere, plane).")
-    def main(cells, cell_size, structure):
-        file_out_name = str(cells)+"_"+structure+'.xyz'
+    @click.option('--cells', nargs=3, type=int, prompt="Number of cells x y z", help="Number of cells in system.")
+    @click.option('--structure', prompt="Type of structure (random, sphere, plane): ", help="Type of structure (random, sphere, plane).")
+    def main(cells, structure):
+        file_out_name = str(cells[0])+'_'+str(cells[1])+'_'+str(cells[2])+'_'+structure+'.xyz'
         if structure == 'random':
-            GenerateXYZ(int(cells), int(cell_size), file_out_name).generate_random()
+            GenerateXYZ(cells, file_out_name).generate_random()
         if structure == 'sphere':
-            GenerateXYZ(int(cells),
-                        int(cell_size),
-                        file_out_name).generate_sphere(float(cells)*.95)
+            GenerateXYZ(cells, file_out_name).generate_sphere(5)
         if structure == 'plane':
-            GenerateXYZ(int(cells), int(cell_size), file_out_name).generate_plane(3)
+            GenerateXYZ(cells, file_out_name).generate_plane(1)
     main()

@@ -15,11 +15,11 @@ class Core {
 	long double time_end;
 
 	double*** oxygen_array_;
-	size_t oxygen_array_size_; 
+    std::vector<size_t> oxygen_array_size_; 
 	std::vector<std::vector<int>> oxygen_positions_;
 
 	double*** kation_array_;
-	size_t kation_array_size_; 
+    std::vector<size_t> kation_array_size_; 
 
 	double*** residence_time_array_;
 	size_t residence_time_array_size_;
@@ -35,11 +35,9 @@ class Core {
 
 public:
 	std::vector<float> update_vector;
-	int*** heat_map_array_;
-	size_t heat_map_array_size_; 
 	long int steps;
 
-	Core(const Configuration& configuration, const size_t cells, const long double time_end, const std::vector<Type> types, const double delta_energy, const std::string& file_name_out):  
+	Core(const Configuration& configuration, const std::vector<size_t> cells, const long double time_end, const std::vector<Type> types, const double delta_energy, const std::string& file_name_out):  
 		types{ types }, 
 		time_end{ time_end },
 	       	delta_energy{ delta_energy },
@@ -49,18 +47,20 @@ public:
 
 		// Define OXYGENE
 		// with bourdery conditions
-		oxygen_array_size_ = 2 * cells + 2;
+		oxygen_array_size_[0] = 2 * cells[0] + 2;
+		oxygen_array_size_[1] = 2 * cells[1] + 2;
+		oxygen_array_size_[2] = 2 * cells[2] + 2;
 
-		oxygen_array_ = new double**[oxygen_array_size_];
-		for (size_t z = 0; z < oxygen_array_size_; z++)
-			oxygen_array_[z] = new double*[oxygen_array_size_];
-		for (size_t z = 0; z < oxygen_array_size_; z++)
-			for (size_t y = 0; y < oxygen_array_size_; y++)
-				oxygen_array_[z][y] = new double[oxygen_array_size_];
+		oxygen_array_ = new double**[oxygen_array_size_[2]];
+		for (size_t z = 0; z < oxygen_array_size_[2]; z++)
+			oxygen_array_[z] = new double*[oxygen_array_size_[1]];
+		for (size_t z = 0; z < oxygen_array_size_[2]; z++)
+			for (size_t y = 0; y < oxygen_array_size_[1]; y++)
+				oxygen_array_[z][y] = new double[oxygen_array_size_[0]];
 
-		for (size_t z = 0; z < oxygen_array_size_; z++)
-			for (size_t y = 0; y < oxygen_array_size_; y++)
-				for (size_t x = 0; x < oxygen_array_size_; x++)
+		for (size_t z = 0; z < oxygen_array_size_[2]; z++)
+			for (size_t y = 0; y < oxygen_array_size_[1]; y++)
+				for (size_t x = 0; x < oxygen_array_size_[0]; x++)
 					oxygen_array_[z][y][x] = 1.0;
 		
 		{
@@ -69,7 +69,7 @@ public:
 			for (auto sort_map : configuration.GetSortMap()) {
 				if (sort_map.first == Type::O) {
 					for (auto position : sort_map.second) {
-						temp_position = position.Data();
+						temp_position = position.GetPosition();
 
 						//+1 because bourdery conditions
 						temp_site[0] = static_cast<int>(floor(temp_position[0]/CELL_SIZE)) + 1;
@@ -82,28 +82,9 @@ public:
 			}
 		}
 
-		heat_map_array_size_ = 2 * cells + 2;
-
-		heat_map_array_ = new int**[heat_map_array_size_];
-		for (size_t z = 0; z < heat_map_array_size_; z++)
-			heat_map_array_[z] = new int*[heat_map_array_size_];
-		for (size_t z = 0; z < heat_map_array_size_; z++)
-			for (size_t y = 0; y < heat_map_array_size_; y++)
-				heat_map_array_[z][y] = new int[heat_map_array_size_];
-
-		for (size_t z = 0; z < heat_map_array_size_; z++)
-			for (size_t y = 0; y < heat_map_array_size_; y++)
-				for (size_t x = 0; x < heat_map_array_size_; x++)
-					heat_map_array_[z][y][x] = 0;
-
-
 		std::vector<std::vector<double>> temp_vector;
 		for (size_t i = 0; i < configuration.GetKationNumber(); i++) {
-			temp_vector.push_back(std::vector<double>{
-				configuration.GetPositions()[i].Data()[0],
-				configuration.GetPositions()[i].Data()[1],
-				configuration.GetPositions()[i].Data()[2],
-			});
+			temp_vector.push_back(std::vector<double>(configuration.GetPositions()[i].GetPosition()));
 		}
 
 		for (size_t i = configuration.GetKationNumber(); i < configuration.GetPositions().size(); i++) {
@@ -111,7 +92,7 @@ public:
 		}
 
 		// Define KATION
-		kation_array_size_ = 2 * cells + 1;
+		kation_array_size_[0] = 2 * cells[0] + 1;
 
 		kation_array_ = new double**[kation_array_size_];
 		for (size_t z = 0; z < kation_array_size_; z++)
@@ -131,7 +112,7 @@ public:
 			for (auto sort_map : configuration.GetSortMap()) {
 				if (sort_map.first == Type::Bi) {
 					for (auto position : sort_map.second) {
-						temp_position = position.Data();
+						temp_position = position.GetPosition();
 						temp_site[0] = static_cast<size_t>(floor(temp_position[0]/CELL_SIZE));
 						temp_site[1] = static_cast<size_t>(floor(temp_position[1]/CELL_SIZE));
 						temp_site[2] = static_cast<size_t>(floor(temp_position[2]/CELL_SIZE));
@@ -140,7 +121,7 @@ public:
 				}
 				if (sort_map.first == Type::Y) {
 					for (auto position : sort_map.second) {
-						temp_position = position.Data();
+						temp_position = position.GetPosition();
 						temp_site[0] = static_cast<size_t>(floor(temp_position[0]/CELL_SIZE));
 						temp_site[1] = static_cast<size_t>(floor(temp_position[1]/CELL_SIZE));
 						temp_site[2] = static_cast<size_t>(floor(temp_position[2]/CELL_SIZE));
