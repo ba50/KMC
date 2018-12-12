@@ -9,12 +9,10 @@ class PlotItrium:
     def __init__(self, plot_paths):
         self.plot_paths = plot_paths
 
-        self.filename = plot_paths.file_name.split('_')
-        self.filename = self.filename[0]+'_'+self.filename[1]+'.xyz'
+        self.filename = path.join(plot_paths.data_path, 'positions.xyz')
 
         self.positions = []
-        with open(path.join(plot_paths.path_to_data,
-                            self.filename)) as file_in:
+        with open(self.filename) as file_in:
             for line in file_in.readlines()[2:]:
                 line =  line.split('\t')
                 if line[0] == 'Y':

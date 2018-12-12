@@ -1,57 +1,123 @@
-import subprocess
-import time
+import os
+from os import path
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QFileDialog
 
 
-class Launcher:
-    def __init__(self, command, n_processes):
-        self.command = command
-        self.n_processes = n_processes
-        self.global_index = -1
-        self.processes = None
+from GUI import Ui_KMC_GUI
+from GenerateXYZ import GenerateXYZ
+from GenerateWorkers import GenerateWorkers
+from TimeHeatMap import TimeHeatMap
 
-    def __make_process(self):
-        self.global_index += 1
-        if self.global_index < len(self.command):
-            print(self.command[self.global_index])
-            return subprocess.Popen((self.command[self.global_index]).split(), stdout=subprocess.PIPE)
+class Launcher(Ui_KMC_GUI):
+    cell_type = None
+    root_directory = None
+    path_to_data = None
+    size = None
+    time_end = None
+    contact_switch = None
+    contact = None
+    energy_param = None
+    models = []
+    root = None
+    time_heatmap = None
 
-    def __str__(self):
-        temp = [str(i.poll()) + ", " for i in self.processes]
-        return "".join(temp)
+    def __init__(self):
+        self.KMC_GUI = QtWidgets.QMainWindow()
+        self.setupUi(self.KMC_GUI)
 
-    def run(self):
-        self.processes = [self.__make_process() for i in range(self.n_processes)]
-        for i, proc in enumerate(self.processes):
-            if i < len(self.command):
-                print(proc.communicate())
+        self.root_directory = os.getcwd()
+        self.label_path_to_data.setText(self.root_directory)
 
-        while True:
-            for index in range(len(self.processes)):
-                if self.global_index < len(self.command):
-                    if self.processes[index].poll() == 0:
-                        self.processes[index] = self.__make_process()
-                else:
-                    exit()
-            time.sleep(30)
+        self.pushButton_path_to_data.clicked.connect(self.handleButton_path_to_data)
+        self.pushButton_generate.clicked.connect(self.handleButton_generate)
 
-threads = 3
-cells = ['7', '9', '11']
-energies = ['0.02']
-cell_types = ['random', 'sphere', 'plane']
-time_end = str(60)
+        self.pushButton_add_model.clicked.connect(self.handleButton_add_model)
+        self.pushButton_clear_all.clicked.connect(self.handleButton_clear_all)
+        self.pushButton_launch.clicked.connect(self.handleButton_launch)
 
-commands = []
-for cell in cells:
-    for energy in energies:
-        for cell_type in cell_types:
-            commands.append(
-                './data/KMC '+
-                cell+' '+
-                time_end + ' ' +
-                energy+' '+
-                cell+'_'+cell_type+'.xyz '+
-                cell+'_'+cell_type+'_'+energy.replace('0.', '')
-            )
+        self.pushButton_add_root.clicked.connect(self.handleButton_add_root)
+        self.pushButton_plot.clicked.connect(self.handleButton_plot)
+        self.pushButton_heatmap.clicked.connect(self.handleButton_heatmap)
 
-test = Launcher(commands, threads)
-test.run()
+    def handleButton_path_to_data(self):
+        self.root_directory = QFileDialog.getExistingDirectory(self.centralWidget)
+        self.label_path_to_data.setText(self.root_directory)
+
+    def handleButton_generate(self):
+        self.cell_type = self.comboBox_type.currentText()
+
+        self.size = self.spinBox_x_size.value(), self.spinBox_y_size.value(), self.spinBox_z_size.value()
+
+        self.time_end = self.spinBox_time_end.value()
+
+        self.contact_switch = self.checkBox_left_contact.checkState(), self.checkBox_right_contact.checkState()
+        self.contact = self.spinBox_left_contact.value(), self.spinBox_right_contact.value()
+
+        self.enegry_param = self.doubleSpinBox_A.value(), self.doubleSpinBox_period.value(), self.doubleSpinBox_delta_energi_base.value()
+
+        self.path_to_data = path.join(self.root_directory, str(self.size[0])+'_'+str(self.size[1])+'_'+str(self.size[2])+'_'+self.cell_type.lower())
+        if not os.path.exists(self.path_to_data):
+            os.makedirs(self.path_to_data)
+        if not os.path.exists(path.join(self.path_to_data, 'heat_map')):
+                    os.makedirs(path.join(self.path_to_data, 'heat_map'))
+
+        with open(path.join(self.path_to_data, 'input.kmc'), 'w') as file_out:
+            file_out.write("{}\t# Cell type\n".format(self.cell_type.lower()))
+            file_out.write("{}\t# X number of cells\n".format(self.size[0]))
+            file_out.write("{}\t# Y number of cells\n".format(self.size[1]))
+            file_out.write("{}\t# Z number of cells\n".format(self.size[2]))
+            file_out.write("{}\t# Time to end simulation\n".format(self.time_end))
+            file_out.write("{}\t# Left contact switch\n".format(self.contact_switch[0]))
+            file_out.write("{}\t# Right contact switch\n".format(self.contact_switch[1]))
+            file_out.write("{}\t# Left contact\n".format(self.contact[0]))
+            file_out.write("{}\t# Right contact\n".format(self.contact[1]))
+            file_out.write("{}\t# Amplitude of sin function\n".format(self.enegry_param[0]))
+            file_out.write("{}\t# Period of sin function\n".format(self.enegry_param[1]))
+            file_out.write("{}\t# Delta energy base\n".format(self.enegry_param[2]))
+
+        if self.cell_type == 'Random':
+            GenerateXYZ(self.size, self.path_to_data).generate_random()
+        if self.cell_type == 'Sphere':
+            GenerateXYZ(self.size, self.path_to_data).generate_sphere(5)
+        if self.cell_type == 'Plane':
+            GenerateXYZ(self.size, self.path_to_data).generate_plane(1)
+
+    def handleButton_clear_all(self):
+        self.models = []
+        self.label_models.setText('\n'.join(self.models))
+
+    def handleButton_add_model(self):
+        self.models.append(str(QFileDialog.getExistingDirectory(self.centralWidget)))
+        self.label_models.setText('\n'.join(self.models))
+
+    def handleButton_launch(self):
+        commands = []
+        for model in self.models:
+            commands.append('./build/KMC '  + model)
+
+        threads = self.spinBox_threads.value()
+
+        print(commands)
+        workers_pool = GenerateWorkers(commands, threads)
+        workers_pool.run()
+
+    def handleButton_add_root(self):
+        self.root = str(QFileDialog.getExistingDirectory(self.centralWidget))
+        self.label_roots.setText(self.root)
+        self.time_heatmap = TimeHeatMap(self.root)
+
+    def handleButton_heatmap(self):
+        self.time_heatmap.save_plot()
+
+    def handleButton_plot(self):
+        self.time_heatmap.plot_layer_in_time(self.spinBox_layer.value())
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    launcher = Launcher()
+    launcher.KMC_GUI.show()
+    sys.exit(app.exec_())
+

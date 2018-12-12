@@ -1,14 +1,15 @@
 import sys
+import os
 import random
 import numpy as np
 import click
 
 
 class GenerateXYZ:
-    def __init__(self, cells, file_out_name):
+    def __init__(self, cells, path_out):
 
         self.cell_size = 1.0
-        self.file_out_name = file_out_name
+        self.path_out = os.path.join(path_out, 'positions.xyz')
 
         self.kations = np.zeros(2*np.array(cells) + 1).astype(np.int)
         self.anions = np.zeros(2*np.array(cells)).astype(np.int)
@@ -18,6 +19,17 @@ class GenerateXYZ:
         self.Bi = 0
         self.Y = 0
         self.O = 0
+
+    def save_positions(self):
+        with open(self.path_out, 'w') as file_out:
+            file_out.write("{}\n\n".format(self.Bi+self.Y+self.O))
+            for atom_type in self.positions:
+                for atom in self.positions[atom_type]:
+                    file_out.write("{}".format(atom_type))
+                    for r in atom:
+                        file_out.write("\t{}".format(r))
+                    file_out.write("\n")
+
 
     def generate_sphere(self, radius):
         center = np.floor(np.array(self.kations.shape)*self.cell_size/2)
@@ -48,14 +60,8 @@ class GenerateXYZ:
                 self.positions['O'].append(position)
                 self.O += 1
 
-        with open(self.file_out_name, 'w') as file_out:
-            file_out.write("{}\n\n".format(self.Bi+self.Y+self.O))
-            for atom_type in self.positions:
-                for atom in self.positions[atom_type]:
-                    file_out.write("{}".format(atom_type))
-                    for r in atom:
-                        file_out.write("\t{}".format(r))
-                    file_out.write("\n")
+        self.save_positions()
+
 
     def generate_random(self):
         to_change = True
@@ -101,24 +107,16 @@ class GenerateXYZ:
                 self.positions['O'].append(position)
                 self.O += 1
 
-        with open(self.file_out_name, 'w') as file_out:
-            file_out.write("{}\n\n".format(self.Bi+self.Y+self.O))
-            for atom_type in self.positions:
-                for atom in self.positions[atom_type]:
-                    file_out.write("{}".format(atom_type))
-                    for r in atom:
-                        file_out.write("\t{}".format(r))
-                    file_out.write("\n")
+        self.save_positions()
 
     def generate_plane(self, thickness):
-        center = np.floor(np.array(self.kations.shape)*self.cell_size/2)
+        center = np.floor(np.array(self.kations.shape)*self.cell_size/3)
 
         to_change = True
         for index, kation in np.ndenumerate(self.kations):
             position = index[0] * self.cell_size, index[1] * self.cell_size, index[2] * self.cell_size
             if to_change:
-                test = np.abs(position[0]-center[0])
-                if test > thickness:
+                if not position[0] % 10 == 0:
                     self.positions['Bi'].append(position)
                     self.Bi += 1
                 else:
@@ -137,14 +135,7 @@ class GenerateXYZ:
                 self.positions['O'].append(position)
                 self.O += 1
 
-        with open(self.file_out_name, 'w') as file_out:
-            file_out.write("{}\n\n".format(self.Bi+self.Y+self.O))
-            for atom_type in self.positions:
-                for atom in self.positions[atom_type]:
-                    file_out.write("{}".format(atom_type))
-                    for r in atom:
-                        file_out.write("\t{}".format(r))
-                    file_out.write("\n")
+        self.save_positions()
 
 
 if __name__ == "__main__":
@@ -152,11 +143,15 @@ if __name__ == "__main__":
     @click.option('--cells', nargs=3, type=int, prompt="Number of cells x y z", help="Number of cells in system.")
     @click.option('--structure', prompt="Type of structure (random, sphere, plane): ", help="Type of structure (random, sphere, plane).")
     def main(cells, structure):
-        file_out_name = str(cells[0])+'_'+str(cells[1])+'_'+str(cells[2])+'_'+structure+'.xyz'
+        path_out = str(cells[0])+'_'+str(cells[1])+'_'+str(cells[2])+'_'+structure
+        if not os.path.exists(path_out):
+            os.makedirs(path_out)
+        if not os.path.exists(os.path.join(path_out, 'heat_map')):
+                    os.makedirs(os.path.join(path_out, 'heat_map'))
         if structure == 'random':
-            GenerateXYZ(cells, file_out_name).generate_random()
+            GenerateXYZ(cells, path_out).generate_random()
         if structure == 'sphere':
-            GenerateXYZ(cells, file_out_name).generate_sphere(5)
+            GenerateXYZ(cells, path_out).generate_sphere(5)
         if structure == 'plane':
-            GenerateXYZ(cells, file_out_name).generate_plane(1)
+            GenerateXYZ(cells, path_out).generate_plane(1)
     main()

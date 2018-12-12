@@ -16,9 +16,9 @@ if __name__ == '__main__':
                   type=float)
     @click.option("--file_name", prompt="File name", help="File name")
     def main(path_to_data,  time_limit, layer,  file_name):
-        param_file = path.join(path_to_data, 'param_'+file_name+'.dat')
-        time_file = path.join(path_to_data, 'time_vector_'+file_name+'.npy')
-        data_file = path.join(path_to_data, 'update_vector_'+file_name+'.npy')
+        param_file = path.join(path_to_data, 'params.dat')
+        time_file = path.join(path_to_data, 'time_vector.npy')
+        data_file = path.join(path_to_data, 'update_vector.npy')
 
         shape = np.genfromtxt(param_file).astype(np.int)
         oxygen_path = np.load(data_file)

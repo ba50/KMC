@@ -11,10 +11,9 @@ from PlotItrium import PlotItrium
 
 
 class PlotPaths(app.Canvas):
-    def __init__(self, time, positions, path_to_data, file_name, atoms_number=50, resolution=(800,600)):
+    def __init__(self, time, positions, data_path, atoms_number=50, resolution=(800,600)):
         self.time = time
-        self.path_to_data = path_to_data
-        self.file_name = file_name
+        self.data_path = data_path
         self.resolution = resolution
         app.Canvas.__init__(self, keys='interactive', size=self.resolution)
         self.delta_pos = positions[:1].mean()
@@ -115,18 +114,17 @@ class PlotPaths(app.Canvas):
 
 if __name__ == '__main__':
     @click.command()
-    @click.option('--path_to_data',prompt="Path to data", help=" Path to data.")
-    @click.option('--file_name',prompt="Filename", help="Filename.")
-    def main(path_to_data, file_name):
-        param_file = path.join(path_to_data, 'param_'+file_name+'.dat')
-        time_file = path.join(path_to_data, 'time_vector_'+file_name+'.npy')
-        data_file = path.join(path_to_data, 'update_vector_'+file_name+'.npy')
+    @click.option('--data_path',prompt="Path to data", help=" Path to data.")
+    def main(data_path):
+        param_file = path.join(data_path, 'params.dat')
+        time_file = path.join(data_path, 'time_vector.npy')
+        data_file = path.join(data_path, 'update_vector.npy')
 
         shape = np.genfromtxt(param_file).astype(np.int)
         oxygen_path = np.load(data_file, mmap_mode='r')
         time = np.load(time_file)
         oxygen_path = oxygen_path.reshape(shape[0], shape[1], 3)
-        c = PlotPaths(time, oxygen_path, path_to_data, file_name, shape[1])
+        c = PlotPaths(time, oxygen_path, data_path, shape[1])
         app.run()
 
     main()

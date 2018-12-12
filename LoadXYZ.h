@@ -8,9 +8,18 @@
 #include "Position.h"
 
 namespace Load {
-	static void XYZ(std::vector<Type> &types, std::vector<std::vector<double>> &positions, const std::string &file_name) {
+	static void XYZ(std::vector<Type> &types, std::vector<std::vector<double>> &positions, const std::string &data_path) {
 		std::ifstream file;
-		file.open(file_name);
+		std::string _data_path = data_path+"/positions.xyz";
+		file.open(_data_path);
+		if(file){
+			std::cout<<"Loading file "<<_data_path<<std::endl;
+		}
+		else{
+			std::cout<<"Error loading file "<<_data_path<<std::endl;
+			exit(1);
+		}
+
 		double temp_double;
 		std::vector<double> temp_vector;
 		std::string temp_string;
@@ -46,5 +55,6 @@ namespace Load {
 
 			positions.push_back(temp_vector);
 		}
+		file.close();
 	}
 }
