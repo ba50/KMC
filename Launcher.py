@@ -10,6 +10,7 @@ from GenerateXYZ import GenerateXYZ
 from GenerateWorkers import GenerateWorkers
 from TimeHeatMap import TimeHeatMap
 
+
 class Launcher(Ui_KMC_GUI):
     cell_type = None
     root_directory = None
@@ -41,9 +42,11 @@ class Launcher(Ui_KMC_GUI):
         self.pushButton_plot.clicked.connect(self.handleButton_plot)
         self.pushButton_heatmap.clicked.connect(self.handleButton_heatmap)
 
+
     def handleButton_path_to_data(self):
         self.root_directory = QFileDialog.getExistingDirectory(self.centralWidget)
         self.label_path_to_data.setText(self.root_directory)
+
 
     def handleButton_generate(self):
         self.cell_type = self.comboBox_type.currentText()
@@ -109,10 +112,11 @@ class Launcher(Ui_KMC_GUI):
         self.time_heatmap = TimeHeatMap(self.root)
 
     def handleButton_heatmap(self):
-        self.time_heatmap.save_plot()
+        self.time_heatmap.save_heatmap()
 
     def handleButton_plot(self):
         self.time_heatmap.plot_layer_in_time(self.spinBox_layer.value())
+
 
 if __name__ == "__main__":
     import sys

@@ -6,7 +6,7 @@
 #include <fstream>
 #include <cmath>
 
-#include "cnpy.h"
+//#include "cnpy.h"
 #include "Configuration.h"
 
 
@@ -43,7 +43,7 @@ public:
 			const std::vector<Type> types,
 			const std::vector<bool> contact_switch,
 			const std::vector<unsigned int> contact,
-			const std::string& data_path):  
+			const std::string& data_path):
 		types( types ), 
 		data_path( data_path ),
 		steps( 0 )
@@ -280,7 +280,7 @@ public:
 	}
 
 	// Da sie to lepiej rozwiazac!!
-	void Run(const long time_end, const double A, const double period, const double delta_energy_base){
+	void Run(long double time_end, const double A, const double period, const double delta_energy_base){
 		double kT{ (800.0 + 273.15)*8.6173304e-5 };
 		double random_for_atom, random_for_direction;
 		double random_for_time;
@@ -292,9 +292,9 @@ public:
 		long double time{ 0.0 };
 
 		for(auto pos : oxygen_positions_){
-			update_vector.push_back(pos[0]);
-			update_vector.push_back(pos[1]);
-			update_vector.push_back(pos[2]);
+			update_vector.push_back(static_cast<float>(pos[0]));
+			update_vector.push_back(static_cast<float>(pos[1]));
+			update_vector.push_back(static_cast<float>(pos[2]));
 		}
 		
 		if( remove(std::string(data_path+"/update_vector.npy").c_str()) != 0 )
@@ -307,8 +307,8 @@ public:
 		else
 			std::cout<< "File time_vector.npy successfully deleted" <<std::endl;
 
-		cnpy::npy_save(data_path+"/update_vector.npy",&update_vector[0],{update_vector.size()},"a");
-		cnpy::npy_save(data_path+"/time_vector.npy",&time,{1},"a");
+		//cnpy::npy_save(data_path+"/update_vector.npy",&update_vector[0],{update_vector.size()},"a");
+		//cnpy::npy_save(data_path+"/time_vector.npy",&time,{1},"a");
 		double delta_energy{ 0.0 };
 		while(time < time_end){
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
