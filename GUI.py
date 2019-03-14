@@ -2,11 +2,12 @@
 
 # Form implementation generated from reading ui file 'kmc_gui.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.3
+# Created by: PyQt5 UI code generator 5.12
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_KMC_GUI(object):
     def setupUi(self, KMC_GUI):
@@ -35,6 +36,9 @@ class Ui_KMC_GUI(object):
         self.label_6.setObjectName("label_6")
         self.gridLayout.addWidget(self.label_6, 14, 0, 1, 1)
         self.doubleSpinBox_delta_energi_base = QtWidgets.QDoubleSpinBox(self.gridLayoutWidget)
+        self.doubleSpinBox_delta_energi_base.setDecimals(5)
+        self.doubleSpinBox_delta_energi_base.setMinimum(-99999.99)
+        self.doubleSpinBox_delta_energi_base.setMaximum(99999.99)
         self.doubleSpinBox_delta_energi_base.setObjectName("doubleSpinBox_delta_energi_base")
         self.gridLayout.addWidget(self.doubleSpinBox_delta_energi_base, 13, 1, 1, 1)
         self.spinBox_left_contact = QtWidgets.QSpinBox(self.gridLayoutWidget)
@@ -109,9 +113,13 @@ class Ui_KMC_GUI(object):
         self.label_8.setObjectName("label_8")
         self.gridLayout.addWidget(self.label_8, 9, 0, 1, 1)
         self.doubleSpinBox_period = QtWidgets.QDoubleSpinBox(self.gridLayoutWidget)
+        self.doubleSpinBox_period.setDecimals(5)
+        self.doubleSpinBox_period.setMaximum(9999.99)
         self.doubleSpinBox_period.setObjectName("doubleSpinBox_period")
         self.gridLayout.addWidget(self.doubleSpinBox_period, 12, 1, 1, 1)
         self.doubleSpinBox_A = QtWidgets.QDoubleSpinBox(self.gridLayoutWidget)
+        self.doubleSpinBox_A.setDecimals(5)
+        self.doubleSpinBox_A.setMaximum(9999.99)
         self.doubleSpinBox_A.setObjectName("doubleSpinBox_A")
         self.gridLayout.addWidget(self.doubleSpinBox_A, 11, 1, 1, 1)
         self.label_7 = QtWidgets.QLabel(self.gridLayoutWidget)
@@ -250,6 +258,8 @@ class Ui_KMC_GUI(object):
         self.tabWidge.setTabText(self.tabWidge.indexOf(self.tab_analysis), _translate("KMC_GUI", "Analysis"))
 
 
+
+
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
@@ -258,4 +268,3 @@ if __name__ == "__main__":
     ui.setupUi(KMC_GUI)
     KMC_GUI.show()
     sys.exit(app.exec_())
-
