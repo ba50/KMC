@@ -5,10 +5,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QFileDialog
 
 
-from GUI import Ui_KMC_GUI
-from GenerateXYZ import GenerateXYZ
-from GenerateWorkers import GenerateWorkers
-from TimeHeatMap import TimeHeatMap
+from src.GUI import Ui_KMC_GUI
+from src.GenerateXYZ import GenerateXYZ
+from src.GenerateWorkers import GenerateWorkers
+from src.TimeHeatMap import TimeHeatMap
 
 
 class Launcher(Ui_KMC_GUI):
@@ -42,11 +42,9 @@ class Launcher(Ui_KMC_GUI):
         self.pushButton_plot.clicked.connect(self.handleButton_plot)
         self.pushButton_heatmap.clicked.connect(self.handleButton_heatmap)
 
-
     def handleButton_path_to_data(self):
         self.root_directory = QFileDialog.getExistingDirectory(self.centralWidget)
         self.label_path_to_data.setText(self.root_directory)
-
 
     def handleButton_generate(self):
         self.cell_type = self.comboBox_type.currentText()

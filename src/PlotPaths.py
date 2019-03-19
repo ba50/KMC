@@ -26,7 +26,7 @@ class PlotPaths(app.Canvas):
         self.phi = 0
         self.delta_theta = 0
         self.delta_phi = 0
-        self.animation_step = 2
+        self.animation_step = 24800
 
         self.translate = 50
         self.view = translate((0, 0, -self.translate), dtype=np.float32)
@@ -90,8 +90,8 @@ class PlotPaths(app.Canvas):
     def on_draw(self, event):
         self.context.clear()
         self.plot_lines.on_draw(event)
-        self.plot_points.on_draw(event)
-        self.plot_itrium.on_draw(event)
+        #self.plot_points.on_draw(event)
+        #self.plot_itrium.on_draw(event)
 
     # ---------------------------------
     def on_mouse_move(self, event):

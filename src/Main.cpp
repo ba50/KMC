@@ -101,7 +101,6 @@ int main(int argc, char *argv[]) {
 
 	std::unique_ptr<Core> core = std::make_unique<Core>(*sample, cells, types, contact_switch, contact, data_path);
 	core->Run(time_end, A, period, delta_energy_base);
-	exit(1);
 
 	//Save params
 	file_out_param.open(data_path+"/params.dat");

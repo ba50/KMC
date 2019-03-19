@@ -40,6 +40,14 @@ class TimeHeatMap:
         self.x_heat_map_list = [self.x_heat_map_list[i+1]-self.x_heat_map_list[i]
                                 for i in range(len(self.x_heat_map_list)-1)]
 
+        temp = self.x_heat_map_list[0]
+        for idx in self.x_heat_map_list[1:]:
+            temp += idx
+        self.x_heat_map_list = []
+        self.x_heat_map_list.append(temp)
+        self.x_heat_map_list.append(temp)
+
+
     def _make_image(self):
         self.im = plt.imshow(self.x_heat_map_list[0],
                              interpolation='none',
