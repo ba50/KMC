@@ -6,7 +6,7 @@
 #include <fstream>
 #include <cmath>
 
-#include "cnpy.h"
+//#include "cnpy.h"
 #include "Configuration.h"
 
 
@@ -307,8 +307,8 @@ public:
 		else
 			std::cout<< "File time_vector.npy successfully deleted" <<std::endl;
 
-		cnpy::npy_save(data_path+"/update_vector.npy",&update_vector[0],{update_vector.size()},"a");
-		cnpy::npy_save(data_path+"/time_vector.npy",&time,{1},"a");
+		//cnpy::npy_save(data_path+"/update_vector.npy",&update_vector[0],{update_vector.size()},"a");
+		//cnpy::npy_save(data_path+"/time_vector.npy",&time,{1},"a");
 		double delta_energy{ 0.0 };
 		while(time < time_end){
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
@@ -402,9 +402,9 @@ public:
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
 
-			cnpy::npy_save(data_path+"/update_vector.npy",&update_vector[0],{update_vector.size()},"a");
-			cnpy::npy_save(data_path+"/time_vector.npy",&time,{1},"a");
-			steps++;
+			//cnpy::npy_save(data_path+"/update_vector.npy",&update_vector[0],{update_vector.size()},"a");
+			//cnpy::npy_save(data_path+"/time_vector.npy",&time,{1},"a");
+			//steps++;
 		}
 		std::cout << "Core exit." << "\n";
 	}

@@ -34,6 +34,7 @@ void main()
 
 W, H = 400, 400
 
+
 class Canvas(app.Canvas):
 
     # ---------------------------------

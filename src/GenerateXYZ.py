@@ -1,8 +1,7 @@
-import sys
+import argparse
 import os
 import random
 import numpy as np
-import click
 
 
 class GenerateXYZ:
@@ -29,7 +28,6 @@ class GenerateXYZ:
                     for r in atom:
                         file_out.write("\t{}".format(r))
                     file_out.write("\n")
-
 
     def generate_sphere(self, radius):
         center = np.floor(np.array(self.kations.shape)*self.cell_size/2)
@@ -61,7 +59,6 @@ class GenerateXYZ:
                 self.O += 1
 
         self.save_positions()
-
 
     def generate_random(self):
         to_change = True
@@ -139,19 +136,31 @@ class GenerateXYZ:
 
 
 if __name__ == "__main__":
-    @click.command()
-    @click.option('--cells', nargs=3, type=int, prompt="Number of cells x y z", help="Number of cells in system.")
-    @click.option('--structure', prompt="Type of structure (random, sphere, plane): ", help="Type of structure (random, sphere, plane).")
-    def main(cells, structure):
-        path_out = str(cells[0])+'_'+str(cells[1])+'_'+str(cells[2])+'_'+structure
-        if not os.path.exists(path_out):
-            os.makedirs(path_out)
-        if not os.path.exists(os.path.join(path_out, 'heat_map')):
-                    os.makedirs(os.path.join(path_out, 'heat_map'))
-        if structure == 'random':
-            GenerateXYZ(cells, path_out).generate_random()
-        if structure == 'sphere':
-            GenerateXYZ(cells, path_out).generate_sphere(5)
-        if structure == 'plane':
-            GenerateXYZ(cells, path_out).generate_plane(1)
-    main()
+    parser = argparse.ArgumentParser(description="Generate atoms positions")
+    parser.add_argument('-c',
+                        '--cells',
+                        dest='cells',
+                        action='store',
+                        type=int,
+                        nargs=3,
+                        help="Number of cells in system.")
+    parser.add_argument('-s',
+                        '--structure',
+                        dest='structure',
+                        action='store',
+                        type=str,
+                        help="Type of structure (random, sphere, plane).")
+
+    args = parser.parse_args()
+
+    path_out = str(args.cells[0])+'_'+str(args.cells[1])+'_'+str(args.cells[2])+'_'+args.structure
+    if not os.path.exists(path_out):
+        os.makedirs(path_out)
+    if not os.path.exists(os.path.join(path_out, 'heat_map')):
+                os.makedirs(os.path.join(path_out, 'heat_map'))
+    if args.structure == 'random':
+        GenerateXYZ(args.cells, path_out).generate_random()
+    if args.structure == 'sphere':
+        GenerateXYZ(args.cells, path_out).generate_sphere(5)
+    if args.structure == 'plane':
+        GenerateXYZ(args.cells, path_out).generate_plane(1)

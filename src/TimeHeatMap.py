@@ -1,6 +1,5 @@
 import os
 import glob
-from PIL import Image
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -43,10 +42,7 @@ class TimeHeatMap:
         temp = self.x_heat_map_list[0]
         for idx in self.x_heat_map_list[1:]:
             temp += idx
-        self.x_heat_map_list = []
-        self.x_heat_map_list.append(temp)
-        self.x_heat_map_list.append(temp)
-
+        self.x_heat_map_list = [temp, temp]
 
     def _make_image(self):
         self.im = plt.imshow(self.x_heat_map_list[0],
