@@ -1,6 +1,7 @@
-import argparse
 import os
+import argparse
 import random
+
 import numpy as np
 
 
@@ -140,14 +141,12 @@ if __name__ == "__main__":
     parser.add_argument('-c',
                         '--cells',
                         dest='cells',
-                        action='store',
                         type=int,
                         nargs=3,
                         help="Number of cells in system.")
     parser.add_argument('-s',
                         '--structure',
                         dest='structure',
-                        action='store',
                         type=str,
                         help="Type of structure (random, sphere, plane).")
 

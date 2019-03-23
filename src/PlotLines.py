@@ -87,7 +87,7 @@ class PlotLines:
 
         self.program['a_color'] = gloo.VertexBuffer(a_color)
         self.program['a_position'] = gloo.VertexBuffer(a_position)
-        print("Time: {:.2f} [ps]".format(self.plot_paths.time[self.plot_paths.animation_step]))
+        #print("Time: {:.2f} [ps]".format(self.plot_paths.time[self.plot_paths.animation_step]))
 
     # ---------------------------------
     def on_draw(self, event):

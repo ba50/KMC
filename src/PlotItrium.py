@@ -14,7 +14,7 @@ class PlotItrium:
         self.positions = []
         with open(self.filename) as file_in:
             for line in file_in.readlines()[2:]:
-                line =  line.split('\t')
+                line = line.split('\t')
                 if line[0] == 'Y':
                     self.positions.append((float(line[1]),
                                            float(line[2]),

@@ -290,13 +290,14 @@ public:
 
 		size_t id, i; 
 		long double time{ 0.0 };
+		double delta_energy{ 0.0 };
 
 		for(auto pos : oxygen_positions_){
 			update_vector.push_back(static_cast<float>(pos[0]));
 			update_vector.push_back(static_cast<float>(pos[1]));
 			update_vector.push_back(static_cast<float>(pos[2]));
 		}
-		
+		/*
 		if( remove(std::string(data_path+"/update_vector.npy").c_str()) != 0 )
 			std::cout<<"Error deleting file: update_vector.npy"<<std::endl;
 		else
@@ -307,9 +308,12 @@ public:
 		else
 			std::cout<< "File time_vector.npy successfully deleted" <<std::endl;
 
-		//cnpy::npy_save(data_path+"/update_vector.npy",&update_vector[0],{update_vector.size()},"a");
-		//cnpy::npy_save(data_path+"/time_vector.npy",&time,{1},"a");
-		double delta_energy{ 0.0 };
+		cnpy::npy_save(data_path+"/update_vector.npy",&update_vector[0],{update_vector.size()},"a");
+		cnpy::npy_save(data_path+"/time_vector.npy",&time,{1},"a");
+		*/
+
+		FILE* which_wherer_when;
+		fopen_s(&which_wherer_when, std::string(data_path + "/which_where_when.txt").c_str(), "a");
 		while(time < time_end){
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
 			delta_energy = A*sin(time*period)+delta_energy_base;
@@ -401,11 +405,13 @@ public:
 			
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
+			fprintf(which_wherer_when, "%zd\t%zd\t%f\n", selected_atom, seleced_direction, time);
 
 			//cnpy::npy_save(data_path+"/update_vector.npy",&update_vector[0],{update_vector.size()},"a");
 			//cnpy::npy_save(data_path+"/time_vector.npy",&time,{1},"a");
 			//steps++;
 		}
+		fclose(which_wherer_when);
 		std::cout << "Core exit." << "\n";
 	}
 

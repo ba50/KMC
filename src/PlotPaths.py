@@ -1,9 +1,10 @@
+import argparse
+import os.path as path
+
 import numpy as np
 from vispy import gloo
 from vispy import app
 from vispy.util.transforms import perspective, translate, rotate
-import click
-import os.path as path
 
 from PlotLines import PlotLines
 from PlotPoints import PlotPoints
@@ -11,13 +12,12 @@ from PlotItrium import PlotItrium
 
 
 class PlotPaths(app.Canvas):
-    def __init__(self, time, positions, data_path, atoms_number=50, resolution=(800,600)):
-        self.time = time
+    def __init__(self, positions, data_path, atoms_number=50, resolution=(800, 600)):
         self.data_path = data_path
         self.resolution = resolution
         app.Canvas.__init__(self, keys='interactive', size=self.resolution)
         self.delta_pos = positions[:1].mean()
-        self.positions = positions - self.delta_pos
+        self.positions = positions  # - self.delta_pos
         self.atoms_number = atoms_number
 
         self.mouse_press_point = 0, 0
@@ -26,7 +26,7 @@ class PlotPaths(app.Canvas):
         self.phi = 0
         self.delta_theta = 0
         self.delta_phi = 0
-        self.animation_step = 24800
+        self.animation_step = 25000  # max 474984
 
         self.translate = 50
         self.view = translate((0, 0, -self.translate), dtype=np.float32)
@@ -36,7 +36,8 @@ class PlotPaths(app.Canvas):
                                       float(self.size[1]), 1.0, 1000.0)
 
         self.alpha = np.array((0, 0, 0, 0)).astype(np.float32).reshape(1, 4)
-        self.a_color = [np.append(np.random.rand(3), 1).astype(np.float32).reshape(1,4) for i in range(self.positions.shape[1])]
+        self.a_color = [np.append(np.random.rand(3), 1).astype(np.float32).reshape(1,4)
+                        for _ in range(self.positions.shape[1])]
 
         self.plot_lines = PlotLines(self)
         self.plot_points = PlotPoints(self)
@@ -90,7 +91,7 @@ class PlotPaths(app.Canvas):
     def on_draw(self, event):
         self.context.clear()
         self.plot_lines.on_draw(event)
-        #self.plot_points.on_draw(event)
+        self.plot_points.on_draw(event)
         #self.plot_itrium.on_draw(event)
 
     # ---------------------------------
@@ -113,19 +114,24 @@ class PlotPaths(app.Canvas):
 
 
 if __name__ == '__main__':
-    @click.command()
-    @click.option('--data_path',prompt="Path to data", help=" Path to data.")
-    def main(data_path):
-        param_file = path.join(data_path, 'params.dat')
-        time_file = path.join(data_path, 'time_vector.npy')
-        data_file = path.join(data_path, 'update_vector.npy')
+    parser = argparse.ArgumentParser(description="Plot oxygen paths")
+    parser.add_argument('-d', '--data_path', dest='data_path', type=str, help="Path to data.")
+    parser.add_argument('-a', '--atoms_number',  dest='atoms_number', type=int, help="Atoms number to plot")
+    args = parser.parse_args()
 
-        shape = np.genfromtxt(param_file).astype(np.int)
-        oxygen_path = np.load(data_file, mmap_mode='r')
-        time = np.load(time_file)
-        oxygen_path = oxygen_path.reshape(shape[0], shape[1], 3)
-        c = PlotPaths(time, oxygen_path, data_path, shape[1])
-        app.run()
+    param_file = path.join(args.data_path, 'params.dat')
+    time_file = path.join(args.data_path, 'time_vector.npy')
+    data_file = path.join(args.data_path, 'update_vector.npy')
 
-    main()
+    shape = np.genfromtxt(param_file).astype(np.int)
+    oxygen_path = np.load(data_file, mmap_mode='r')
+    oxygen_path = oxygen_path.reshape(shape[0], shape[1], 3)
 
+    if args.atoms_number:
+        atoms_number = args.atoms_number
+    else:
+        atoms_number = shape[1]
+
+    c = PlotPaths(oxygen_path, args.data_path, atoms_number)
+
+    app.run()
