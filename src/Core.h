@@ -281,7 +281,7 @@ public:
 
 	// Da sie to lepiej rozwiazac!!
 	void Run(long double time_end, const double A, const double period, const double delta_energy_base){
-		double kT{ (800.0 + 273.15)*8.6173304e-5 };
+		double kT{(800.0 + 273.15)*8.6173304e-5};
 		double random_for_atom, random_for_direction;
 		double random_for_time;
 
@@ -312,6 +312,11 @@ public:
 		cnpy::npy_save(data_path+"/time_vector.npy",&time,{1},"a");
 		*/
 
+		if( remove(std::string(data_path+"/which_where_when.txt").c_str()) != 0 )
+			std::cout<<"Error deleting file: which_where_when.txt"<<std::endl;
+		else
+			std::cout<< "File which_where_when.txt successfully deleted"<<std::endl;
+
 		FILE* which_wherer_when;
 		fopen_s(&which_wherer_when, std::string(data_path + "/which_where_when.txt").c_str(), "a");
 		while(time < time_end){
@@ -319,8 +324,8 @@ public:
 			delta_energy = A*sin(time*period)+delta_energy_base;
 
 			for (id = 0; id < jump_rate_vector_.size(); id++) {
-				jump_rate_vector_[id][0] = jump_rate(id, 0, 0, 1, oxygen_array_, oxygen_positions_, residence_time_array_) * exp(delta_energy/kT);
-				jump_rate_vector_[id][1] = jump_rate(id, 0, 0, -1, oxygen_array_, oxygen_positions_, residence_time_array_) * exp(-delta_energy/kT);
+				jump_rate_vector_[id][0] = jump_rate(id, 0, 0, 1, oxygen_array_, oxygen_positions_, residence_time_array_) * exp(delta_energy / kT);
+				jump_rate_vector_[id][1] = jump_rate(id, 0, 0, -1, oxygen_array_, oxygen_positions_, residence_time_array_) * exp(-delta_energy / kT);
 				jump_rate_vector_[id][2] = jump_rate(id, 0, 1, 0, oxygen_array_, oxygen_positions_, residence_time_array_);
 				jump_rate_vector_[id][3] = jump_rate(id, 0, -1, 0, oxygen_array_, oxygen_positions_, residence_time_array_);
 				jump_rate_vector_[id][4] = jump_rate(id, 1, 0, 0, oxygen_array_, oxygen_positions_, residence_time_array_);
@@ -342,21 +347,20 @@ public:
 			}
 
 			random_for_direction = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0) * jumpe_direction_sume_vector_.back();
-			selected_direction_temp = std::lower_bound(jumpe_direction_sume_vector_.begin(),
-				jumpe_direction_sume_vector_.end(), random_for_direction);
+			selected_direction_temp = std::lower_bound(jumpe_direction_sume_vector_.begin(), jumpe_direction_sume_vector_.end(), random_for_direction);
 			seleced_direction = selected_direction_temp - jumpe_direction_sume_vector_.begin() - 1;
 
-			oxygen_array_[oxygen_positions_[selected_atom][2]]
-				[oxygen_positions_[selected_atom][1]]
-			[oxygen_positions_[selected_atom][0]] = 1;
+			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 1;
 
 			oxygen_positions_[selected_atom][2] += direction_vector[seleced_direction][2];
 			oxygen_positions_[selected_atom][1] += direction_vector[seleced_direction][1];
 			oxygen_positions_[selected_atom][0] += direction_vector[seleced_direction][0];
 
+			/*
 			update_vector[selected_atom*3+2] += direction_vector[seleced_direction][2];
 			update_vector[selected_atom*3+1] += direction_vector[seleced_direction][1];
 			update_vector[selected_atom*3] += direction_vector[seleced_direction][0];
+			*/
 
 			oxygen_positions_[selected_atom][2] %= oxygen_array_size_[2]-1;
 			oxygen_positions_[selected_atom][1] %= oxygen_array_size_[1]-1;
@@ -375,9 +379,7 @@ public:
 			}
 			///////////////////////////////////////////////////////////////////////////
 
-			oxygen_array_[oxygen_positions_[selected_atom][2]]
-				[oxygen_positions_[selected_atom][1]]
-				[oxygen_positions_[selected_atom][0]] = 0;
+			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 0;
 
 			if(fmod(time, 10.0) <= 0.01){
 				std::cout << time << "[ps]" << std::endl;
@@ -399,9 +401,7 @@ public:
 				file_out.close();
 			}
 
-			heat_map_array_[oxygen_positions_[selected_atom][2]-1]
-				    [oxygen_positions_[selected_atom][1]-1]
-				    [oxygen_positions_[selected_atom][0]-1]++;
+			heat_map_array_[oxygen_positions_[selected_atom][2]-1][oxygen_positions_[selected_atom][1]-1][oxygen_positions_[selected_atom][0]-1]++;
 			
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
@@ -450,7 +450,7 @@ public:
 		// up -> down
 		for (z = 0; z < array_size[2]; z++) {
 			for (x = 0; x < array_size[0]; x++) {
-				array[z][array_size[1]-1][x] = array[z][1][x];
+				array[z][array_size[1] - 1][x] = array[z][1][x];
 			}
 		}
 	}
@@ -460,5 +460,3 @@ public:
 			/ residence_time_array[oxygen_positions[id][2] - 1][oxygen_positions[id][1] - 1][oxygen_positions[id][0] - 1];
 	};
 };
-
-

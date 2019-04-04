@@ -2,3 +2,5 @@ PyQt5
 Pillow
 matplotlib
 vispy
+tqdm
+pandas
