@@ -1,5 +1,5 @@
 import os
-import glob
+from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,30 +7,50 @@ import matplotlib.animation as animation
 
 
 class TimeHeatMap:
+    load_data_path = None
+    save_data_path = None
+    file_list = None
     x_heat_map_list = []
-    im = None
     frame = 0
+    im = None
 
-    def __init__(self, path_to_data):
-        self.path_to_data = path_to_data
+    def __init__(self, load_data_path: Path, save_data_path: Path = None):
+        """
+        Load data from HeatMap.
+        :param load_data_path:
+        :param save_data_path:
+        """
+        self.load_data_path = load_data_path
+        self.save_data_path = save_data_path
 
-        self.path_out = os.path.join(self.path_to_data, 'data_out')
-        if not os.path.exists(self.path_out):
-            os.makedirs(self.path_out)
+        if not self.save_data_path:
+            self.save_data_path = Path(self.load_data_path.parent, 'heat_map_plots')
 
-        path_to_data = os.path.join(self.path_to_data, 'heat_map/*')
-        path_to_data = sorted(glob.glob(path_to_data), key=lambda i: int(os.path.splitext(os.path.basename(i))[0]))
-        for file_in in path_to_data:
+        if not self.save_data_path.exists():
+            self.save_data_path.mkdir()
+
+        self.file_list = sorted(self.load_data_path.glob('*.dat'),
+                                key=lambda i: int(os.path.splitext(os.path.basename(i))[0]))
+
+    def process_data(self, mode: list = None):
+        heat_map_list = []
+        for file_in in self.file_list:
             array = []
-            with open(file_in) as heat_map_file:
-              for line in heat_map_file:
-                  array.append([int(word) for word in line.split()])
+            with file_in.open() as heat_map_file:
+                for line in heat_map_file:
+                    array.append([int(word) for word in line.split()])
 
-            array = np.array(array)
+            heat_map_list.append(np.array(array))
+        if 'mean' in mode:
+            self.timed_mean_heat_map(heat_map_list)
+        if 'jumps' in mode:
+            pass
 
-            dim = np.max(array[:, 0])+1, np.max(array[:, 1])+1, np.max(array[:, 2])+1
+    def timed_mean_heat_map(self, heat_map_list):
+        for heat_map in heat_map_list:
+            dim = np.max(heat_map[:, 0])+1, np.max(heat_map[:, 1])+1, np.max(heat_map[:, 2])+1
             _heat_map = np.zeros(dim)
-            for pos in array:
+            for pos in heat_map:
                 _heat_map[pos[0], pos[1], pos[2]] = pos[3]
 
             _x_heat_map = _heat_map.sum(axis=(1, 2))
@@ -38,13 +58,6 @@ class TimeHeatMap:
 
         self.x_heat_map_list = [self.x_heat_map_list[i+1]-self.x_heat_map_list[i]
                                 for i in range(len(self.x_heat_map_list)-1)]
-
-        """
-        temp = self.x_heat_map_list[0]
-        for idx in self.x_heat_map_list[1:]:
-            temp += idx
-        self.x_heat_map_list = [temp, temp]
-        """
 
     def _make_image(self):
         self.im = plt.imshow(self.x_heat_map_list[0],
@@ -55,15 +68,15 @@ class TimeHeatMap:
         plt.colorbar()
 
     def plot_layer_in_time(self, layer):
-        csfont = {'size': 16}
+        cs_font = {'size': 16}
         fig = plt.figure()
         y = [l[0][layer] for l in self.x_heat_map_list]
         y = np.array(y)
         x = np.arange(0, len(self.x_heat_map_list)*10, 10)
 
         plt.plot(x, y)
-        plt.xlabel("Time [ps]", **csfont)
-        plt.ylabel("Jumps [au]", **csfont)
+        plt.xlabel("Time [ps]", **cs_font)
+        plt.ylabel("Jumps [au]", **cs_font)
         plt.show()
 
     def plot(self):
@@ -74,17 +87,17 @@ class TimeHeatMap:
         animation.FuncAnimation(fig, self.updatefig, frames=5, interval=1000, blit=True)
         plt.show()
 
-    def save_plot(self):
+    def save_animation(self):
         fig = plt.figure()
         self._make_image()
         ani = animation.FuncAnimation(fig, self.updatefig, frames=len(self.x_heat_map_list), blit=True)
-        ani.save(os.path.join(self.path_out, 'heat_map.html'), fps=5, dpi=200, extra_args=['-vcodec', 'libx264'])
+        ani.save(Path(self.save_data_path, 'heat_map.mp4'), fps=5, dpi=200)
 
     def save_heatmap(self):
         fig = plt.figure()
         self._make_image()
         for idx, _ in enumerate(self.x_heat_map_list):
-            fig.savefig(os.path.join(self.path_out, 'heatmap_' + str(idx) + '.png'))
+            fig.savefig(Path(self.save_data_path, 'heatmap_' + str(idx) + '.png'))
             self.updatefig()
 
     def updatefig(self, *args):
@@ -93,3 +106,9 @@ class TimeHeatMap:
             self.frame = 0
         plt.title(str(self.frame*10)+'[ps]')
         self.im.set_array(self.x_heat_map_list[self.frame])
+
+
+if __name__ == '__main__':
+    data_path = Path('D:/KMC_data/3_3_3_random/heat_map')
+    hm = TimeHeatMap(data_path)
+    hm.process_data()

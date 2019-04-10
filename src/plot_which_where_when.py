@@ -1,6 +1,5 @@
 import os
 
-import pandas as pd
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
@@ -58,8 +57,6 @@ for i in o_base_positions:
 
 hist_jumps = []
 time = []
-jumps = np.concatenate((o_base_positions, np.zeros((o_base_positions.shape[0], 6))), axis=1)
-jumps = pd.DataFrame(data=jumps, columns=['x', 'y', 'z', 'right', 'left', 'up', 'down', 'back', 'front'])
 print("Calculating oxygen paths")
 for which, where, when in tqdm.tqdm(www):
     o_paths[which].append(o_paths[which][-1]+jump[where])
@@ -70,20 +67,6 @@ for which, where, when in tqdm.tqdm(www):
     hist_jumps.append(where)
     time.append(when)
 
-    if where == 0:
-        jumps.loc[which]['right'] += 1
-    elif where == 1:
-        jumps.loc[which]['left'] += 1
-    elif where == 2:
-        jumps.loc[which]['up'] += 1
-    elif where == 3:
-        jumps.loc[which]['down'] += 1
-    elif where == 4:
-        jumps.loc[which]['back'] += 1
-    elif where == 5:
-        jumps.loc[which]['front'] += 1
-
-jumps.to_csv(os.path.join(save_path, "total_jumps.csv"), sep=';', index=False, decimal=',')
 hist_jumps = np.array(hist_jumps)
 time = np.array(time)
 o_paths = [np.array(i) for i in o_paths]
