@@ -96,7 +96,7 @@ class Launcher(Ui_KMC_GUI):
     def handleButton_launch(self):
         commands = []
         for model in self.models:
-            commands.append('./build/KMC.exe ' + model)
+            commands.append('./build/KMC ' + model)
 
         threads = self.spinBox_threads.value()
 
