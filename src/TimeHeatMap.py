@@ -37,12 +37,19 @@ class TimeHeatMap:
         if 'mean' in mode:
             self._timed_mean_heat_map(heat_map_list)
         if 'jumps' in mode:
-            jumps_heat_map_list = self._timed_jumps(heat_map_list)
-            mean_jumps = [(idx*10.0, i.mean()) for idx, i in enumerate(jumps_heat_map_list)]
-            mean_jumps = np.array(mean_jumps)
-            self.plot_line(save_file=self.save_data_path / 'timed_jumps.png',
-                           x=mean_jumps[:, 0],
-                           y=mean_jumps[:, 1],
+            jumps_left_heat_map_list, jumps_right_heat_map_list = self._timed_jumps(heat_map_list)
+            mean_left_jumps = [(idx*10.0, i.mean()) for idx, i in enumerate(jumps_left_heat_map_list)]
+            mean_right_jumps = [(idx*10.0, i.mean()) for idx, i in enumerate(jumps_right_heat_map_list)]
+            mean_left_jumps = np.array(mean_left_jumps)
+            mean_right_jumps = np.array(mean_right_jumps)
+            self.plot_line(save_file=self.save_data_path / 'timed_jumps_left.png',
+                           x=mean_left_jumps[:, 0],
+                           y=mean_left_jumps[:, 1],
+                           x_label='Time [ps]',
+                           y_label='Jumps [au]')
+            self.plot_line(save_file=self.save_data_path / 'timed_jumps_right.png',
+                           x=mean_right_jumps[:, 0],
+                           y=mean_right_jumps[:, 1],
                            x_label='Time [ps]',
                            y_label='Jumps [au]')
 
@@ -63,18 +70,28 @@ class TimeHeatMap:
 
     @staticmethod
     def _timed_jumps(heat_map_list):
-        jumps_heat_map_list = []
+        jumps_left_heat_map_list = []
+        jumps_right_heat_map_list = []
         print('Calculating jumps in time')
         for heat_map in tqdm(heat_map_list):
             max_x = np.max(heat_map[:, 0])
             dim = np.max(heat_map[:, 1])+1, np.max(heat_map[:, 2])+1
-            _heat_map = np.zeros(dim)
+            _left_heat_map = np.zeros(dim)
+            _right_heat_map = np.zeros(dim)
             for pos in heat_map:
+                if pos[0] == 0:
+                    _left_heat_map[pos[1], pos[2]] = pos[3]
                 if pos[0] == max_x:
-                    _heat_map[pos[1], pos[2]] = pos[3]
-            jumps_heat_map_list.append(_heat_map)
-        return [jumps_heat_map_list[i+1]-jumps_heat_map_list[i]
-                for i in range(len(jumps_heat_map_list)-1)]
+                    _right_heat_map[pos[1], pos[2]] = pos[3]
+
+            jumps_left_heat_map_list.append(_left_heat_map)
+            jumps_right_heat_map_list.append(_right_heat_map)
+        delta_left_heat_map = [jumps_left_heat_map_list[i+1]-jumps_left_heat_map_list[i]
+                               for i in range(len(jumps_left_heat_map_list)-1)]
+        delta_right_heat_map = [jumps_right_heat_map_list[i+1]-jumps_right_heat_map_list[i]
+                                for i in range(len(jumps_right_heat_map_list)-1)]
+
+        return delta_left_heat_map, delta_right_heat_map
 
     @staticmethod
     def plot_line(save_file, x, y,  x_label, y_label, x_size=8, y_size=6, dpi=100):

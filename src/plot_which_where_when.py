@@ -27,7 +27,7 @@ jump = np.array([[1, 0, 0],
                  [0, 0, -1]])
 
 
-path_to_folder = Path('D:/KMC_data/sin/30_7_7_random')
+path_to_folder = Path('D:/KMC_data/sin/120_7_7_random')
 path_to_data = path_to_folder / 'which_where_when.txt'
 path_to_positions = path_to_folder / 'positions.xyz'
 save_path = path_to_folder / 'paths'

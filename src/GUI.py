@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'kmc_gui.ui'
+# Form implementation generated from reading ui file '.\kmc_gui.ui'
 #
 # Created by: PyQt5 UI code generator 5.12
 #
@@ -76,6 +76,8 @@ class Ui_KMC_GUI(object):
         self.label_3.setObjectName("label_3")
         self.gridLayout.addWidget(self.label_3, 2, 0, 1, 1)
         self.spinBox_y_size = QtWidgets.QSpinBox(self.gridLayoutWidget)
+        self.spinBox_y_size.setMinimum(3)
+        self.spinBox_y_size.setMaximum(999)
         self.spinBox_y_size.setProperty("value", 7)
         self.spinBox_y_size.setObjectName("spinBox_y_size")
         self.gridLayout.addWidget(self.spinBox_y_size, 3, 1, 1, 1)
@@ -83,10 +85,14 @@ class Ui_KMC_GUI(object):
         self.label_4.setObjectName("label_4")
         self.gridLayout.addWidget(self.label_4, 6, 0, 1, 1)
         self.spinBox_z_size = QtWidgets.QSpinBox(self.gridLayoutWidget)
+        self.spinBox_z_size.setMinimum(3)
+        self.spinBox_z_size.setMaximum(999)
         self.spinBox_z_size.setProperty("value", 7)
         self.spinBox_z_size.setObjectName("spinBox_z_size")
         self.gridLayout.addWidget(self.spinBox_z_size, 4, 1, 1, 1)
         self.spinBox_x_size = QtWidgets.QSpinBox(self.gridLayoutWidget)
+        self.spinBox_x_size.setMinimum(3)
+        self.spinBox_x_size.setMaximum(999)
         self.spinBox_x_size.setProperty("value", 15)
         self.spinBox_x_size.setObjectName("spinBox_x_size")
         self.gridLayout.addWidget(self.spinBox_x_size, 2, 1, 1, 1)
@@ -95,7 +101,7 @@ class Ui_KMC_GUI(object):
         self.gridLayout.addWidget(self.label_2, 3, 0, 1, 1)
         self.spinBox_time_end = QtWidgets.QSpinBox(self.gridLayoutWidget)
         self.spinBox_time_end.setMaximum(9999999)
-        self.spinBox_time_end.setProperty("value", 60)
+        self.spinBox_time_end.setProperty("value", 1000)
         self.spinBox_time_end.setObjectName("spinBox_time_end")
         self.gridLayout.addWidget(self.spinBox_time_end, 6, 1, 1, 1)
         self.pushButton_generate = QtWidgets.QPushButton(self.gridLayoutWidget)
@@ -207,7 +213,7 @@ class Ui_KMC_GUI(object):
         self.tabWidge.addTab(self.tab_analysis, "")
         KMC_GUI.setCentralWidget(self.centralWidget)
         self.menuBar = QtWidgets.QMenuBar(KMC_GUI)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 771, 20))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 771, 21))
         self.menuBar.setObjectName("menuBar")
         KMC_GUI.setMenuBar(self.menuBar)
         self.mainToolBar = QtWidgets.QToolBar(KMC_GUI)
@@ -258,13 +264,3 @@ class Ui_KMC_GUI(object):
         self.tabWidge.setTabText(self.tabWidge.indexOf(self.tab_analysis), _translate("KMC_GUI", "Analysis"))
 
 
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    KMC_GUI = QtWidgets.QMainWindow()
-    ui = Ui_KMC_GUI()
-    ui.setupUi(KMC_GUI)
-    KMC_GUI.show()
-    sys.exit(app.exec_())
