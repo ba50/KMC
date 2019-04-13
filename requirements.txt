@@ -4,3 +4,4 @@ matplotlib
 vispy
 tqdm
 pandas
+numpy

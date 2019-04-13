@@ -405,7 +405,7 @@ public:
 			
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
-			fprintf(which_wherer_when, "%zd\t%zd\t%Lf\n", selected_atom, seleced_direction, time);
+			fprintf(which_wherer_when, "%zd\t%zd\t%Lf\t%Lf\n", selected_atom, seleced_direction, delta_energy, time);
 
 			//cnpy::npy_save(data_path+"/update_vector.npy",&update_vector[0],{update_vector.size()},"a");
 			//cnpy::npy_save(data_path+"/time_vector.npy",&time,{1},"a");

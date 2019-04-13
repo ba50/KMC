@@ -3,15 +3,10 @@ from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 from tqdm import tqdm
 
 
 class TimeHeatMap:
-    load_data_path = None
-    save_data_path = None
-    file_list = None
-
     def __init__(self, load_data_path: Path, save_data_path: Path = None):
         """
         Load data from HeatMap.
@@ -43,12 +38,16 @@ class TimeHeatMap:
             self._timed_mean_heat_map(heat_map_list)
         if 'jumps' in mode:
             jumps_heat_map_list = self._timed_jumps(heat_map_list)
-            index = 0
-            mead_jumps = [i.mean() for i in jumps_heat_map_list]
-            plt.plot(mead_jumps)
-            plt.show()
+            mean_jumps = [(idx*10.0, i.mean()) for idx, i in enumerate(jumps_heat_map_list)]
+            mean_jumps = np.array(mean_jumps)
+            self.plot_line(save_file=self.save_data_path / 'timed_jumps.png',
+                           x=mean_jumps[:, 0],
+                           y=mean_jumps[:, 1],
+                           x_label='Time [ps]',
+                           y_label='Jumps [au]')
 
-    def _timed_mean_heat_map(self, heat_map_list):
+    @staticmethod
+    def _timed_mean_heat_map(heat_map_list):
         x_heat_map_list = []
         for heat_map in heat_map_list:
             dim = np.max(heat_map[:, 0])+1, np.max(heat_map[:, 1])+1, np.max(heat_map[:, 2])+1
@@ -62,8 +61,10 @@ class TimeHeatMap:
         return [x_heat_map_list[i+1]-x_heat_map_list[i]
                 for i in range(len(x_heat_map_list)-1)]
 
-    def _timed_jumps(self, heat_map_list):
+    @staticmethod
+    def _timed_jumps(heat_map_list):
         jumps_heat_map_list = []
+        print('Calculating jumps in time')
         for heat_map in tqdm(heat_map_list):
             max_x = np.max(heat_map[:, 0])
             dim = np.max(heat_map[:, 1])+1, np.max(heat_map[:, 2])+1
@@ -75,20 +76,18 @@ class TimeHeatMap:
         return [jumps_heat_map_list[i+1]-jumps_heat_map_list[i]
                 for i in range(len(jumps_heat_map_list)-1)]
 
-    def plot_layer_in_time(self, layer):
-        cs_font = {'size': 16}
-        fig = plt.figure()
-        y = [l[0][layer] for l in self.x_heat_map_list]
-        y = np.array(y)
-        x = np.arange(0, len(self.x_heat_map_list)*10, 10)
-
-        plt.plot(x, y)
-        plt.xlabel("Time [ps]", **cs_font)
-        plt.ylabel("Jumps [au]", **cs_font)
-        plt.show()
+    @staticmethod
+    def plot_line(save_file, x, y,  x_label, y_label, x_size=8, y_size=6, dpi=100):
+        _fig = plt.figure(figsize=(x_size, y_size))
+        _ax = _fig.add_subplot(111)
+        _ax.set_xlabel(x_label)
+        _ax.set_ylabel(y_label)
+        _ax.plot(x, y)
+        plt.savefig(save_file, dpi=dpi)
+        plt.close(_fig)
 
 
 if __name__ == '__main__':
-    data_path = Path('/home/blue/Documents/source/KMC/KMC_data/3_3_3_random/heat_map')
+    data_path = Path('C:/Users/barja/source/repos/KMC/KMC/KMC_data/30_7_7_random/heat_map')
     hm = TimeHeatMap(data_path)
-    hm.process_data('jumps')
+    hm.process_data(['jumps'])
