@@ -50,13 +50,20 @@ int main(int argc, char *argv[]) {
 			std::cerr << "Invalid number " << input_vector[3] << '\n';
 	}
 
+	long double thermalization_time;
+	{
+		std::string::size_type sz;
+		thermalization_time = std::stold(input_vector[4], &sz);
+	}
+
+
 	long double time_end;
 	{
 		std::string::size_type sz;
-		time_end = std::stold(input_vector[4], &sz);
+		time_end = std::stold(input_vector[5], &sz);
 	}
 
-	switch(std::atoi(input_vector[5].c_str())){
+	switch(std::atoi(input_vector[6].c_str())){
 		case 0:
 			contact_switch[0] = false;
 			break;
@@ -65,10 +72,10 @@ int main(int argc, char *argv[]) {
 			break;
 		default:
 			throw("Error in contact switch");
-			break;
+			exit(1);
 	}
 
-	switch(std::atoi(input_vector[6].c_str())){
+	switch(std::atoi(input_vector[7].c_str())){
 		case 0:
 			contact_switch[1] = false;
 			break;
@@ -77,37 +84,29 @@ int main(int argc, char *argv[]) {
 			break;
 		default:
 			throw("Error in contact switch");
-			break;
-	}
-
-	{
-		std::istringstream ss(input_vector[7]);
-		if (!(ss >> contact[0]))
-			std::cerr << "Invalid number " << input_vector[7] << '\n';
+			exit(1);
 	}
 
 	{
 		std::istringstream ss(input_vector[8]);
-		if (!(ss >> contact[1]))
+		if (!(ss >> contact[0]))
 			std::cerr << "Invalid number " << input_vector[8] << '\n';
 	}
 
-	double A = std::atof(input_vector[9].c_str());
-	double period = std::atof(input_vector[10].c_str());
-	double delta_energy_base = std::atof(input_vector[11].c_str());
+	{
+		std::istringstream ss(input_vector[9]);
+		if (!(ss >> contact[1]))
+			std::cerr << "Invalid number " << input_vector[9] << '\n';
+	}
+
+	double A = std::atof(input_vector[10].c_str());
+	double period = std::atof(input_vector[11].c_str());
+	double delta_energy_base = std::atof(input_vector[12].c_str());
 
 	Load::XYZ(types, positions, data_path);
 	std::unique_ptr<Configuration> sample = std::make_unique<Configuration>(positions, types);
 
 	std::unique_ptr<Core> core = std::make_unique<Core>(*sample, cells, types, contact_switch, contact, data_path);
-	core->Run(time_end, A, period, delta_energy_base);
-
-	//Save params/
-	/*
-	file_out_param.open(data_path+"/params.dat");
-	file_out_param << core->steps+1 << std::endl;
-	file_out_param << sample->GetOxygenNumber() << std::endl;
-	file_out_param.close();
-	*/
+	core->Run(thermalization_time, time_end, A, period, delta_energy_base);
 }
 

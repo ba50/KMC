@@ -46,27 +46,24 @@
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="14" column="0">
-        <widget class="QLabel" name="label_6">
+       <item row="10" column="2">
+        <widget class="QCheckBox" name="checkBox_right_contact">
          <property name="text">
-          <string>Path to Data</string>
+          <string>CheckBox</string>
          </property>
         </widget>
        </item>
-       <item row="13" column="1">
-        <widget class="QDoubleSpinBox" name="doubleSpinBox_delta_energi_base">
-         <property name="decimals">
-          <number>5</number>
-         </property>
+       <item row="10" column="1">
+        <widget class="QSpinBox" name="spinBox_right_contact">
          <property name="minimum">
-          <double>-99999.990000000005239</double>
+          <number>1</number>
          </property>
          <property name="maximum">
-          <double>99999.990000000005239</double>
+          <number>99999</number>
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="8" column="1">
         <widget class="QSpinBox" name="spinBox_left_contact">
          <property name="minimum">
           <number>1</number>
@@ -76,34 +73,37 @@
          </property>
         </widget>
        </item>
-       <item row="9" column="2">
-        <widget class="QCheckBox" name="checkBox_right_contact">
-         <property name="text">
-          <string>CheckBox</string>
-         </property>
-        </widget>
-       </item>
-       <item row="14" column="1">
-        <widget class="QPushButton" name="pushButton_path_to_data">
-         <property name="text">
-          <string>Browse</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="2">
-        <widget class="QCheckBox" name="checkBox_left_contact">
-         <property name="text">
-          <string>CheckBox</string>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="1">
-        <widget class="QSpinBox" name="spinBox_right_contact">
-         <property name="minimum">
-          <number>1</number>
+       <item row="12" column="1">
+        <widget class="QDoubleSpinBox" name="doubleSpinBox_A">
+         <property name="decimals">
+          <number>5</number>
          </property>
          <property name="maximum">
-          <number>99999</number>
+          <double>9999.989999999999782</double>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Path to Data</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QSpinBox" name="spinBox_thermalization_time">
+         <property name="maximum">
+          <number>9999999</number>
+         </property>
+         <property name="value">
+          <number>200</number>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="0" colspan="3">
+        <widget class="QLabel" name="label_16">
+         <property name="text">
+          <string>delta energy = A*sin(time*perion)+delta energy base</string>
          </property>
         </widget>
        </item>
@@ -126,44 +126,10 @@
          </item>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_9">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_10">
          <property name="text">
-          <string>Type</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Z</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>X</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QSpinBox" name="spinBox_y_size">
-         <property name="minimum">
-          <number>3</number>
-         </property>
-         <property name="maximum">
-          <number>999</number>
-         </property>
-         <property name="value">
-          <number>7</number>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Time End</string>
+          <string>Root Directory</string>
          </property>
         </widget>
        </item>
@@ -180,8 +146,22 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="QSpinBox" name="spinBox_x_size">
+       <item row="10" column="0">
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>Right Contact</string>
+         </property>
+        </widget>
+       </item>
+       <item row="12" column="0">
+        <widget class="QLabel" name="label_11">
+         <property name="text">
+          <string>A</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QSpinBox" name="spinBox_y_size">
          <property name="minimum">
           <number>3</number>
          </property>
@@ -189,31 +169,21 @@
           <number>999</number>
          </property>
          <property name="value">
-          <number>15</number>
+          <number>7</number>
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_2">
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_9">
          <property name="text">
-          <string>Y</string>
+          <string>Type</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
-        <widget class="QSpinBox" name="spinBox_time_end">
-         <property name="maximum">
-          <number>9999999</number>
-         </property>
-         <property name="value">
-          <number>1000</number>
-         </property>
-        </widget>
-       </item>
-       <item row="17" column="0" colspan="3">
-        <widget class="QPushButton" name="pushButton_generate">
+       <item row="14" column="0">
+        <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>Generate</string>
+          <string>Delta Energy Base</string>
          </property>
         </widget>
        </item>
@@ -230,21 +200,96 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_10">
+       <item row="8" column="2">
+        <widget class="QCheckBox" name="checkBox_left_contact">
          <property name="text">
-          <string>Root Directory</string>
+          <string>CheckBox</string>
          </property>
         </widget>
        </item>
-       <item row="9" column="0">
-        <widget class="QLabel" name="label_8">
+       <item row="8" column="0">
+        <widget class="QLabel" name="label_7">
          <property name="text">
-          <string>Right Contact</string>
+          <string>Left Contact</string>
          </property>
         </widget>
        </item>
-       <item row="12" column="1">
+       <item row="18" column="0" colspan="3">
+        <widget class="QPushButton" name="pushButton_generate">
+         <property name="text">
+          <string>Generate</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QSpinBox" name="spinBox_x_size">
+         <property name="minimum">
+          <number>3</number>
+         </property>
+         <property name="maximum">
+          <number>999</number>
+         </property>
+         <property name="value">
+          <number>15</number>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="1">
+        <widget class="QDoubleSpinBox" name="doubleSpinBox_delta_energi_base">
+         <property name="decimals">
+          <number>5</number>
+         </property>
+         <property name="minimum">
+          <double>-99999.990000000005239</double>
+         </property>
+         <property name="maximum">
+          <double>99999.990000000005239</double>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>X</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Z</string>
+         </property>
+        </widget>
+       </item>
+       <item row="13" column="0">
+        <widget class="QLabel" name="label_14">
+         <property name="text">
+          <string>Period</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Y</string>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="1">
+        <widget class="QPushButton" name="pushButton_path_to_data">
+         <property name="text">
+          <string>Browse</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Thermalization Time</string>
+         </property>
+        </widget>
+       </item>
+       <item row="13" column="1">
         <widget class="QDoubleSpinBox" name="doubleSpinBox_period">
          <property name="decimals">
           <number>5</number>
@@ -254,48 +299,20 @@
          </property>
         </widget>
        </item>
-       <item row="11" column="1">
-        <widget class="QDoubleSpinBox" name="doubleSpinBox_A">
-         <property name="decimals">
-          <number>5</number>
-         </property>
-         <property name="maximum">
-          <double>9999.989999999999782</double>
-         </property>
-        </widget>
-       </item>
        <item row="7" column="0">
-        <widget class="QLabel" name="label_7">
+        <widget class="QLabel" name="label_15">
          <property name="text">
-          <string>Left Contact</string>
+          <string>Time End</string>
          </property>
         </widget>
        </item>
-       <item row="13" column="0">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Delta Energy Base</string>
+       <item row="7" column="1">
+        <widget class="QSpinBox" name="spinBox_time_end">
+         <property name="maximum">
+          <number>9999999</number>
          </property>
-        </widget>
-       </item>
-       <item row="12" column="0">
-        <widget class="QLabel" name="label_14">
-         <property name="text">
-          <string>Period</string>
-         </property>
-        </widget>
-       </item>
-       <item row="11" column="0">
-        <widget class="QLabel" name="label_11">
-         <property name="text">
-          <string>A</string>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="0" colspan="3">
-        <widget class="QLabel" name="label_16">
-         <property name="text">
-          <string>delta energy = A*sin(time*perion)+delta energy base</string>
+         <property name="value">
+          <number>1000</number>
          </property>
         </widget>
        </item>

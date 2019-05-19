@@ -27,7 +27,7 @@ jump = np.array([[1, 0, 0],
                  [0, 0, -1]])
 
 
-path_to_folder = Path('D:/KMC_data/sin/120_7_7_random')
+path_to_folder = Path('D:/KMC_data/tests/15_7_7_random')
 path_to_data = path_to_folder / 'which_where_when.txt'
 path_to_positions = path_to_folder / 'positions.xyz'
 save_path = path_to_folder / 'paths'
@@ -148,5 +148,5 @@ for i in tqdm.tqdm(range(0, 360, 36)):
     ax.dist = 5
     plt.savefig(os.path.join(save_path, "{}.png".format(i)), dpi=100)
 
-timed_heat_map = TimeHeatMap(load_data_path=path_to_folder / 'heat_map')
+timed_heat_map = TimeHeatMap(load_data_path=path_to_folder)
 timed_heat_map.process_data(['jumps'])

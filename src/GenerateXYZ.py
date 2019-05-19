@@ -1,15 +1,15 @@
-import os
-import argparse
 import random
+import argparse
+from pathlib import Path
 
 import numpy as np
 
 
 class GenerateXYZ:
-    def __init__(self, cells, path_out):
+    def __init__(self, cells: int, path_out: Path):
 
         self.cell_size = 1.0
-        self.path_out = os.path.join(path_out, 'positions.xyz')
+        self.path_out = path_out / 'positions.xyz'
 
         self.kations = np.zeros(2*np.array(cells) + 1).astype(np.int)
         self.anions = np.zeros(2*np.array(cells)).astype(np.int)
@@ -21,7 +21,7 @@ class GenerateXYZ:
         self.O = 0
 
     def save_positions(self):
-        with open(self.path_out, 'w') as file_out:
+        with self.path_out.open('w') as file_out:
             file_out.write("{}\n\n".format(self.Bi+self.Y+self.O))
             for atom_type in self.positions:
                 for atom in self.positions[atom_type]:
@@ -152,11 +152,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    path_out = str(args.cells[0])+'_'+str(args.cells[1])+'_'+str(args.cells[2])+'_'+args.structure
-    if not os.path.exists(path_out):
-        os.makedirs(path_out)
-    if not os.path.exists(os.path.join(path_out, 'heat_map')):
-                os.makedirs(os.path.join(path_out, 'heat_map'))
+    path_out = Path(str(args.cells[0])+'_'+str(args.cells[1])+'_'+str(args.cells[2])+'_'+args.structure)
+    if not (path_out / 'heat_map').exists():
+        (path_out / 'heat_map').mkdir(parents=True, exist_ok=True)
     if args.structure == 'random':
         GenerateXYZ(args.cells, path_out).generate_random()
     if args.structure == 'sphere':

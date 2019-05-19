@@ -1,5 +1,5 @@
 import os
-from os import path
+from pathlib import Path
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QFileDialog
@@ -16,6 +16,7 @@ class Launcher(Ui_KMC_GUI):
     root_directory = None
     path_to_data = None
     size = None
+    thermalization_time = None
     time_end = None
     contact_switch = None
     contact = None
@@ -52,23 +53,29 @@ class Launcher(Ui_KMC_GUI):
         self.size = self.spinBox_x_size.value(), self.spinBox_y_size.value(), self.spinBox_z_size.value()
 
         self.time_end = self.spinBox_time_end.value()
+        self.thermalization_time = self.spinBox_thermalization_time.value()
 
         self.contact_switch = self.checkBox_left_contact.checkState(), self.checkBox_right_contact.checkState()
         self.contact = self.spinBox_left_contact.value(), self.spinBox_right_contact.value()
 
-        self.enegry_param = self.doubleSpinBox_A.value(), self.doubleSpinBox_period.value(), self.doubleSpinBox_delta_energi_base.value()
+        self.enegry_param = (self.doubleSpinBox_A.value(),
+                             self.doubleSpinBox_period.value(),
+                             self.doubleSpinBox_delta_energi_base.value())
 
-        self.path_to_data = path.join(self.root_directory, str(self.size[0])+'_'+str(self.size[1])+'_'+str(self.size[2])+'_'+self.cell_type.lower())
-        if not os.path.exists(self.path_to_data):
-            os.makedirs(self.path_to_data)
-        if not os.path.exists(path.join(self.path_to_data, 'heat_map')):
-            os.makedirs(path.join(self.path_to_data, 'heat_map'))
+        self.path_to_data = Path(self.root_directory,
+                                 str(self.size[0])+'_' +
+                                 str(self.size[1])+'_' +
+                                 str(self.size[2])+'_' +
+                                 self.cell_type.lower())
+        if not (self.path_to_data / 'heat_map').exists():
+            (self.path_to_data / 'heat_map').mkdir(parents=True, exist_ok=True)
 
-        with open(path.join(self.path_to_data, 'input.kmc'), 'w') as file_out:
+        with (self.path_to_data / 'input.kmc').open('w') as file_out:
             file_out.write("{}\t# Cell type\n".format(self.cell_type.lower()))
             file_out.write("{}\t# X number of cells\n".format(self.size[0]))
             file_out.write("{}\t# Y number of cells\n".format(self.size[1]))
             file_out.write("{}\t# Z number of cells\n".format(self.size[2]))
+            file_out.write("{}\t# Thermalization time\n".format(self.thermalization_time))
             file_out.write("{}\t# Time to end simulation\n".format(self.time_end))
             file_out.write("{}\t# Left contact switch\n".format(self.contact_switch[0]))
             file_out.write("{}\t# Right contact switch\n".format(self.contact_switch[1]))
@@ -105,7 +112,7 @@ class Launcher(Ui_KMC_GUI):
         workers_pool.run()
 
     def handleButton_add_root(self):
-        self.root = str(QFileDialog.getExistingDirectory(self.centralWidget))
+        self.root = Path(QFileDialog.getExistingDirectory(self.centralWidget))
         self.label_roots.setText(self.root)
         self.time_heatmap = TimeHeatMap(self.root)
 

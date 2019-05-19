@@ -13,14 +13,14 @@ class TimeHeatMap:
         :param load_data_path:
         :param save_data_path:
         """
-        self.load_data_path = load_data_path
+        self.load_data_path = load_data_path / 'heat_map'
         self.save_data_path = save_data_path
 
         if not self.save_data_path:
-            self.save_data_path = Path(self.load_data_path.parent, 'heat_map_plots')
+            self.save_data_path = self.load_data_path.parent / 'heat_map_plots'
 
         if not self.save_data_path.exists():
-            self.save_data_path.mkdir()
+            self.save_data_path.mkdir(parents=True, exist_ok=True)
 
         self.file_list = sorted(self.load_data_path.glob('*.dat'),
                                 key=lambda i: int(os.path.splitext(os.path.basename(i))[0]))
@@ -37,16 +37,26 @@ class TimeHeatMap:
         if 'mean' in mode:
             self._timed_mean_heat_map(heat_map_list)
         if 'jumps' in mode:
-            jumps_ll_heat_map_list, jumps_lr_heat_map_list, jumps_rl_heat_map_list, jumps_rr_heat_map_list\
-                = self._timed_jumps(heat_map_list)
+            jumps_heat_map_list = self._timed_jumps(heat_map_list)
+
+            jumps_ll_heat_map_list = jumps_heat_map_list[0]
+            jumps_lr_heat_map_list = jumps_heat_map_list[1]
+            jumps_cl_heat_map_list = jumps_heat_map_list[2]
+            jumps_cr_heat_map_list = jumps_heat_map_list[3]
+            jumps_rl_heat_map_list = jumps_heat_map_list[4]
+            jumps_rr_heat_map_list = jumps_heat_map_list[5]
 
             mean_ll_jumps = [(idx*10.0, i.mean()) for idx, i in enumerate(jumps_ll_heat_map_list)]
             mean_lr_jumps = [(idx*10.0, i.mean()) for idx, i in enumerate(jumps_lr_heat_map_list)]
+            mean_cl_jumps = [(idx*10.0, i.mean()) for idx, i in enumerate(jumps_cl_heat_map_list)]
+            mean_cr_jumps = [(idx*10.0, i.mean()) for idx, i in enumerate(jumps_cr_heat_map_list)]
             mean_rl_jumps = [(idx*10.0, i.mean()) for idx, i in enumerate(jumps_rl_heat_map_list)]
             mean_rr_jumps = [(idx*10.0, i.mean()) for idx, i in enumerate(jumps_rr_heat_map_list)]
 
             mean_ll_jumps = np.array(mean_ll_jumps)
             mean_lr_jumps = np.array(mean_lr_jumps)
+            mean_cl_jumps = np.array(mean_cl_jumps)
+            mean_cr_jumps = np.array(mean_cr_jumps)
             mean_rl_jumps = np.array(mean_rl_jumps)
             mean_rr_jumps = np.array(mean_rr_jumps)
 
@@ -58,6 +68,17 @@ class TimeHeatMap:
             self.plot_line(save_file=self.save_data_path / 'timed_jumps_left_contact_right_jump.png',
                            x=mean_lr_jumps[:, 0],
                            y=mean_lr_jumps[:, 1],
+                           x_label='Time [ps]',
+                           y_label='Jumps [au]')
+
+            self.plot_line(save_file=self.save_data_path / 'timed_jumps_center_contact_left_jump.png',
+                           x=mean_cl_jumps[:, 0],
+                           y=mean_cl_jumps[:, 1],
+                           x_label='Time [ps]',
+                           y_label='Jumps [au]')
+            self.plot_line(save_file=self.save_data_path / 'timed_jumps_center_contact_right_jump.png',
+                           x=mean_cr_jumps[:, 0],
+                           y=mean_cr_jumps[:, 1],
                            x_label='Time [ps]',
                            y_label='Jumps [au]')
 
@@ -167,6 +188,6 @@ class TimeHeatMap:
 
 
 if __name__ == '__main__':
-    data_path = Path('C:/Users/Bartek/source/repos/KMC/KMC/KMC_data/30_7_7_random/heat_map')
+    data_path = Path('D:/KMC_data/tests/15_7_7_random')
     hm = TimeHeatMap(data_path)
     hm.process_data(['jumps'])
