@@ -35,7 +35,7 @@ public:
 	long double steps;
 	std::vector<float> update_vector;
 
-	double*** heat_map_array_;
+	unsigned short**** heat_map_array_;
 	std::vector<size_t> heat_map_array_size_; 
 
 	Core(const Configuration& configuration,
@@ -230,17 +230,24 @@ public:
 		heat_map_array_size_[1] = 2 * cells[1];
 		heat_map_array_size_[2] = 2 * cells[2];
 
-		heat_map_array_ = new double**[heat_map_array_size_[2]];
+		heat_map_array_ = new unsigned short***[heat_map_array_size_[2]];
 		for (size_t z = 0; z < heat_map_array_size_[2]; z++)
-			heat_map_array_[z] = new double*[heat_map_array_size_[1]];
+			heat_map_array_[z] = new unsigned short**[heat_map_array_size_[1]];
 		for (size_t z = 0; z < heat_map_array_size_[2]; z++)
 			for (size_t y = 0; y < heat_map_array_size_[1]; y++)
-				heat_map_array_[z][y] = new double[heat_map_array_size_[0]];
+				heat_map_array_[z][y] = new unsigned short*[heat_map_array_size_[0]];
 
 		for (size_t z = 0; z < heat_map_array_size_[2]; z++)
 			for (size_t y = 0; y < heat_map_array_size_[1]; y++)
 				for (size_t x = 0; x < heat_map_array_size_[0]; x++)
-					heat_map_array_[z][y][x] = 0.0;
+					heat_map_array_[z][y][x] = new unsigned short[6];
+
+
+		for (size_t z = 0; z < heat_map_array_size_[2]; z++)
+			for (size_t y = 0; y < heat_map_array_size_[1]; y++)
+				for (size_t x = 0; x < heat_map_array_size_[0]; x++)
+					for (size_t i = 0; i < 6; i++)
+						heat_map_array_[z][y][x][i] = 0;
 		std::string folder_heat_map(data_path + "/heat_map");
 	}
 
@@ -318,7 +325,8 @@ public:
 			std::cout<< "File which_where_when.txt successfully deleted"<<std::endl;
 
 		FILE* which_wherer_when;
-		which_wherer_when = fopen(std::string(data_path + "/which_where_when.txt").c_str(), "a");
+		fopen_s(&which_wherer_when, std::string(data_path + "/which_where_when.txt").c_str(), "a");
+		//which_wherer_when = fopen(std::string(data_path + "/which_where_when.txt").c_str(), "a");
 		while(time < time_end){
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
 			delta_energy = A*sin(time*period)+delta_energy_base;
@@ -381,27 +389,34 @@ public:
 
 			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 0;
 
-			if(fmod(time, 10.0) <= 0.01){
+			if (fmod(time, 10.0) <= 0.01) {
 				std::cout << time << "[ps]" << std::endl;
-				std::ofstream file_out(data_path+"/heat_map/"+std::to_string((int)time)+".dat");
-				for (size_t z = 0; z < heat_map_array_size_[2]; z++){
-					for (size_t y = 0; y < heat_map_array_size_[1]; y++){
-						for (size_t x = 0; x < heat_map_array_size_[0]; x++){
-							file_out << x \
-								<< "\t" \
-							       	<< y \
-							       	<< "\t" \
-							       	<< z \
-							       	<< "\t" \
-							       	<< heat_map_array_[z][y][x] \
-							       	<< std::endl;
+				std::ofstream file_out(data_path + "/heat_map/" + std::to_string((int)time) + ".dat");
+				for (size_t z = 0; z < heat_map_array_size_[2]; z++) {
+					for (size_t y = 0; y < heat_map_array_size_[1]; y++) {
+						for (size_t x = 0; x < heat_map_array_size_[0]; x++) {
+							for (size_t i = 0; i < 6; i++) {
+								file_out << x \
+									<< "\t" \
+									<< y \
+									<< "\t" \
+									<< z \
+									<< "\t" \
+									<< i \
+									<< "\t" \
+									<< heat_map_array_[z][y][x][i] \
+									<< std::endl;
+							}
 						}
 					}
 				}
 				file_out.close();
 			}
 
-			heat_map_array_[oxygen_positions_[selected_atom][2]-1][oxygen_positions_[selected_atom][1]-1][oxygen_positions_[selected_atom][0]-1]++;
+			heat_map_array_[oxygen_positions_[selected_atom][2] - 1]
+				[oxygen_positions_[selected_atom][1] - 1]
+			[oxygen_positions_[selected_atom][0] - 1]
+			[seleced_direction]++;
 			
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);

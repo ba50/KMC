@@ -62,7 +62,7 @@ class Launcher(Ui_KMC_GUI):
         if not os.path.exists(self.path_to_data):
             os.makedirs(self.path_to_data)
         if not os.path.exists(path.join(self.path_to_data, 'heat_map')):
-                    os.makedirs(path.join(self.path_to_data, 'heat_map'))
+            os.makedirs(path.join(self.path_to_data, 'heat_map'))
 
         with open(path.join(self.path_to_data, 'input.kmc'), 'w') as file_out:
             file_out.write("{}\t# Cell type\n".format(self.cell_type.lower()))
@@ -122,4 +122,3 @@ if __name__ == "__main__":
     launcher = Launcher()
     launcher.KMC_GUI.show()
     sys.exit(app.exec_())
-
