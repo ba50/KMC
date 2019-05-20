@@ -405,7 +405,7 @@ public:
 					jumpe_rate_sume_vector_[id + 1] += jump_rate_vector_[id][i];
 				}
 			}
-
+			/*
 			random_for_atom = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0) * jumpe_rate_sume_vector_.back();
 			selected_atom_temp = std::lower_bound(jumpe_rate_sume_vector_.begin(), jumpe_rate_sume_vector_.end(), random_for_atom);
 			selected_atom = selected_atom_temp - jumpe_rate_sume_vector_.begin() - 1;
@@ -417,6 +417,37 @@ public:
 			random_for_direction = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0) * jumpe_direction_sume_vector_.back();
 			selected_direction_temp = std::lower_bound(jumpe_direction_sume_vector_.begin(), jumpe_direction_sume_vector_.end(), random_for_direction);
 			seleced_direction = selected_direction_temp - jumpe_direction_sume_vector_.begin() - 1;
+			*/
+
+			do {
+				random_for_atom = ((double)rand() / RAND_MAX) * jumpe_rate_sume_vector_.back(); // losowanie atomu
+			} while (random_for_atom == 0);
+
+			for (id = 1; id < jumpe_rate_sume_vector_.size(); ++id) {
+				if (jumpe_rate_sume_vector_[id - 1] < random_for_atom && random_for_atom <= jumpe_rate_sume_vector_[id]) {
+					selected_atom = id - 1;
+
+					break;
+				}
+			}
+
+			for (id = 1; id < jumpe_direction_sume_vector_.size(); id++) {
+				jumpe_direction_sume_vector_[id] = jumpe_direction_sume_vector_[id-1] + jump_rate_vector_[selected_atom][id-1];
+			}
+
+			do {
+				random_for_direction = ((double)rand() / RAND_MAX)*jumpe_direction_sume_vector_.back(); // losowanie atomu
+			} while (random_for_direction == 0);
+
+			for (id = 1; id < jumpe_direction_sume_vector_.size(); ++id) {
+				if (jumpe_direction_sume_vector_[id - 1] < random_for_direction && random_for_direction <= jumpe_direction_sume_vector_[id]) {
+
+					seleced_direction = id - 1;
+
+					break;
+				}
+
+			}
 
 			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 1;
 
@@ -465,6 +496,7 @@ public:
 					}
 				}
 				file_out.close();
+				
 			}
 
 			heat_map_array_[oxygen_positions_[selected_atom][2] - 1]

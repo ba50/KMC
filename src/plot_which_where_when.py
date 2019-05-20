@@ -27,7 +27,7 @@ jump = np.array([[1, 0, 0],
                  [0, 0, -1]])
 
 
-path_to_folder = Path('D:/KMC_data/tests/15_7_7_random')
+path_to_folder = Path('D:/KMC_data/tests/15_7_7_random_old')
 path_to_data = path_to_folder / 'which_where_when.txt'
 path_to_positions = path_to_folder / 'positions.xyz'
 save_path = path_to_folder / 'paths'
@@ -69,13 +69,25 @@ o_paths = []
 for i in o_base_positions:
     o_paths.append([i])
 
+
+step = 0
 hist_jumps = []
 field = []
 time = []
+msd = np.zeros((len(www), 2))
 print("Calculating oxygen paths")
 for which, where, delta_energy, when in tqdm.tqdm(www):
     o_paths[which].append(o_paths[which][-1]+jump[where])
     """
+    step_msd = 0
+    for index in range(o_base_positions.shape[0]):
+        step_msd += pow(o_base_positions[index][0] - o_paths[index][-1][0], 2) +\
+                    pow(o_base_positions[index][1] - o_paths[index][-1][1], 2) +\
+                    pow(o_base_positions[index][2] - o_paths[index][-1][2], 2)
+    step_msd /= o_base_positions.shape[0]
+    msd[step, 0] = when
+    msd[step, 1] = step_msd
+
     for index in range(len(o_base_positions)):
         if not index == which:
             o_paths[index].append(o_paths[index][-1])
@@ -84,6 +96,7 @@ for which, where, delta_energy, when in tqdm.tqdm(www):
     hist_jumps.append(where)
     field.append([when, delta_energy])
     time.append(when)
+    step += 1
 
 hist_jumps = np.array(hist_jumps)
 field = np.array(field)
@@ -115,6 +128,7 @@ with open(os.path.join(save_path, "simulation.xyz"), 'w') as file_out:
         file_out.write("\n")
 """
 
+
 # Histogram
 fig = plt.figure(figsize=(8, 6))
 ax = fig.add_subplot(111)
@@ -124,6 +138,7 @@ ax.hist(hist_jumps, bins=11)
 plt.savefig(os.path.join(save_path, "Jumps.png"), dpi=100)
 
 # Field Time (delta Time)
+# plot_line(save_file=save_path / 'MSD.png', x=msd[:, 0], y=msd[:, 1], x_label='Time [ps]', y_label='MSD')
 plot_line(save_file=save_path / 'Field.png', x=field[:, 0], y=field[:, 1], x_label='Time [ps]', y_label='Field [eV]')
 plot_line(save_file=save_path / 'Time.png', x=range(time.shape[0]), y=time, x_label='Step', y_label='Time')
 plot_line(save_file=save_path / 'delta_Time.png',

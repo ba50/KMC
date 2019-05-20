@@ -113,7 +113,7 @@ class TimeHeatMap:
         # l - left
         # r - right
         # c - center
-        # ll left contact left jump
+        # ll - left contact left jump
         jumps_ll_heat_map_list = []
         jumps_lr_heat_map_list = []
         jumps_cl_heat_map_list = []
@@ -131,7 +131,7 @@ class TimeHeatMap:
             _rl_heat_map = np.zeros(dim)
             _rr_heat_map = np.zeros(dim)
             for pos in heat_map:
-                if pos[0] == 0:
+                if pos[0] == 1:
                     if pos[3] == 1:
                         _ll_heat_map[pos[1], pos[2]] = pos[4]
                     if pos[3] == 0:
@@ -141,7 +141,7 @@ class TimeHeatMap:
                         _cl_heat_map[pos[1], pos[2]] = pos[4]
                     if pos[3] == 0:
                         _cr_heat_map[pos[1], pos[2]] = pos[4]
-                if pos[0] == max_x:
+                if pos[0] == max_x-1:
                     if pos[3] == 1:
                         _rl_heat_map[pos[1], pos[2]] = pos[4]
                     if pos[3] == 0:
@@ -160,7 +160,7 @@ class TimeHeatMap:
                              for i in range(len(jumps_lr_heat_map_list)-1)]
         delta_cl_heat_map = [jumps_cl_heat_map_list[i+1]-jumps_cl_heat_map_list[i]
                              for i in range(len(jumps_cl_heat_map_list)-1)]
-        delta_cr_heat_map = [jumps_cr_heat_map_list[i+1]-jumps_lr_heat_map_list[i]
+        delta_cr_heat_map = [jumps_cr_heat_map_list[i+1]-jumps_cr_heat_map_list[i]
                              for i in range(len(jumps_cr_heat_map_list)-1)]
         delta_rl_heat_map = [jumps_rl_heat_map_list[i+1]-jumps_rl_heat_map_list[i]
                              for i in range(len(jumps_rl_heat_map_list)-1)]
