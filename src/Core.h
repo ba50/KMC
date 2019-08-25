@@ -282,11 +282,11 @@ public:
 	}
 
 	// Da sie to lepiej rozwiazac!!
-	void Run(long double thermalization_time, long double time_end, const double A, const double period, const double delta_energy_base){
+	void Run(long double thermalization_time, long double time_end, const double A, const double frequency, const double period, const double delta_energy_base){
 		std::cout << "Start thermalization" << "\n";
 		Thermalization(thermalization_time);
 		std::cout << "Start simulation" << "\n";
-		Update(time_end, A, period, delta_energy_base);
+		Update(time_end, A, frequency, period, delta_energy_base);
 		std::cout << "Core exit." << "\n";
 	}
 
@@ -366,8 +366,9 @@ public:
 		}
 	}
 
-	void Update(long double time_end, const double A, const double period, const double delta_energy_base){
-		double kT{(800.0 + 273.15)*8.6173304e-5};
+	void Update(long double time_end, const double A, const double frequency, const double period, const double delta_energy_base){
+		const double PI = 3.141592653589793238463;
+		const double kT{(800.0 + 273.15)*8.6173304e-5};
 		double random_for_atom, random_for_direction;
 		double random_for_time;
 
@@ -387,9 +388,14 @@ public:
 		fopen_s(&which_wherer_when, std::string(data_path + "/which_where_when.txt").c_str(), "a");
 		//which_wherer_when = fopen(std::string(data_path + "/which_where_when.txt").c_str(), "a");
 
+		if (time_end == 0) {
+			time_end = period / frequency;
+			std::cout << "Now end time: " << time_end << "[ps]" << std::endl;
+		}
+
 		while(time < time_end){
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
-			delta_energy = A * sin(time * period) + delta_energy_base;
+			delta_energy = A * sin(2 * PI * frequency * time) + delta_energy_base;
 
 			for (id = 0; id < jump_rate_vector_.size(); id++) {
 				jump_rate_vector_[id][0] = jump_rate(id, 0, 0, 1, oxygen_array_, oxygen_positions_, residence_time_array_) * exp(delta_energy / kT);

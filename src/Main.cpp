@@ -100,13 +100,16 @@ int main(int argc, char *argv[]) {
 	}
 
 	double A = std::atof(input_vector[10].c_str());
-	double period = std::atof(input_vector[11].c_str());
-	double delta_energy_base = std::atof(input_vector[12].c_str());
+	double frequency_base = std::atof(input_vector[11].c_str());
+	double frequency_power = std::atof(input_vector[12].c_str());
+	double period = std::atof(input_vector[13].c_str());
+	double delta_energy_base = std::atof(input_vector[14].c_str());
+
+	double frequency = frequency_base * pow(10, frequency_power);
 
 	Load::XYZ(types, positions, data_path);
 	std::unique_ptr<Configuration> sample = std::make_unique<Configuration>(positions, types);
 
 	std::unique_ptr<Core> core = std::make_unique<Core>(*sample, cells, types, contact_switch, contact, data_path);
-	core->Run(thermalization_time, time_end, A, period, delta_energy_base);
+	core->Run(thermalization_time, time_end, A, frequency, period, delta_energy_base);
 }
-

@@ -1,12 +1,11 @@
 import random
-import argparse
 from pathlib import Path
 
 import numpy as np
 
 
 class GenerateXYZ:
-    def __init__(self, cells: int, path_out: Path):
+    def __init__(self, cells: tuple, path_out: Path):
 
         self.cell_size = 1.0
         self.path_out = path_out / 'positions.xyz'
@@ -134,30 +133,3 @@ class GenerateXYZ:
                 self.O += 1
 
         self.save_positions()
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Generate atoms positions")
-    parser.add_argument('-c',
-                        '--cells',
-                        dest='cells',
-                        type=int,
-                        nargs=3,
-                        help="Number of cells in system.")
-    parser.add_argument('-s',
-                        '--structure',
-                        dest='structure',
-                        type=str,
-                        help="Type of structure (random, sphere, plane).")
-
-    args = parser.parse_args()
-
-    path_out = Path(str(args.cells[0])+'_'+str(args.cells[1])+'_'+str(args.cells[2])+'_'+args.structure)
-    if not (path_out / 'heat_map').exists():
-        (path_out / 'heat_map').mkdir(parents=True, exist_ok=True)
-    if args.structure == 'random':
-        GenerateXYZ(args.cells, path_out).generate_random()
-    if args.structure == 'sphere':
-        GenerateXYZ(args.cells, path_out).generate_sphere(5)
-    if args.structure == 'plane':
-        GenerateXYZ(args.cells, path_out).generate_plane(1)

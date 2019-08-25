@@ -11,6 +11,36 @@ from src.GenerateWorkers import GenerateWorkers
 from src.TimeHeatMap import TimeHeatMap
 
 
+def gen_sym(params_dict):
+        if not (params_dict['path_to_data'] / 'heat_map').exists():
+            (params_dict['path_to_data'] / 'heat_map').mkdir(parents=True, exist_ok=True)
+
+        with (params_dict['path_to_data'] / 'input.kmc').open('w') as file_out:
+            file_out.write("{}\t# Cell type\n".format(params_dict['cell_type'].lower()))
+            file_out.write("{}\t# X number of cells\n".format(params_dict['size'][0]))
+            file_out.write("{}\t# Y number of cells\n".format(params_dict['size'][1]))
+            file_out.write("{}\t# Z number of cells\n".format(params_dict['size'][2]))
+            file_out.write("{}\t# Thermalization time\n".format(params_dict['thermalization_time']))
+            file_out.write("{}\t# Time to end simulation\n".format(params_dict['time_end']))
+            file_out.write("{}\t# Left contact switch\n".format(params_dict['contact_switch'][0]))
+            file_out.write("{}\t# Right contact switch\n".format(params_dict['contact_switch'][1]))
+            file_out.write("{}\t# Left contact\n".format(params_dict['contact'][0]))
+            file_out.write("{}\t# Right contact\n".format(params_dict['contact'][1]))
+            file_out.write("{}\t# Amplitude of sine function\n".format(params_dict['energy_params'][0]))
+            file_out.write("{}\t# Frequency base of sine function\n".format(params_dict['energy_params'][1]))
+            file_out.write("{}\t# Frequency power of sine function\n".format(params_dict['energy_params'][2]))
+            file_out.write("{}\t# Period of sine function\n".format(params_dict['energy_params'][3]))
+            file_out.write("{}\t# Delta energy base\n".format(params_dict['energy_params'][4]))
+
+        if params_dict['cell_type'] == 'Random':
+            GenerateXYZ(params_dict['size'], params_dict['path_to_data']).generate_random()
+        if params_dict['cell_type'] == 'Sphere':
+            GenerateXYZ(self.params_dict['size'], params_dict['path_to_data']).generate_sphere(5)
+        if params_dict['cell_type'] == 'Plane':
+            GenerateXYZ(params_dict['size'], params_dict['path_to_data']).generate_plane(1)
+
+
+
 class Launcher(Ui_KMC_GUI):
     cell_type = None
     root_directory = None
@@ -59,7 +89,9 @@ class Launcher(Ui_KMC_GUI):
         self.contact = self.spinBox_left_contact.value(), self.spinBox_right_contact.value()
 
         self.enegry_param = (self.doubleSpinBox_A.value(),
-                             self.doubleSpinBox_period.value(),
+                             self.doubleSpinBox_frequency_base.value(),
+                             self.spinBox_frequency_power.value(),
+                             self.spinBox_period.value(),
                              self.doubleSpinBox_delta_energi_base.value())
 
         self.path_to_data = Path(self.root_directory,
@@ -81,9 +113,11 @@ class Launcher(Ui_KMC_GUI):
             file_out.write("{}\t# Right contact switch\n".format(self.contact_switch[1]))
             file_out.write("{}\t# Left contact\n".format(self.contact[0]))
             file_out.write("{}\t# Right contact\n".format(self.contact[1]))
-            file_out.write("{}\t# Amplitude of sin function\n".format(self.enegry_param[0]))
-            file_out.write("{}\t# Period of sin function\n".format(self.enegry_param[1]))
-            file_out.write("{}\t# Delta energy base\n".format(self.enegry_param[2]))
+            file_out.write("{}\t# Amplitude of sine function\n".format(self.enegry_param[0]))
+            file_out.write("{}\t# Frequency base of sine function\n".format(self.enegry_param[1]))
+            file_out.write("{}\t# Frequency power of sine function\n".format(self.enegry_param[2]))
+            file_out.write("{}\t# Period of sine function\n".format(self.enegry_param[3]))
+            file_out.write("{}\t# Delta energy base\n".format(self.enegry_param[4]))
 
         if self.cell_type == 'Random':
             GenerateXYZ(self.size, self.path_to_data).generate_random()
