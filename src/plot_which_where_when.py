@@ -85,21 +85,23 @@ class DataProcess:
         ax.hist(www['where'], bins=11)
         plt.savefig(self.save_path / "Jumps.png", dpi=self.options['dpi'])
 
+        pass_index = [i for i in range(www.shape[0]) if not i % 5 == 0]
+
         self.plot_line(save_file=self.save_path / 'Field.png',
-                       x=www['when'],
-                       y=www['delta_energy'],
+                       x=www['when'].drop(pass_index),
+                       y=www['delta_energy'].drop(pass_index),
                        x_label='Time [ps]',
                        y_label='Field [eV]')
 
         self.plot_line(save_file=self.save_path / 'Time.png',
-                       x=range(www['when'].shape[0]),
-                       y=www['when'],
+                       x=range(www['when'].shape[0]-len(pass_index)),
+                       y=www['when'].drop(pass_index),
                        x_label='Step',
                        y_label='Time')
 
         self.plot_line(save_file=self.save_path / 'delta_Time.png',
-                       x=range(www['when'].shape[0]),
-                       y=www['when'].diff(),
+                       x=range(www['when'].shape[0]-len(pass_index)),
+                       y=www['when'].drop(pass_index).diff(),
                        x_label='Step',
                        y_label='Time')
 
@@ -137,13 +139,13 @@ if __name__ == '__main__':
     """
 
     simulations = [Path(x) for x in [
-        'D:/KMC_data/data_2019_08_24/25_7_7_random_0_a',
-        'D:/KMC_data/data_2019_08_24/25_7_7_random_1_a',
-        'D:/KMC_data/data_2019_08_24/25_7_7_random_2_a',
-        'D:/KMC_data/data_2019_08_24/25_7_7_random_3_a',
-        'D:/KMC_data/data_2019_08_24/25_7_7_random_4_a',
-        'D:/KMC_data/data_2019_08_24/25_7_7_random_5_a',
-        'D:/KMC_data/data_2019_08_24/25_7_7_random_6_a',
+        # 'D:/KMC_data/data_2019_08_24/25_7_7_random_0_a',
+        # 'D:/KMC_data/data_2019_08_24/25_7_7_random_1_a',
+        # 'D:/KMC_data/data_2019_08_24/25_7_7_random_2_a',
+        # 'D:/KMC_data/data_2019_08_24/25_7_7_random_3_a',
+        # 'D:/KMC_data/data_2019_08_24/25_7_7_random_4_a',
+        # 'D:/KMC_data/data_2019_08_24/25_7_7_random_5_a',
+        # 'D:/KMC_data/data_2019_08_24/25_7_7_random_6_a',
         'D:/KMC_data/data_2019_08_24/25_7_7_random_7_a',
     ]]
 
