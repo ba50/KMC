@@ -1,13 +1,16 @@
 import os
-import h5py
 from pathlib import Path
 
+import h5py
 import numpy as np
-import matplotlib.pyplot as plt
+import pandas as pd
 from tqdm import tqdm
+from multiprocessing import Pool
+import matplotlib.pyplot as plt
 
 
 class TimeHeatMap:
+    cuts_pos = None
     options = {'mean': False, "jumps": True, "save_raw": True, 'mean_size': 6}
 
     def __init__(self, load_data_path: Path, save_data_path: Path = None, options=None):
@@ -25,38 +28,15 @@ class TimeHeatMap:
         if not self.save_data_path:
             self.save_data_path = self.load_data_path.parent / 'heat_map_plots'
 
-        if not self.save_data_path.exists():
-            self.save_data_path.mkdir(parents=True, exist_ok=True)
+        self.save_data_path.mkdir(parents=True, exist_ok=True)
 
         self.file_list = sorted(self.load_data_path.glob('*.dat'),
                                 key=lambda i: int(os.path.splitext(os.path.basename(i))[0]))
 
     def process_data(self):
-        heat_map_list = []
         print('Loading heat map files...')
-        if self.options['Len']:
-            for file_in in tqdm(self.file_list[:self.options['Len']]):
-                array = []
-                with file_in.open() as heat_map_file:
-                    for line in heat_map_file:
-                        array.append([int(word) for word in line.split()])
-
-                heat_map_list.append(np.array(array))
-        else:
-            for file_in in tqdm(self.file_list):
-                array = []
-                with file_in.open() as heat_map_file:
-                    for line in heat_map_file:
-                        array.append([int(word) for word in line.split()])
-
-                heat_map_list.append(np.array(array))
-
-        if self.options['mean']:
-            self._timed_mean_heat_map(heat_map_list)
         if self.options['jumps']:
-            jumps_heat_map_list = self._time_jumps(heat_map_list,
-                                                   ['left', 'center', 'right'],
-                                                   mean_size=self.options['mean_size'])
+            jumps_heat_map_list = self._time_jumps(self.file_list, ['left', 'center', 'right'], 3)
 
             jumps_ll_heat_map_list = jumps_heat_map_list['left']['left']
             jumps_lr_heat_map_list = jumps_heat_map_list['left']['right']
@@ -96,36 +76,70 @@ class TimeHeatMap:
                                y_label='Jumps [au]',
                                dpi=self.options['dpi'])
 
-    @staticmethod
-    def _time_jumps(heat_map_list, cuts_pos, mean_size=3):
-        print('Calculating jumps in time')
-        jumps_heat_map_list = {key: {'left': [], 'right': []} for key in cuts_pos}
-        for heat_map in tqdm(heat_map_list):
-            max_x = np.max(heat_map[:, 0])
-            dim = mean_size, np.max(heat_map[:, 1])+1, np.max(heat_map[:, 2])+1
-            _heat_map = {key: {'left': np.zeros(dim), 'right': np.zeros(dim)} for key in cuts_pos}
-            cuts_pos_dict = {'left': 0, 'center': max_x//2-mean_size, 'right': max_x-mean_size}
-            for pos in heat_map:
-                for key in cuts_pos:
-                    for mean_pos in range(mean_size):
-                        if pos[0] == cuts_pos_dict[key]+mean_pos:
-                            if pos[3] == 1:
-                                _heat_map[key]['left'][mean_pos, pos[1], pos[2]] = pos[4]
-                            if pos[3] == 0:
-                                _heat_map[key]['right'][mean_pos, pos[1], pos[2]] = pos[4]
+    def _time_jumps(self, heat_map_file_list: list, cuts_pos: list, workers: int):
+        self.cuts_pos = cuts_pos
 
-            for key in _heat_map:
-                jumps_heat_map_list[key]['left'].append(_heat_map[key]['left'])
-                jumps_heat_map_list[key]['right'].append(_heat_map[key]['right'])
+        print("\nCalculating jumps in time")
+        jumps_heat_map_list = {key: {0: [], 1: []} for key in self.cuts_pos}
+        with Pool(workers) as p:
+            for data_out in tqdm(p.imap(self.worker, heat_map_file_list,
+                                        chunksize=1),
+                                 total=len(heat_map_file_list)):
+                for directions in range(2):
+                    for key in self.cuts_pos:
+                        jumps_heat_map_list[key][directions].append(data_out[key][directions])
 
-        delta_heat_map = {key: {'left': [], 'right': []} for key in cuts_pos}
-        for key in cuts_pos:
-            delta_heat_map[key]['left'] = [jumps_heat_map_list[key]['left'][i+1]-jumps_heat_map_list[key]['left'][i]
-                                           for i in range(len(jumps_heat_map_list[key]['left'])-1)]
-            delta_heat_map[key]['right'] = [jumps_heat_map_list[key]['right'][i+1]-jumps_heat_map_list[key]['right'][i]
-                                            for i in range(len(jumps_heat_map_list[key]['right'])-1)]
+        delta_heat_map = {key: {'left': [], 'right': []} for key in self.cuts_pos}
+        for key in self.cuts_pos:
+            delta_heat_map[key]['left'] = [jumps_heat_map_list[key][0][i+1]-jumps_heat_map_list[key][0][i]
+                                           for i in range(len(jumps_heat_map_list[key][0])-1)]
+            delta_heat_map[key]['right'] = [jumps_heat_map_list[key][1][i+1]-jumps_heat_map_list[key][1][i]
+                                            for i in range(len(jumps_heat_map_list[key][1])-1)]
 
         return delta_heat_map
+
+    def worker(self, file_name):
+        data_out = {key: {0: None, 1: None} for key in self.cuts_pos}
+        heat_map = pd.read_csv(file_name, sep='\t', names=['x', 'y', 'z', 'direction', 'count'])
+        max_x = heat_map['x'].max()
+        dim = self.options['mean_size'], heat_map['y'].max() + 1, heat_map['z'].max() + 1
+        _heat_map = {'x': [], 'y': [], 'z': [], 'cuts_pos': [], 'direction': []}
+        cuts_pos_dict = {'left': 0,
+                         'center': max_x // 2 - self.options['mean_size'],
+                         'right': max_x - self.options['mean_size']}
+
+        for direction in range(2):
+            for key in self.cuts_pos:
+                for x in range(cuts_pos_dict[key], cuts_pos_dict[key] + dim[0]):
+                    for y in range(dim[1]):
+                        for z in range(dim[2]):
+                            _heat_map['x'].append(x)
+                            _heat_map['y'].append(y)
+                            _heat_map['z'].append(z)
+                            _heat_map['cuts_pos'].append(key)
+                            _heat_map['direction'].append(direction)
+
+        _heat_map = pd.DataFrame(_heat_map)
+
+        _heat_map = _heat_map.merge(heat_map, on=['x', 'y', 'z', 'direction'])
+
+        for direction in range(2):
+            for key in self.cuts_pos:
+                sample = np.zeros(dim)
+                data = _heat_map.loc[_heat_map['cuts_pos'] == key]
+                data.loc[data['direction'] == direction] \
+                    .apply(lambda _x: TimeHeatMap.create_array(_x,
+                                                               sample,
+                                                               cuts_pos_dict), axis=1)
+                data_out[key][direction] = sample
+
+        return data_out
+
+    @staticmethod
+    def create_array(x, data, cuts_pos_dict):
+        data[np.clip(x[0]-cuts_pos_dict[x[3]], 0, data.shape[0]),
+             np.clip(x[1]-cuts_pos_dict[x[3]], 0, data.shape[0]),
+             np.clip(x[2]-cuts_pos_dict[x[3]], 0, data.shape[0])] = x[5]
 
     @staticmethod
     def _timed_mean_heat_map(heat_map_list):
