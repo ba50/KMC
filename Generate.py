@@ -5,7 +5,7 @@ from pathlib import Path
 from Launcher import gen_sym
 
 
-path_to_gen = 'D:\KMC_data\data_2019_08_24'
+path_to_gen = 'D:\KMC_data\data_2019_08_30'
 path_to_gen = Path(path_to_gen)
 
 params_base = {'cell_type': 'Random',

@@ -11,7 +11,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-from src.TimeHeatMap import TimeHeatMap
+from TimeHeatMap import TimeHeatMap
 
 
 class DataProcess:
@@ -104,6 +104,7 @@ class DataProcess:
                        y=www['when'].drop(pass_index).diff(),
                        x_label='Step',
                        y_label='Time')
+        del www
 
         timed_heat_map = TimeHeatMap(load_data_path=self.data_path.parent, options=self.options)
         timed_heat_map.process_data()
@@ -139,14 +140,30 @@ if __name__ == '__main__':
     """
 
     simulations = [Path(x) for x in [
-        # 'D:/KMC_data/data_2019_08_24/25_7_7_random_0_a',
-        # 'D:/KMC_data/data_2019_08_24/25_7_7_random_1_a',
-        # 'D:/KMC_data/data_2019_08_24/25_7_7_random_2_a',
-        # 'D:/KMC_data/data_2019_08_24/25_7_7_random_3_a',
-        # 'D:/KMC_data/data_2019_08_24/25_7_7_random_4_a',
-        # 'D:/KMC_data/data_2019_08_24/25_7_7_random_5_a',
-        # 'D:/KMC_data/data_2019_08_24/25_7_7_random_6_a',
-        'D:/KMC_data/data_2019_08_24/25_7_7_random_7_a',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_0_a',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_1_a',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_2_a',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_3_a',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_4_a',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_5_a',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_6_a',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_7_a',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_0_b',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_1_b',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_2_b',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_3_b',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_4_b',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_5_b',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_6_b',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_7_b',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_0_c',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_1_c',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_2_c',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_3_c',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_4_c',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_5_c',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_6_c',
+        'D:/KMC_data/data_2019_08_30/25_7_7_random_7_c',
     ]]
 
     config = {

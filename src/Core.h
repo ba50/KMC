@@ -480,7 +480,7 @@ public:
 
 			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 0;
 
-			if (fmod(time, 10.0) <= 0.01) {
+			if (fmod(time, 100.0) <= 0.01) {
 				std::cout << time << "[ps]" << std::endl;
 				std::ofstream file_out(data_path + "/heat_map/" + std::to_string((int)time) + ".dat");
 				for (size_t z = 0; z < heat_map_array_size_[2]; z++) {
