@@ -53,13 +53,9 @@ class DataProcess:
                                              float(line[2]),
                                              float(line[3])])
 
-        bi_base_positions = np.array(bi_base_positions)
-        y_base_positions = np.array(y_base_positions)
-        o_base_positions = np.array(o_base_positions)
-
-        self.bi_base_positions = bi_base_positions
-        self.y_base_positions = y_base_positions
-        self.o_base_positions = o_base_positions
+        self.bi_base_positions = np.array(bi_base_positions)
+        self.y_base_positions = np.array(y_base_positions)
+        self.o_base_positions = np.array(o_base_positions)
 
         file_out = h5py.File((self.save_path/'o_paths.hdf5'), 'w')
         self.o_paths = file_out.create_dataset('o_path',
@@ -71,11 +67,13 @@ class DataProcess:
                                                          None),
                                                data=self.o_base_positions)
 
-    def run(self):
+    def run(self, n_points: int):
         www = pd.read_csv(self.data_path,
                           sep='\t',
                           names=['which', 'where', 'delta_energy', 'when'])
 
+        loc_index = list(range(0, www.shape[0], www.shape[0] // n_points))
+        
         print("Calculating oxygen paths")
         # Histogram
         fig = plt.figure(figsize=(8, 6))
@@ -84,29 +82,28 @@ class DataProcess:
         ax.set_ylabel('Count')
         ax.hist(www['where'], bins=11)
         plt.savefig(self.save_path / "Jumps.png", dpi=self.options['dpi'])
-
-        pass_index = [i for i in range(www.shape[0]) if not i % 5 == 0]
-
+        
+        
         self.plot_line(save_file=self.save_path / 'Field.png',
-                       x=www['when'].drop(pass_index),
-                       y=www['delta_energy'].drop(pass_index),
+                       x=www['when'].iloc[loc_index],
+                       y=www['delta_energy'].iloc[loc_index],
                        x_label='Time [ps]',
                        y_label='Field [eV]')
-
+        
         self.plot_line(save_file=self.save_path / 'Time.png',
-                       x=range(www['when'].shape[0]-len(pass_index)),
-                       y=www['when'].drop(pass_index),
+                       x=range(len(loc_index)),
+                       y=www['when'].iloc[loc_index],
                        x_label='Step',
                        y_label='Time')
-
+        
         self.plot_line(save_file=self.save_path / 'delta_Time.png',
-                       x=range(www['when'].shape[0]-len(pass_index)),
-                       y=www['when'].drop(pass_index).diff(),
+                       x=range(len(loc_index)),
+                       y=www['when'].iloc[loc_index].diff(),
                        x_label='Step',
                        y_label='Time')
         del www
 
-        timed_heat_map = TimeHeatMap(load_data_path=self.data_path.parent, options=self.options)
+        timed_heat_map = TimeHeatMap(load_data_path=self.data_path.parent, options=self.options, workers=3)
         timed_heat_map.process_data()
 
     def plot_line(self, save_file, x, y, x_label, y_label, x_size=8, y_size=6):
@@ -119,59 +116,40 @@ class DataProcess:
 
 
 if __name__ == '__main__':
-    """
-    simulations =[
-        'D:/KMC_data/data_2019_07_24/amplitude/30_7_7_random_01',
-        'D:/KMC_data/data_2019_07_24/amplitude/30_7_7_random_04',
-        'D:/KMC_data/data_2019_07_24/freq/30_7_7_random_01',
-        'D:/KMC_data/data_2019_07_24/freq/30_7_7_random_0025'
-    ]
-
-    simulations = [
-            'D:/KMC_data/data_2019_08_24/25_7_7_random_0_a',
-            'D:/KMC_data/data_2019_08_24/25_7_7_random_1_a',
-            'D:/KMC_data/data_2019_08_24/25_7_7_random_2_a',
-            'D:/KMC_data/data_2019_08_24/25_7_7_random_3_a',
-            'D:/KMC_data/data_2019_08_24/25_7_7_random_4_a',
-            'D:/KMC_data/data_2019_08_24/25_7_7_random_5_a',
-            'D:/KMC_data/data_2019_08_24/25_7_7_random_6_a',
-            'D:/KMC_data/data_2019_08_24/25_7_7_random_7_a',
-            ]
-    """
-
     simulations = [Path(x) for x in [
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_0_a',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_1_a',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_2_a',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_3_a',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_4_a',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_5_a',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_6_a',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_7_a',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_0_b',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_1_b',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_2_b',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_3_b',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_4_b',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_5_b',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_6_b',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_7_b',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_0_c',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_1_c',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_2_c',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_3_c',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_4_c',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_5_c',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_6_c',
-        'D:/KMC_data/data_2019_08_30/25_7_7_random_7_c',
-    ]]
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_0_a',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_1_a',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_2_a',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_3_a',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_4_a',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_5_a',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_6_a',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_7_a',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_0_b',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_1_b',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_2_b',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_3_b',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_4_b',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_5_b',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_6_b',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_7_b',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_0_c',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_1_c',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_2_c',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_3_c',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_4_c',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_5_c',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_6_c',
+        'D:/KMC_data/data_2019_09_05/30_7_7_random_7_c',
+        ]]
 
     config = {
         'dpi': 100,
         'MSD': False,
         'Len': False,
-        '3D': False
+        '3D': False,
+        'time_step': 100
     }
 
     for idx in simulations:
-        DataProcess(idx, config).run()
+        DataProcess(idx, config).run(100)

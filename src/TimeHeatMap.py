@@ -13,7 +13,7 @@ class TimeHeatMap:
     cuts_pos = None
     options = {'mean': False, "jumps": True, "save_raw": True, 'mean_size': 6}
 
-    def __init__(self, load_data_path: Path, save_data_path: Path = None, options=None):
+    def __init__(self, load_data_path: Path, save_data_path: Path = None, options=None, workers: int = 3):
         """
         Load data from HeatMap.
         :param load_data_path:
@@ -24,6 +24,7 @@ class TimeHeatMap:
 
         self.load_data_path = load_data_path / 'heat_map'
         self.save_data_path = save_data_path
+        self.workers = workers
 
         if not self.save_data_path:
             self.save_data_path = self.load_data_path.parent / 'heat_map_plots'
@@ -36,7 +37,7 @@ class TimeHeatMap:
     def process_data(self):
         print('Loading heat map files...')
         if self.options['jumps']:
-            jumps_heat_map_list = self._time_jumps(self.file_list, ['left', 'center', 'right'], 3)
+            jumps_heat_map_list = self._time_jumps(self.file_list, ['left', 'center', 'right'], self.workers)
 
             jumps_ll_heat_map_list = jumps_heat_map_list['left']['left']
             jumps_lr_heat_map_list = jumps_heat_map_list['left']['right']
@@ -45,12 +46,12 @@ class TimeHeatMap:
             jumps_rl_heat_map_list = jumps_heat_map_list['right']['left']
             jumps_rr_heat_map_list = jumps_heat_map_list['right']['right']
 
-            mean_ll_jumps = [(idx*10.0, i.mean()) for idx, i in enumerate(jumps_ll_heat_map_list)]
-            mean_lr_jumps = [(idx*10.0, i.mean()) for idx, i in enumerate(jumps_lr_heat_map_list)]
-            mean_cl_jumps = [(idx*10.0, i.mean()) for idx, i in enumerate(jumps_cl_heat_map_list)]
-            mean_cr_jumps = [(idx*10.0, i.mean()) for idx, i in enumerate(jumps_cr_heat_map_list)]
-            mean_rl_jumps = [(idx*10.0, i.mean()) for idx, i in enumerate(jumps_rl_heat_map_list)]
-            mean_rr_jumps = [(idx*10.0, i.mean()) for idx, i in enumerate(jumps_rr_heat_map_list)]
+            mean_ll_jumps = [(idx*self.options['time_step'], i.mean()) for idx, i in enumerate(jumps_ll_heat_map_list)]
+            mean_lr_jumps = [(idx*self.options['time_step'], i.mean()) for idx, i in enumerate(jumps_lr_heat_map_list)]
+            mean_cl_jumps = [(idx*self.options['time_step'], i.mean()) for idx, i in enumerate(jumps_cl_heat_map_list)]
+            mean_cr_jumps = [(idx*self.options['time_step'], i.mean()) for idx, i in enumerate(jumps_cr_heat_map_list)]
+            mean_rl_jumps = [(idx*self.options['time_step'], i.mean()) for idx, i in enumerate(jumps_rl_heat_map_list)]
+            mean_rr_jumps = [(idx*self.options['time_step'], i.mean()) for idx, i in enumerate(jumps_rr_heat_map_list)]
 
             mean_ll_jumps = np.array(mean_ll_jumps)
             mean_lr_jumps = np.array(mean_lr_jumps)
@@ -127,19 +128,17 @@ class TimeHeatMap:
             for key in self.cuts_pos:
                 sample = np.zeros(dim)
                 data = _heat_map.loc[_heat_map['cuts_pos'] == key]
-                data.loc[data['direction'] == direction] \
-                    .apply(lambda _x: TimeHeatMap.create_array(_x,
-                                                               sample,
-                                                               cuts_pos_dict), axis=1)
+                data = data.loc[data['direction'] == direction]
+                data.apply(lambda _x: self.create_array(_x,
+                                                        sample,
+                                                        cuts_pos_dict), axis=1)
                 data_out[key][direction] = sample
 
         return data_out
 
     @staticmethod
     def create_array(x, data, cuts_pos_dict):
-        data[np.clip(x[0]-cuts_pos_dict[x[3]], 0, data.shape[0]),
-             np.clip(x[1]-cuts_pos_dict[x[3]], 0, data.shape[0]),
-             np.clip(x[2]-cuts_pos_dict[x[3]], 0, data.shape[0])] = x[5]
+        data[np.clip(x[0]-cuts_pos_dict[x[3]], 0, data.shape[0]), x[1], x[2]] = x[5]
 
     @staticmethod
     def _timed_mean_heat_map(heat_map_list):
@@ -165,9 +164,3 @@ class TimeHeatMap:
         _ax.plot(x, y)
         plt.savefig(str(save_file), dpi=dpi)
         plt.close(_fig)
-
-
-if __name__ == '__main__':
-    data_path = Path('D:/KMC_data/tests/15_7_7_random')
-    hm = TimeHeatMap(data_path)
-    hm.process_data()

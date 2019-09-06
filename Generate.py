@@ -5,11 +5,11 @@ from pathlib import Path
 from Launcher import gen_sym
 
 
-path_to_gen = 'D:\KMC_data\data_2019_08_30'
+path_to_gen = 'D:\KMC_data\data_2019_09_06'
 path_to_gen = Path(path_to_gen)
 
 params_base = {'cell_type': 'Random',
-        'size': [25, 7, 7],
+        'size': [30, 7, 7],
         'time_end': 0,
         'thermalization_time': 200,
         'contact_switch': (0, 0),
@@ -36,7 +36,7 @@ for index, freq in enumerate(freq_list):
         sym_path_list.append(temp_dict['path_to_data'])
         power = int(np.log10(freq))
 
-        temp_dict['energy_params'] = (0.02, freq/10**power, power, 2, 0)
+        temp_dict['energy_params'] = (0.008, freq/10**power, power, 2, 0)
         gen_sym(temp_dict)
 
 
