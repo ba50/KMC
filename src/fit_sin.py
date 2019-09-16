@@ -4,6 +4,7 @@ from multiprocessing import Pool
 
 import h5py
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 from scipy import optimize
 import matplotlib.pyplot as plt
@@ -33,8 +34,7 @@ class Function:
 
 def get_config(path: Path):
     str_index = [0]
-    int_index = [*range(2, 10)]
-    float_index = [*range(10, 13)]
+    float_index = [*range(1, 15)]
     with path.open() as _config:
         lines = _config.readlines()
     _config = {}
@@ -43,10 +43,7 @@ def get_config(path: Path):
             _data = line.split('#')
             _key = _data[1].strip()
             _config[_key] = _data[0].strip()
-        if index in int_index:
-            _data = line.split('#')
-            _key = _data[1].strip()
-            _config[_key] = int(_data[0].strip())
+
         if index in float_index:
             _data = line.split('#')
             _key = _data[1].strip()
@@ -61,12 +58,32 @@ def generate_phi(sym: Path):
     config = get_config(sym / 'input.kmc')
     data_out = {}
     for key in hf.keys():
+        print(key)
+        mean_signal = []
         data = hf[key]
-        data_x = np.linspace(data[:].min(), data[:].max(), 100)
+
+        test_period = int(len(data)/config['Period of sine function'])
+
+        for i in range(test_period):
+            point = []
+            for step in range(len(data)):
+                if step % test_period == i:
+                    point.append(data[step, 1])
+            mean_signal.append(point)
+        mean_signal = pd.DataFrame(mean_signal, columns=['y_'+str(i)
+                                                         for i in range(int(config['Period of sine function']))])
+        mean_signal['x'] = data[:test_period, 0]
+
+        mean_signal['y_mean'] = mean_signal[['y_'+str(i)
+                                             for i in range(int(config['Period of sine function']))]].apply(
+            lambda x: x.mean(), axis=1
+        )
+
+        data_x = np.linspace(mean_signal['x'].min(), mean_signal['x'].max(), 1000)
         try:
             params, params_covariance = optimize.curve_fit(Function.sin_add_line,
-                                                           data[:, 0],
-                                                           data[:, 1],
+                                                           mean_signal['x'],
+                                                           mean_signal['y_mean'],
                                                            p0=[config['Amplitude of sine function'],
                                                                config['Frequency base of sine function'] *
                                                                10 ** config['Frequency power of sine function'],
@@ -81,15 +98,15 @@ def generate_phi(sym: Path):
                     Function.line(x_0, params[3], params[4]))
             data_y = np.array(data_y)
 
-            X_data_y = data[:, 1] - Function.line(data[:, 0], params[3], params[4])
-            Y_data_y = Function.sin(data[:, 0], params[0], params[1], params[2])
+            X_data_y = mean_signal['y_mean'] - Function.line(mean_signal['x'], params[3], params[4])
+            Y_data_y = Function.sin(mean_signal['x'], params[0], params[1], params[2])
 
             mse = Function.mse(X_data_y, Y_data_y)
             mape = Function.mape(X_data_y, Y_data_y)
 
             _fig = plt.figure(figsize=(8, 6))
             _ax = _fig.add_subplot(111)
-            _ax.plot(data[:, 0], X_data_y, label='Data', linestyle='--')
+            _ax.plot(mean_signal['x'], X_data_y, label='Data', linestyle='--')
             _ax.plot(data_x, data_y, label='Fitted function')
             _ax.plot(data_x, Function.sin(data_x,
                                           config['Amplitude of sine function'],
@@ -122,7 +139,7 @@ def generate_phi(sym: Path):
 
 def run(workers: int = 1):
     phi_dict = {}
-    base_path = Path('D:/KMC_data/data_2019_09_05')
+    base_path = Path('D:/KMC_data/data_2019_09_08')
     sim_key = '30_7_7_random_'
     for y in tqdm(range(7, -1, -1)):
         phi_dict[y] = []

@@ -68,9 +68,15 @@ class DataProcess:
                                                data=self.o_base_positions)
 
     def run(self, n_points: int):
-        www = pd.read_csv(self.data_path,
-                          sep='\t',
-                          names=['which', 'where', 'delta_energy', 'when'])
+        """
+
+        :param n_points: Number of point to plot (Field, Time)
+        """
+        www = pd.read_csv(
+            self.data_path,
+            sep='\t',
+            names=['which', 'where', 'delta_energy', 'when']
+        )
 
         loc_index = list(range(0, www.shape[0], www.shape[0] // n_points))
         
@@ -82,7 +88,6 @@ class DataProcess:
         ax.set_ylabel('Count')
         ax.hist(www['where'], bins=11)
         plt.savefig(self.save_path / "Jumps.png", dpi=self.options['dpi'])
-        
         
         self.plot_line(save_file=self.save_path / 'Field.png',
                        x=www['when'].iloc[loc_index],
@@ -102,7 +107,6 @@ class DataProcess:
                        x_label='Step',
                        y_label='Time')
         del www
-
         timed_heat_map = TimeHeatMap(load_data_path=self.data_path.parent, options=self.options, workers=3)
         timed_heat_map.process_data()
 
@@ -113,6 +117,30 @@ class DataProcess:
         _ax.set_ylabel(y_label)
         _ax.plot(x, y)
         plt.savefig(save_file, dpi=self.options['dpi'], bbox_inches='tight')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':

@@ -37,37 +37,23 @@ class TimeHeatMap:
     def process_data(self):
         print('Loading heat map files...')
         if self.options['jumps']:
-            jumps_heat_map_list = self._time_jumps(self.file_list, ['left', 'center', 'right'], self.workers)
+            positions = ['left', 'center', 'right']
+            directions = ['left', 'right']
+            jumps_heat_map_list = self._time_jumps(self.file_list, positions, self.workers)
 
-            jumps_ll_heat_map_list = jumps_heat_map_list['left']['left']
-            jumps_lr_heat_map_list = jumps_heat_map_list['left']['right']
-            jumps_cl_heat_map_list = jumps_heat_map_list['center']['left']
-            jumps_cr_heat_map_list = jumps_heat_map_list['center']['right']
-            jumps_rl_heat_map_list = jumps_heat_map_list['right']['left']
-            jumps_rr_heat_map_list = jumps_heat_map_list['right']['right']
-
-            mean_ll_jumps = [(idx*self.options['time_step'], i.mean()) for idx, i in enumerate(jumps_ll_heat_map_list)]
-            mean_lr_jumps = [(idx*self.options['time_step'], i.mean()) for idx, i in enumerate(jumps_lr_heat_map_list)]
-            mean_cl_jumps = [(idx*self.options['time_step'], i.mean()) for idx, i in enumerate(jumps_cl_heat_map_list)]
-            mean_cr_jumps = [(idx*self.options['time_step'], i.mean()) for idx, i in enumerate(jumps_cr_heat_map_list)]
-            mean_rl_jumps = [(idx*self.options['time_step'], i.mean()) for idx, i in enumerate(jumps_rl_heat_map_list)]
-            mean_rr_jumps = [(idx*self.options['time_step'], i.mean()) for idx, i in enumerate(jumps_rr_heat_map_list)]
-
-            mean_ll_jumps = np.array(mean_ll_jumps)
-            mean_lr_jumps = np.array(mean_lr_jumps)
-            mean_cl_jumps = np.array(mean_cl_jumps)
-            mean_cr_jumps = np.array(mean_cr_jumps)
-            mean_rl_jumps = np.array(mean_rl_jumps)
-            mean_rr_jumps = np.array(mean_rr_jumps)
+            mean_jumps = {}
+            for pos in positions:
+                mean_jumps[pos] = {direc: np.array([(idx*self.options['time_step'], i.mean())
+                                                    for idx, i in enumerate(jumps_heat_map_list[pos][direc])])
+                                   for direc in directions}
 
             file_name_h5py = h5py.File(str(self.save_data_path / 'timed_jumps_raw_data.h5'), 'w')
 
-            file_name_h5py.create_dataset('timed_jumps_left_contact_left_jump', data=mean_ll_jumps)
-            file_name_h5py.create_dataset('timed_jumps_left_contact_right_jump', data=mean_lr_jumps)
-            file_name_h5py.create_dataset('timed_jumps_center_contact_left_jump', data=mean_cl_jumps)
-            file_name_h5py.create_dataset('timed_jumps_center_contact_right_jump', data=mean_cr_jumps)
-            file_name_h5py.create_dataset('timed_jumps_right_contact_left_jump', data=mean_rl_jumps)
-            file_name_h5py.create_dataset('timed_jumps_right_contact_right_jump', data=mean_rr_jumps)
+            for pos in positions:
+                for direc in directions:
+                    file_name_h5py.create_dataset(
+                        'timed_jumps_'+pos+'_contact_'+direc+'_jump', data=mean_jumps[pos][direc]
+                    )
 
             for key in file_name_h5py.keys():
                 self.plot_line(save_file=Path(self.save_data_path, key+'.png'),
@@ -83,9 +69,7 @@ class TimeHeatMap:
         print("\nCalculating jumps in time")
         jumps_heat_map_list = {key: {0: [], 1: []} for key in self.cuts_pos}
         with Pool(workers) as p:
-            for data_out in tqdm(p.imap(self.worker, heat_map_file_list,
-                                        chunksize=1),
-                                 total=len(heat_map_file_list)):
+            for data_out in tqdm(p.imap(self.worker, heat_map_file_list, chunksize=1), total=len(heat_map_file_list)):
                 for directions in range(2):
                     for key in self.cuts_pos:
                         jumps_heat_map_list[key][directions].append(data_out[key][directions])
@@ -152,8 +136,7 @@ class TimeHeatMap:
             _x_heat_map = _heat_map.sum(axis=(1, 2))
             x_heat_map_list.append(np.rot90(_x_heat_map.reshape((len(_x_heat_map), 1))))
 
-        return [x_heat_map_list[i+1]-x_heat_map_list[i]
-                for i in range(len(x_heat_map_list)-1)]
+        return [x_heat_map_list[i+1]-x_heat_map_list[i] for i in range(len(x_heat_map_list)-1)]
 
     @staticmethod
     def plot_line(save_file: Path, x, y,  x_label, y_label, x_size=8, y_size=6, dpi=100):

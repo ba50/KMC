@@ -9,11 +9,11 @@ path_to_gen = 'D:\KMC_data\data_2019_09_08'
 path_to_gen = Path(path_to_gen)
 
 params_base = {'cell_type': 'Random',
-        'size': [30, 7, 7],
-        'time_end': 0,
-        'thermalization_time': 200,
-        'contact_switch': (0, 0),
-        'contact': (1, 1)}
+               'size': [30, 7, 7],
+               'time_end': 0,
+               'thermalization_time': 200,
+               'contact_switch': (0, 0),
+               'contact': (1, 1)}
 
 freq_list = np.arange(16*10**-6, 4*10**-4, 5*10**-5)
 repeat_list = ['a', 'b', 'c'] 
@@ -47,7 +47,7 @@ for s in repeat_list:
 
 
 for key in file_list:
-    file_list[key] =  ["../build/KMC.exe %s" % s for s in file_list[key]]
+    file_list[key] = ["../build/KMC.exe %s" % s for s in file_list[key]]
 
 for key in file_list:
     file_list[key] = "\n".join(file_list[key])
