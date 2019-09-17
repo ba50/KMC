@@ -53,26 +53,20 @@ def get_config(path: Path):
 
 
 def generate_phi(sym: Path):
-    # print("Start to calculate %s\n" % sym.name)
     hf = h5py.File(str(sym / 'heat_map_plots' / 'timed_jumps_raw_data.h5'))
     config = get_config(sym / 'input.kmc')
     data_out = {}
     for key in hf.keys():
-        print(key)
-        mean_signal = []
         data = hf[key]
 
-        test_period = int(len(data)/config['Period of sine function'])
+        period_steps = int(len(data)/config['Period of sine function'])
+        mean_signal = {}
+        for period in range(int(config['Period of sine function'])):
+            mean_signal['y_'+str(period)] = data[period_steps*period:period_steps*period+period_steps, 1]
 
-        for i in range(test_period):
-            point = []
-            for step in range(len(data)):
-                if step % test_period == i:
-                    point.append(data[step, 1])
-            mean_signal.append(point)
-        mean_signal = pd.DataFrame(mean_signal, columns=['y_'+str(i)
-                                                         for i in range(int(config['Period of sine function']))])
-        mean_signal['x'] = data[:test_period, 0]
+        mean_signal = pd.DataFrame(mean_signal)
+
+        mean_signal['x'] = data[:period_steps, 0]
 
         mean_signal['y_mean'] = mean_signal[['y_'+str(i)
                                              for i in range(int(config['Period of sine function']))]].apply(
@@ -150,13 +144,6 @@ def run(workers: int = 1):
         for save_path, save_data in data_out:
             with (save_path / 'heat_map_plots' / 'data_out.log').open('w') as f_out:
                 json.dump(save_data, f_out)
-
-    exit()
-
-    with (base_path[0] / 'mean_data_out.log').open('w') as f_out:
-        for y in range(0, 8):
-            phi_dict[y] = np.array(phi_dict[y]['phi_mean_red']).mean()
-            json.dump(phi_dict[y], f_out)
 
 
 if __name__ == '__main__':
