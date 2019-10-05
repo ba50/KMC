@@ -385,11 +385,11 @@ public:
 			std::cout<< "File which_where_when.txt successfully deleted"<<std::endl;
 
 		FILE* which_wherer_when;
-		fopen_s(&which_wherer_when, std::string(data_path + "/which_where_when.txt").c_str(), "a");
-		//which_wherer_when = fopen(std::string(data_path + "/which_where_when.txt").c_str(), "a");
+		//fopen_s(&which_wherer_when, std::string(data_path + "/which_where_when.txt").c_str(), "a");
+		which_wherer_when = fopen(std::string(data_path + "/which_where_when.txt").c_str(), "a");
 
 		if (time_end == 0) {
-			time_end = period / frequency;
+			time_end = period / frequency + pow(10.0, 12);
 			std::cout << "Now end time: " << time_end << "[ps]" << std::endl;
 		}
 
@@ -480,7 +480,7 @@ public:
 
 			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 0;
 
-			if (fmod(time, 100.0) <= 0.01) {
+			if (fmod(time, 10000.0) <= 0.01) {
 				std::cout << time << "[ps]" << std::endl;
 				std::ofstream file_out(data_path + "/heat_map/" + std::to_string((int)time) + ".dat");
 				for (size_t z = 0; z < heat_map_array_size_[2]; z++) {
@@ -512,7 +512,7 @@ public:
 			
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
-			fprintf(which_wherer_when, "%zd\t%zd\t%Lf\t%Lf\n", selected_atom, seleced_direction, delta_energy, time);
+			//fprintf(which_wherer_when, "%zd\t%zd\t%Lf\t%Lf\n", selected_atom, seleced_direction, delta_energy, time);
 		}
 		fclose(which_wherer_when);
 	}

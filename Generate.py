@@ -1,12 +1,46 @@
 import numpy as np
 from copy import copy
-from pathlib import Path 
+from pathlib import Path
 
-from Launcher import gen_sym
+import pandas as pd
+
+from src.GenerateXYZ import GenerateXYZ
 
 
-path_to_gen = 'D:\KMC_data\data_2019_09_08'
-path_to_gen = Path(path_to_gen)
+def gen_sym(params_dict):
+    if not (params_dict['path_to_data'] / 'heat_map').exists():
+        (params_dict['path_to_data'] / 'heat_map').mkdir(parents=True, exist_ok=True)
+
+    with (params_dict['path_to_data'] / 'input.kmc').open('w') as file_out:
+        file_out.write("{}\t# Cell type\n".format(params_dict['cell_type'].lower()))
+        file_out.write("{}\t# X number of cells\n".format(params_dict['size'][0]))
+        file_out.write("{}\t# Y number of cells\n".format(params_dict['size'][1]))
+        file_out.write("{}\t# Z number of cells\n".format(params_dict['size'][2]))
+        file_out.write("{}\t# Thermalization time\n".format(params_dict['thermalization_time']))
+        file_out.write("{}\t# Time to end simulation\n".format(params_dict['time_end']))
+        file_out.write("{}\t# Left contact switch\n".format(params_dict['contact_switch'][0]))
+        file_out.write("{}\t# Right contact switch\n".format(params_dict['contact_switch'][1]))
+        file_out.write("{}\t# Left contact\n".format(params_dict['contact'][0]))
+        file_out.write("{}\t# Right contact\n".format(params_dict['contact'][1]))
+        file_out.write("{}\t# Amplitude of sine function\n".format(params_dict['energy_params'][0]))
+        file_out.write("{}\t# Frequency base of sine function\n".format(params_dict['energy_params'][1]))
+        file_out.write("{}\t# Frequency power of sine function\n".format(params_dict['energy_params'][2]))
+        file_out.write("{}\t# Period of sine function\n".format(params_dict['energy_params'][3]))
+        file_out.write("{}\t# Delta energy base\n".format(params_dict['energy_params'][4]))
+
+    if params_dict['cell_type'] == 'Random':
+        GenerateXYZ(params_dict['size'], params_dict['path_to_data']).generate_random()
+    if params_dict['cell_type'] == 'Sphere':
+        GenerateXYZ(params_dict['size'], params_dict['path_to_data']).generate_sphere(5)
+    if params_dict['cell_type'] == 'Plane':
+        GenerateXYZ(params_dict['size'], params_dict['path_to_data']).generate_plane(1)
+
+
+version = '12'
+workers = 16
+bin_path = Path('/home/b.jasik/Documents/source/KMC/build/KMC')
+save_path = Path('/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_26')
+save_path.mkdir(parents=True, exist_ok=True)
 
 params_base = {'cell_type': 'Random',
                'size': [30, 7, 7],
@@ -15,11 +49,8 @@ params_base = {'cell_type': 'Random',
                'contact_switch': (0, 0),
                'contact': (1, 1)}
 
-freq_list = np.arange(16*10**-6, 4*10**-4, 5*10**-5)
+freq_list = np.logspace(3, 6, num=16)
 repeat_list = ['a', 'b', 'c'] 
-
-file_list = {path_to_gen/('run_v5_%s.ps1' % s): [] for s in repeat_list}
-[file.parent.mkdir(parents=True, exist_ok=True) for file in file_list.keys()]
 
 params = {}
 sym_path_list = []
@@ -32,7 +63,7 @@ for index, freq in enumerate(freq_list):
                              params_base['cell_type'].lower(),
                              str(index),
                              s])
-        temp_dict['path_to_data'] = path_to_gen / sym_name
+        temp_dict['path_to_data'] = save_path / sym_name
         sym_path_list.append(temp_dict['path_to_data'])
         power = int(np.log10(freq))
 
@@ -40,19 +71,14 @@ for index, freq in enumerate(freq_list):
         gen_sym(temp_dict)
 
 
+run_df = {'commend': []}
 for s in repeat_list: 
     for sym_path in sym_path_list:
         if sym_path.stem[-1] == s:
-            file_list[path_to_gen/('run_v5_%s.ps1' % s)].append(str(sym_path))
+            run_df['commend'].append(str(bin_path)+' '+str(sym_path))
 
-
-for key in file_list:
-    file_list[key] = ["../build/KMC.exe %s" % s for s in file_list[key]]
-
-for key in file_list:
-    file_list[key] = "\n".join(file_list[key])
-
-
-for key in file_list:
-    key.write_text(file_list[key])
-
+run_df = pd.DataFrame(run_df)
+run_df['commend'] = run_df['commend'].map(lambda x: x+'\n')
+for index, split in enumerate(np.split(run_df, workers)):
+    with Path(save_path, 'run_v%s_%s.run' % (version, index)).open('w') as f_out:
+        f_out.writelines(split['commend'])

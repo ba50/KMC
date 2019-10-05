@@ -75,7 +75,8 @@ class DataProcess:
         www = pd.read_csv(
             self.data_path,
             sep='\t',
-            names=['which', 'where', 'delta_energy', 'when']
+            names=['which', 'where', 'delta_energy', 'when'],
+            nrows=10**6
         )
 
         loc_index = list(range(0, www.shape[0], www.shape[0] // n_points))
@@ -107,7 +108,7 @@ class DataProcess:
                        x_label='Step',
                        y_label='Time')
         del www
-        timed_heat_map = TimeHeatMap(load_data_path=self.data_path.parent, options=self.options, workers=3)
+        timed_heat_map = TimeHeatMap(load_data_path=self.data_path.parent, options=self.options, workers=32)
         timed_heat_map.process_data()
 
     def plot_line(self, save_file, x, y, x_label, y_label, x_size=8, y_size=6):
@@ -119,57 +120,25 @@ class DataProcess:
         plt.savefig(save_file, dpi=self.options['dpi'], bbox_inches='tight')
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 if __name__ == '__main__':
     simulations = [Path(x) for x in [
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_0_a',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_1_a',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_2_a',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_3_a',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_4_a',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_5_a',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_6_a',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_7_a',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_0_b',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_1_b',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_2_b',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_3_b',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_4_b',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_5_b',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_6_b',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_7_b',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_0_c',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_1_c',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_2_c',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_3_c',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_4_c',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_5_c',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_6_c',
-        'D:/KMC_data/data_2019_09_08/30_7_7_random_7_c',
-        ]]
+        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_0_a',
+        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_1_a',
+        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_2_a',
+        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_3_a',
+        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_4_a',
+        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_5_a',
+        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_6_a',
+        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_7_a',
+        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_8_a',
+        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_9_a',
+        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_10_a',
+        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_11_a',
+        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_12_a',
+        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_13_a',
+        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_14_a',
+        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_15_a'
+    ]]
 
     config = {
         'dpi': 100,
