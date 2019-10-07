@@ -384,18 +384,19 @@ public:
 		else
 			std::cout<< "File which_where_when.txt successfully deleted"<<std::endl;
 
-		FILE* which_wherer_when;
+		FILE *which_wherer_when, *field_plot;
 		//fopen_s(&which_wherer_when, std::string(data_path + "/which_where_when.txt").c_str(), "a");
 		which_wherer_when = fopen(std::string(data_path + "/which_where_when.txt").c_str(), "a");
+		field_plot = fopen(std::string(data_path + "/field_plot.txt").c_str(), "a");
 
 		if (time_end == 0) {
-			time_end = period / frequency + pow(10.0, 12);
+			time_end = period / frequency * pow(10.0, 12);
 			std::cout << "Now end time: " << time_end << "[ps]" << std::endl;
 		}
 
 		while(time < time_end){
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
-			delta_energy = A * sin(2 * PI * frequency * time) + delta_energy_base;
+			delta_energy = A * sin(2 * PI * frequency * pow(10.0, -12) * time) + delta_energy_base;
 
 			for (id = 0; id < jump_rate_vector_.size(); id++) {
 				jump_rate_vector_[id][0] = jump_rate(id, 0, 0, 1, oxygen_array_, oxygen_positions_, residence_time_array_) * exp(delta_energy / kT);
@@ -411,7 +412,6 @@ public:
 					jumpe_rate_sume_vector_[id + 1] += jump_rate_vector_[id][i];
 				}
 			}
-			/*
 			random_for_atom = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0) * jumpe_rate_sume_vector_.back();
 			selected_atom_temp = std::lower_bound(jumpe_rate_sume_vector_.begin(), jumpe_rate_sume_vector_.end(), random_for_atom);
 			selected_atom = selected_atom_temp - jumpe_rate_sume_vector_.begin() - 1;
@@ -423,8 +423,8 @@ public:
 			random_for_direction = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0) * jumpe_direction_sume_vector_.back();
 			selected_direction_temp = std::lower_bound(jumpe_direction_sume_vector_.begin(), jumpe_direction_sume_vector_.end(), random_for_direction);
 			seleced_direction = selected_direction_temp - jumpe_direction_sume_vector_.begin() - 1;
-			*/
 
+			/*
 			do {
 				random_for_atom = ((double)rand() / RAND_MAX) * jumpe_rate_sume_vector_.back(); // losowanie atomu
 			} while (random_for_atom == 0);
@@ -454,6 +454,7 @@ public:
 				}
 
 			}
+			*/
 
 			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 1;
 
@@ -480,7 +481,7 @@ public:
 
 			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 0;
 
-			if (fmod(time, 10000.0) <= 0.01) {
+			if (fmod(time, 10.0) <= 0.01) {
 				std::cout << time << "[ps]" << std::endl;
 				std::ofstream file_out(data_path + "/heat_map/" + std::to_string((int)time) + ".dat");
 				for (size_t z = 0; z < heat_map_array_size_[2]; z++) {
@@ -503,6 +504,7 @@ public:
 				}
 				file_out.close();
 				
+				fprintf(field_plot, "%Lf\t%Lf\n", delta_energy, time);
 			}
 
 			heat_map_array_[oxygen_positions_[selected_atom][2] - 1]
@@ -512,9 +514,10 @@ public:
 			
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
-			//fprintf(which_wherer_when, "%zd\t%zd\t%Lf\t%Lf\n", selected_atom, seleced_direction, delta_energy, time);
+			//fprintf(which_wherer_when, "%zd\t%zd\t%Lf\n", selected_atom, seleced_direction, time);
 		}
 		fclose(which_wherer_when);
+		fclose(field_plot);
 	}
 
 	inline void BourderyConditions(double*** &array, const std::vector<size_t> &array_size) {

@@ -23,13 +23,14 @@ class DataProcess:
                      [0, 0, 1],
                      [0, 0, -1]])
 
-    def __init__(self, sim: Path, options: dict = None):
+    def __init__(self, simulation_path: Path, workers: int = 1, options: dict = None):
+        self.workers = workers
         if options:
             self.options = options
 
-        self.data_path = sim / 'which_where_when.txt'
-        self.pos_path = sim / 'positions.xyz'
-        self.save_path = sim / 'paths'
+        self.data_path = simulation_path / 'which_where_when.txt'
+        self.pos_path = simulation_path / 'positions.xyz'
+        self.save_path = simulation_path / 'paths'
 
         print('Save in:', self.save_path)
         self.save_path.mkdir(parents=True, exist_ok=True)
@@ -79,36 +80,37 @@ class DataProcess:
             nrows=10**6
         )
 
-        loc_index = list(range(0, www.shape[0], www.shape[0] // n_points))
-        
-        print("Calculating oxygen paths")
-        # Histogram
-        fig = plt.figure(figsize=(8, 6))
-        ax = fig.add_subplot(111)
-        ax.set_xlabel('Direction')
-        ax.set_ylabel('Count')
-        ax.hist(www['where'], bins=11)
-        plt.savefig(self.save_path / "Jumps.png", dpi=self.options['dpi'])
-        
-        self.plot_line(save_file=self.save_path / 'Field.png',
-                       x=www['when'].iloc[loc_index],
-                       y=www['delta_energy'].iloc[loc_index],
-                       x_label='Time [ps]',
-                       y_label='Field [eV]')
-        
-        self.plot_line(save_file=self.save_path / 'Time.png',
-                       x=range(len(loc_index)),
-                       y=www['when'].iloc[loc_index],
-                       x_label='Step',
-                       y_label='Time')
-        
-        self.plot_line(save_file=self.save_path / 'delta_Time.png',
-                       x=range(len(loc_index)),
-                       y=www['when'].iloc[loc_index].diff(),
-                       x_label='Step',
-                       y_label='Time')
-        del www
-        timed_heat_map = TimeHeatMap(load_data_path=self.data_path.parent, options=self.options, workers=32)
+        if not www.empty:
+            loc_index = list(range(0, www.shape[0], www.shape[0] // n_points))
+
+            print("Calculating oxygen paths")
+            # Histogram
+            fig = plt.figure(figsize=(8, 6))
+            ax = fig.add_subplot(111)
+            ax.set_xlabel('Direction')
+            ax.set_ylabel('Count')
+            ax.hist(www['where'], bins=11)
+            plt.savefig(self.save_path / "Jumps.png", dpi=self.options['dpi'])
+
+            self.plot_line(save_file=self.save_path / 'Field.png',
+                           x=www['when'].iloc[loc_index],
+                           y=www['delta_energy'].iloc[loc_index],
+                           x_label='Time [ps]',
+                           y_label='Field [eV]')
+
+            self.plot_line(save_file=self.save_path / 'Time.png',
+                           x=range(len(loc_index)),
+                           y=www['when'].iloc[loc_index],
+                           x_label='Step',
+                           y_label='Time')
+
+            self.plot_line(save_file=self.save_path / 'delta_Time.png',
+                           x=range(len(loc_index)),
+                           y=www['when'].iloc[loc_index].diff(),
+                           x_label='Step',
+                           y_label='Time')
+            del www
+        timed_heat_map = TimeHeatMap(load_data_path=self.data_path.parent, options=self.options, workers=self.workers)
         timed_heat_map.process_data()
 
     def plot_line(self, save_file, x, y, x_label, y_label, x_size=8, y_size=6):
@@ -121,26 +123,23 @@ class DataProcess:
 
 
 if __name__ == '__main__':
-    simulations = [Path(x) for x in [
-        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_0_a',
-        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_1_a',
-        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_2_a',
-        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_3_a',
-        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_4_a',
-        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_5_a',
-        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_6_a',
-        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_7_a',
-        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_8_a',
-        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_9_a',
-        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_10_a',
-        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_11_a',
-        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_12_a',
-        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_13_a',
-        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_14_a',
-        '/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_09_20/30_7_7_random_15_a'
-    ]]
 
-    config = {
+    version = '12'
+    _workers = 4
+    save_path = Path('D:\KMC_data\data_2019_10_05')
+
+    time_step = 10000
+    params_base = {'cell_type': 'Random',
+                   'size': [30, 7, 7],
+                   'time_end': 0,
+                   'thermalization_time': 200,
+                   'contact_switch': (0, 0),
+                   'contact': (1, 1)}
+
+    freq_list = np.logspace(3, 6, num=16)
+    repeat_list = ['a', 'b', 'c']
+
+    plot_options = {
         'dpi': 100,
         'MSD': False,
         'Len': False,
@@ -148,5 +147,17 @@ if __name__ == '__main__':
         'time_step': 100
     }
 
-    for idx in simulations:
-        DataProcess(idx, config).run(100)
+    sim_path_list = []
+    for index, freq in enumerate(freq_list):
+        for s in repeat_list:
+            sym_name = '_'.join([str(params_base['size'][0]),
+                                 str(params_base['size'][1]),
+                                 str(params_base['size'][2]),
+                                 params_base['cell_type'].lower(),
+                                 str(index),
+                                 s])
+            sim_path_list.append(save_path / sym_name)
+
+    for sim in sim_path_list:
+        if list(sim.glob('heat_map/*')):
+            DataProcess(simulation_path=sim, workers=_workers, options=plot_options).run(time_step)
