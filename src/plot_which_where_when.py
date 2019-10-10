@@ -128,7 +128,7 @@ if __name__ == '__main__':
     _workers = 4
     save_path = Path('D:\KMC_data\data_2019_10_05')
 
-    time_step = 10000
+    time_step = 10
     params_base = {'cell_type': 'Random',
                    'size': [30, 7, 7],
                    'time_end': 0,

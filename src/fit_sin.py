@@ -59,40 +59,43 @@ def generate_phi(sym: Path):
     config = get_config(sym / 'input.kmc')
     data_out = {}
     for key in hf.keys():
-        signal_x = hf[key][:, 0]
-        signal_y = hf[key][:, 1]
+        sim_signal = pd.DataFrame({'x': hf[key][:, 0], 'y': hf[key][:, 1]})
 
-        fit_x = np.linspace(signal_x.min(), signal_x.max(), 1000)
+        fit_signal = pd.DataFrame({'x': np.linspace(sim_signal['x'].min(), sim_signal['x'].max(), 1000)})
 
         fit_function = Function(config['Frequency base of sine function'] *
-                                10 ** config['Frequency power of sine function'] * 10**-12)
+                                10 ** config['Frequency power of sine function'] * 10**-13)
         try:
-            params, params_covariance = optimize.curve_fit(fit_function.sin_add_line,
-                                                           signal_x,
-                                                           signal_y,
-                                                           p0=[config['Amplitude of sine function'],
-                                                               1,
-                                                               1,
-                                                               1])
+            for _ in range(3):
+                params, params_covariance = optimize.curve_fit(fit_function.sin_add_line,
+                                                               sim_signal['x'],
+                                                               sim_signal['y'],
+                                                               p0=[config['Amplitude of sine function'],
+                                                                   1,
+                                                                   1,
+                                                                   1])
 
-            params = {'fit_sine_amp': params[0],
-                      'fit_sine_phi': params[1],
-                      'fit_line_a': params[2],
-                      'fit_line_b': params[3]}
+                params = {'fit_sine_amp': params[0],
+                          'fit_sine_phi': params[1],
+                          'fit_line_a': params[2],
+                          'fit_line_b': params[3]}
 
-            fit_y = []
-            for step_x in fit_x:
-                fit_y.append(
-                    fit_function.sin_add_line(step_x,
-                                              params['fit_sine_amp'],
-                                              params['fit_sine_phi'],
-                                              params['fit_line_a'],
-                                              params['fit_line_b']) -
-                    Function.line(step_x, params['fit_line_a'], params['fit_line_b']))
-            fit_y = np.array(fit_y)
+                fit_y = []
+                for step_x in fit_signal['x']:
+                    fit_y.append(
+                        fit_function.sin_add_line(step_x,
+                                                  params['fit_sine_amp'],
+                                                  params['fit_sine_phi'],
+                                                  params['fit_line_a'],
+                                                  params['fit_line_b']) -
+                        Function.line(step_x, params['fit_line_a'], params['fit_line_b']))
+                fit_signal['y'] = np.array(fit_y)
 
-            origin_y = signal_y - Function.line(signal_x, params['fit_line_a'], params['fit_line_b'])
-            ideal_y = Function.sin(signal_x,
+                sim_signal['y'] = sim_signal['y'].map(lambda x: x if abs(x) < sim_signal['y'].std()*15 else None)
+                sim_signal = sim_signal.dropna()
+
+            origin_y = sim_signal['y'] - Function.line(sim_signal['x'], params['fit_line_a'], params['fit_line_b'])
+            ideal_y = Function.sin(sim_signal['x'],
                                    params['fit_sine_amp'],
                                    fit_function.sine_frequency,
                                    params['fit_sine_phi'])
@@ -102,13 +105,13 @@ def generate_phi(sym: Path):
 
             _fig = plt.figure(figsize=(8, 6))
             _ax = _fig.add_subplot(111)
-            _ax.plot(signal_x, origin_y, label='Data', linestyle='--')
-            _ax.plot(fit_x, fit_y, label='Fitted function')
-            _ax.plot(fit_x, Function.sin(fit_x,
-                                         config['Amplitude of sine function'],
-                                         config['Frequency base of sine function'] * 10 **
-                                         (config['Frequency power of sine function'] - 12),
-                                         0), label='Original function')
+            _ax.plot(sim_signal['x'], origin_y, label='Data', linestyle='--')
+            _ax.plot(fit_signal['x'], fit_signal['y'], label='Fitted function')
+            _ax.plot(fit_signal['x'], Function.sin(fit_signal['x'],
+                                                   config['Amplitude of sine function'],
+                                                   config['Frequency base of sine function'] * 10 **
+                                                   (config['Frequency power of sine function'] - 13),
+                                                   0), label='Original function')
 
             plt.legend(loc='upper right')
             plt.text(0,
@@ -148,5 +151,5 @@ def run(workers: int = 1):
 
 
 if __name__ == '__main__':
-    workers = 1
+    workers = 4
     run(workers)
