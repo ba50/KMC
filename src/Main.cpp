@@ -63,7 +63,21 @@ int main(int argc, char *argv[]) {
 		time_end = std::stold(input_vector[5], &sz);
 	}
 
-	switch(std::atoi(input_vector[6].c_str())){
+	long double window;
+	{
+		std::string::size_type sz;
+		window = std::stold(input_vector[6], &sz);
+	}
+
+	long double window_epsilon;
+	{
+		std::string::size_type sz;
+		window_epsilon = std::stold(input_vector[7], &sz);
+	}
+
+
+
+	switch(std::atoi(input_vector[8].c_str())){
 		case 0:
 			contact_switch[0] = false;
 			break;
@@ -75,7 +89,7 @@ int main(int argc, char *argv[]) {
 			exit(1);
 	}
 
-	switch(std::atoi(input_vector[7].c_str())){
+	switch(std::atoi(input_vector[9].c_str())){
 		case 0:
 			contact_switch[1] = false;
 			break;
@@ -88,22 +102,22 @@ int main(int argc, char *argv[]) {
 	}
 
 	{
-		std::istringstream ss(input_vector[8]);
+		std::istringstream ss(input_vector[10]);
 		if (!(ss >> contact[0]))
-			std::cerr << "Invalid number " << input_vector[8] << '\n';
+			std::cerr << "Invalid number " << input_vector[10] << '\n';
 	}
 
 	{
-		std::istringstream ss(input_vector[9]);
+		std::istringstream ss(input_vector[11]);
 		if (!(ss >> contact[1]))
-			std::cerr << "Invalid number " << input_vector[9] << '\n';
+			std::cerr << "Invalid number " << input_vector[11] << '\n';
 	}
 
-	double A = std::atof(input_vector[10].c_str());
-	double frequency_base = std::atof(input_vector[11].c_str());
-	double frequency_power = std::atof(input_vector[12].c_str());
-	double period = std::atof(input_vector[13].c_str());
-	double delta_energy_base = std::atof(input_vector[14].c_str());
+	double A = std::atof(input_vector[12].c_str());
+	double frequency_base = std::atof(input_vector[13].c_str());
+	double frequency_power = std::atof(input_vector[14].c_str());
+	double period = std::atof(input_vector[15].c_str());
+	double delta_energy_base = std::atof(input_vector[16].c_str());
 
 	double frequency = frequency_base * pow(10, frequency_power);
 
@@ -111,5 +125,14 @@ int main(int argc, char *argv[]) {
 	std::unique_ptr<Configuration> sample = std::make_unique<Configuration>(positions, types);
 
 	std::unique_ptr<Core> core = std::make_unique<Core>(*sample, cells, types, contact_switch, contact, data_path);
-	core->Run(thermalization_time, time_end, A, frequency, period, delta_energy_base);
+	core->Run(
+		thermalization_time,
+		time_end,
+		window,
+		window_epsilon,
+		A,
+		frequency,
+		period,
+		delta_energy_base
+	);
 }

@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 from TimeHeatMap import TimeHeatMap
+from utils.config import get_config
 
 
 class DataProcess:
@@ -28,7 +29,7 @@ class DataProcess:
         if options:
             self.options = options
 
-        self.data_path = simulation_path / 'which_where_when.txt'
+        self.data_path = simulation_path / 'when_which_where.csv'
         self.pos_path = simulation_path / 'positions.xyz'
         self.save_path = simulation_path / 'paths'
 
@@ -75,12 +76,11 @@ class DataProcess:
         """
         www = pd.read_csv(
             self.data_path,
-            sep='\t',
-            names=['which', 'where', 'delta_energy', 'when'],
+            names=['when', 'which', 'where'],
             nrows=10**6
         )
 
-        if not www.empty:
+        if len(www) > 1:
             loc_index = list(range(0, www.shape[0], www.shape[0] // n_points))
 
             print("Calculating oxygen paths")
@@ -124,20 +124,10 @@ class DataProcess:
 
 if __name__ == '__main__':
 
-    version = '12'
     _workers = 4
-    save_path = Path('D:\KMC_data\data_2019_10_05')
+    save_path = Path('D:\KMC_data\data_2019_10_10')
 
-    time_step = 10
-    params_base = {'cell_type': 'Random',
-                   'size': [30, 7, 7],
-                   'time_end': 0,
-                   'thermalization_time': 200,
-                   'contact_switch': (0, 0),
-                   'contact': (1, 1)}
-
-    freq_list = np.logspace(3, 6, num=16)
-    repeat_list = ['a', 'b', 'c']
+    sim_path_list = [sim for sim in save_path.glob("*") if sim.is_dir()]
 
     plot_options = {
         'dpi': 100,
@@ -147,17 +137,7 @@ if __name__ == '__main__':
         'time_step': 100
     }
 
-    sim_path_list = []
-    for index, freq in enumerate(freq_list):
-        for s in repeat_list:
-            sym_name = '_'.join([str(params_base['size'][0]),
-                                 str(params_base['size'][1]),
-                                 str(params_base['size'][2]),
-                                 params_base['cell_type'].lower(),
-                                 str(index),
-                                 s])
-            sim_path_list.append(save_path / sym_name)
-
-    for sim in sim_path_list:
-        if list(sim.glob('heat_map/*')):
-            DataProcess(simulation_path=sim, workers=_workers, options=plot_options).run(time_step)
+    for sim_path in sim_path_list:
+        sim_config = get_config(sim_path/'input.kmc')
+        if list(sim_path.glob('heat_map/*')):
+            DataProcess(simulation_path=sim_path, workers=_workers, options=plot_options).run(sim_config['window'])

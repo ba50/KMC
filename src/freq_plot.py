@@ -6,30 +6,12 @@ import pandas as pd
 
 import matplotlib.pyplot as plt
 
-
-def get_config(path: Path):
-    str_index = [0]
-    float_index = [*range(1, 15)]
-    with path.open() as _config:
-        lines = _config.readlines()
-    _config = {}
-    for index, line in enumerate(lines):
-        if index in str_index:
-            _data = line.split('#')
-            _key = _data[1].strip()
-            _config[_key] = _data[0].strip()
-
-        if index in float_index:
-            _data = line.split('#')
-            _key = _data[1].strip()
-            _config[_key] = float(_data[0].strip())
-
-    return _config
+from utils.config import get_config
 
 
 def run():
 
-    base_path = Path('D:/KMC_data/data_2019_09_08')
+    base_path = Path('D:/KMC_data/data_2019_10_10')
     sim_key = '30_7_7_random_'
 
     data = {'timed_jumps_center_contact_left_jump': [],

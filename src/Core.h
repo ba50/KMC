@@ -282,11 +282,29 @@ public:
 	}
 
 	// Da sie to lepiej rozwiazac!!
-	void Run(long double thermalization_time, long double time_end, const double A, const double frequency, const double period, const double delta_energy_base){
-		std::cout << "Start thermalization" << "\n";
+	void Run(
+		long double thermalization_time,
+		long double time_end,
+		const long double window,
+		const long double window_epsilon,
+		const double A,
+		const double frequency,
+		const double period,
+		const double delta_energy_base
+	){
+		std::cout << "Starting thermalization" << "\n";
 		Thermalization(thermalization_time);
-		std::cout << "Start simulation" << "\n";
-		Update(time_end, A, frequency, period, delta_energy_base);
+
+		std::cout << "Starting simulation" << "\n";
+		Update(
+			time_end,
+			window,
+			window_epsilon,
+			A,
+			frequency,
+			period,
+			delta_energy_base
+		);
 		std::cout << "Core exit." << "\n";
 	}
 
@@ -366,7 +384,15 @@ public:
 		}
 	}
 
-	void Update(long double time_end, const double A, const double frequency, const double period, const double delta_energy_base){
+	void Update(
+		long double time_end,
+		const long double window,
+		const long double window_epsilon,
+		const double A,
+		const double frequency,
+		const double period,
+		const double delta_energy_base
+	) {
 		const double PI = 3.141592653589793238463;
 		const double kT{(800.0 + 273.15)*8.6173304e-5};
 		double random_for_atom, random_for_direction;
@@ -379,19 +405,26 @@ public:
 		long double time{ 0.0 };
 		double delta_energy{ 0.0 };
 
-		if( remove(std::string(data_path+"/which_where_when.txt").c_str()) != 0 )
-			std::cout<<"Error deleting file: which_where_when.txt"<<std::endl;
+		if( remove(std::string(data_path+"/when_which_wherer.csv").c_str()) != 0 )
+			std::cout<<"Error deleting file: when_which_where.csv"<<std::endl;
 		else
-			std::cout<< "File which_where_when.txt successfully deleted"<<std::endl;
+			std::cout<< "File when_which_where.csv successfully deleted"<<std::endl;
 
-		FILE *which_wherer_when, *field_plot;
-		//fopen_s(&which_wherer_when, std::string(data_path + "/which_where_when.txt").c_str(), "a");
-		which_wherer_when = fopen(std::string(data_path + "/which_where_when.txt").c_str(), "a");
-		field_plot = fopen(std::string(data_path + "/field_plot.txt").c_str(), "a");
+		if( remove(std::string(data_path+"/field_plot.csv").c_str()) != 0 )
+			std::cout<<"Error deleting file: field_plot.csv"<<std::endl;
+		else
+			std::cout<< "File field_plot.csv successfully deleted"<<std::endl;
+
+		FILE *when_which_wherer, *field_plot;
+		//fopen_s(&when_which_wheren, std::string(data_path + "/when_which_where.txt").c_str(), "a");
+		when_which_wherer = fopen(std::string(data_path + "/when_which_where.csv").c_str(), "a");
+		fprintf(when_which_wherer, "time,selected_atom,seleced_direction\n");
+
+		field_plot = fopen(std::string(data_path + "/field_plot.csv").c_str(), "a");
+		fprintf(field_plot, "time,delta_energy\n");
 
 		if (time_end == 0) {
 			time_end = period / frequency * pow(10.0, 12);
-			std::cout << "Now end time: " << time_end << "[ps]" << std::endl;
 		}
 
 		while(time < time_end){
@@ -424,38 +457,6 @@ public:
 			selected_direction_temp = std::lower_bound(jumpe_direction_sume_vector_.begin(), jumpe_direction_sume_vector_.end(), random_for_direction);
 			seleced_direction = selected_direction_temp - jumpe_direction_sume_vector_.begin() - 1;
 
-			/*
-			do {
-				random_for_atom = ((double)rand() / RAND_MAX) * jumpe_rate_sume_vector_.back(); // losowanie atomu
-			} while (random_for_atom == 0);
-
-			for (id = 1; id < jumpe_rate_sume_vector_.size(); ++id) {
-				if (jumpe_rate_sume_vector_[id - 1] < random_for_atom && random_for_atom <= jumpe_rate_sume_vector_[id]) {
-					selected_atom = id - 1;
-
-					break;
-				}
-			}
-
-			for (id = 1; id < jumpe_direction_sume_vector_.size(); id++) {
-				jumpe_direction_sume_vector_[id] = jumpe_direction_sume_vector_[id-1] + jump_rate_vector_[selected_atom][id-1];
-			}
-
-			do {
-				random_for_direction = ((double)rand() / RAND_MAX)*jumpe_direction_sume_vector_.back(); // losowanie atomu
-			} while (random_for_direction == 0);
-
-			for (id = 1; id < jumpe_direction_sume_vector_.size(); ++id) {
-				if (jumpe_direction_sume_vector_[id - 1] < random_for_direction && random_for_direction <= jumpe_direction_sume_vector_[id]) {
-
-					seleced_direction = id - 1;
-
-					break;
-				}
-
-			}
-			*/
-
 			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 1;
 
 			oxygen_positions_[selected_atom][2] += direction_vector[seleced_direction][2];
@@ -481,8 +482,8 @@ public:
 
 			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 0;
 
-			if (fmod(time, 10.0) <= 0.01) {
-				std::cout << time << "[ps]" << std::endl;
+			if (fmod(time, window) <= window_epsilon) {
+				std::cout << "\r" << time << "/" << time_end << "[ps]";
 				std::ofstream file_out(data_path + "/heat_map/" + std::to_string((int)time) + ".dat");
 				for (size_t z = 0; z < heat_map_array_size_[2]; z++) {
 					for (size_t y = 0; y < heat_map_array_size_[1]; y++) {
@@ -504,7 +505,7 @@ public:
 				}
 				file_out.close();
 				
-				fprintf(field_plot, "%Lf\t%Lf\n", delta_energy, time);
+				fprintf(field_plot, "%Lf,%Lf\n", time, delta_energy);
 			}
 
 			heat_map_array_[oxygen_positions_[selected_atom][2] - 1]
@@ -514,10 +515,11 @@ public:
 			
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
-			//fprintf(which_wherer_when, "%zd\t%zd\t%Lf\n", selected_atom, seleced_direction, time);
+			//fprintf(when_which_where, "%zd,%zd,%Lf\n", time, selected_atom, seleced_direction);
 		}
-		fclose(which_wherer_when);
+		fclose(when_which_wherer);
 		fclose(field_plot);
+		std::cout << std::endl;
 	}
 
 	inline void BourderyConditions(double*** &array, const std::vector<size_t> &array_size) {

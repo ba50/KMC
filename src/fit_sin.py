@@ -9,6 +9,8 @@ from tqdm import tqdm
 from scipy import optimize
 import matplotlib.pyplot as plt
 
+from utils.config import get_config
+
 
 class Function:
     def __init__(self, sine_frequency):
@@ -34,26 +36,6 @@ class Function:
         return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
 
 
-def get_config(path: Path):
-    str_index = [0]
-    float_index = [*range(1, 15)]
-    with path.open() as _config:
-        lines = _config.readlines()
-    _config = {}
-    for index, line in enumerate(lines):
-        if index in str_index:
-            _data = line.split('#')
-            _key = _data[1].strip()
-            _config[_key] = _data[0].strip()
-
-        if index in float_index:
-            _data = line.split('#')
-            _key = _data[1].strip()
-            _config[_key] = float(_data[0].strip())
-
-    return _config
-
-
 def generate_phi(sym: Path):
     hf = h5py.File(str(sym / 'heat_map_plots' / 'timed_jumps_raw_data.h5'), 'r')
     config = get_config(sym / 'input.kmc')
@@ -63,14 +45,15 @@ def generate_phi(sym: Path):
 
         fit_signal = pd.DataFrame({'x': np.linspace(sim_signal['x'].min(), sim_signal['x'].max(), 1000)})
 
-        fit_function = Function(config['Frequency base of sine function'] *
-                                10 ** config['Frequency power of sine function'] * 10**-13)
+        fit_function = Function(config['frequency_base'] *
+                                10 ** config['frequency_power'] * 10**-13)
         try:
+            params = {}
             for _ in range(3):
                 params, params_covariance = optimize.curve_fit(fit_function.sin_add_line,
                                                                sim_signal['x'],
                                                                sim_signal['y'],
-                                                               p0=[config['Amplitude of sine function'],
+                                                               p0=[config['amplitude'],
                                                                    1,
                                                                    1,
                                                                    1])
@@ -108,9 +91,9 @@ def generate_phi(sym: Path):
             _ax.plot(sim_signal['x'], origin_y, label='Data', linestyle='--')
             _ax.plot(fit_signal['x'], fit_signal['y'], label='Fitted function')
             _ax.plot(fit_signal['x'], Function.sin(fit_signal['x'],
-                                                   config['Amplitude of sine function'],
-                                                   config['Frequency base of sine function'] * 10 **
-                                                   (config['Frequency power of sine function'] - 13),
+                                                   config['amplitude'],
+                                                   config['frequency_base'] * 10 **
+                                                   (config['frequency_power'] - 13),
                                                    0), label='Original function')
 
             plt.legend(loc='upper right')
@@ -137,9 +120,9 @@ def generate_phi(sym: Path):
 
 def run(workers: int = 1):
     phi_dict = {}
-    base_path = Path('D:/KMC_data/data_2019_10_05')
+    base_path = Path('D:/KMC_data/data_2019_10_10')
     sim_key = '30_7_7_random_'
-    for y in tqdm(range(7, -1, -1)):
+    for y in tqdm(range(3, -1, -1)):
         phi_dict[y] = []
         sym = [base_path/(sim_key+str(y)+'_'+x) for x in ['a', 'b', 'c']]
         with Pool(workers) as p:
@@ -151,5 +134,5 @@ def run(workers: int = 1):
 
 
 if __name__ == '__main__':
-    workers = 4
-    run(workers)
+    _workers = 4
+    run(_workers)
