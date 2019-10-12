@@ -415,10 +415,10 @@ public:
 		else
 			std::cout<< "File field_plot.csv successfully deleted"<<std::endl;
 
-		FILE *when_which_wherer, *field_plot;
+		FILE *when_which_where, *field_plot;
 		//fopen_s(&when_which_wheren, std::string(data_path + "/when_which_where.txt").c_str(), "a");
-		when_which_wherer = fopen(std::string(data_path + "/when_which_where.csv").c_str(), "a");
-		fprintf(when_which_wherer, "time,selected_atom,seleced_direction\n");
+		when_which_where = fopen(std::string(data_path + "/when_which_where.csv").c_str(), "a");
+		fprintf(when_which_where, "time,selected_atom,selected_direction\n");
 
 		field_plot = fopen(std::string(data_path + "/field_plot.csv").c_str(), "a");
 		fprintf(field_plot, "time,delta_energy\n");
@@ -515,9 +515,9 @@ public:
 			
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
-			//fprintf(when_which_where, "%zd,%zd,%Lf\n", time, selected_atom, seleced_direction);
+			//fprintf(when_which_where, "%Lf,%zd,%zd,\n", time, selected_atom, seleced_direction);
 		}
-		fclose(when_which_wherer);
+		fclose(when_which_where);
 		fclose(field_plot);
 		std::cout << std::endl;
 	}

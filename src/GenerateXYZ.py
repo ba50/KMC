@@ -5,10 +5,9 @@ import numpy as np
 
 
 class GenerateXYZ:
-    def __init__(self, cells: tuple, path_out: Path):
+    def __init__(self, cells: tuple):
 
         self.cell_size = 1.0
-        self.path_out = path_out / 'positions.xyz'
 
         self.kations = np.zeros(2*np.array(cells) + 1).astype(np.int)
         self.anions = np.zeros(2*np.array(cells)).astype(np.int)
@@ -19,8 +18,8 @@ class GenerateXYZ:
         self.Y = 0
         self.O = 0
 
-    def save_positions(self):
-        with self.path_out.open('w') as file_out:
+    def save_positions(self, save_path: Path):
+        with save_path.open('w') as file_out:
             file_out.write("{}\n\n".format(self.Bi+self.Y+self.O))
             for atom_type in self.positions:
                 for atom in self.positions[atom_type]:
@@ -57,8 +56,6 @@ class GenerateXYZ:
             if random.uniform(0, 1) > 0.75:
                 self.positions['O'].append(position)
                 self.O += 1
-
-        self.save_positions()
 
     def generate_random(self):
         to_change = True
@@ -104,8 +101,6 @@ class GenerateXYZ:
                 self.positions['O'].append(position)
                 self.O += 1
 
-        self.save_positions()
-
     def generate_plane(self, thickness):
         center = np.floor(np.array(self.kations.shape)*self.cell_size/3)
 
@@ -131,5 +126,3 @@ class GenerateXYZ:
             if random.uniform(0, 1) > 0.75:
                 self.positions['O'].append(position)
                 self.O += 1
-
-        self.save_positions()

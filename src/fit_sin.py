@@ -5,7 +5,6 @@ from multiprocessing import Pool
 import h5py
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 from scipy import optimize
 import matplotlib.pyplot as plt
 
@@ -46,7 +45,7 @@ def generate_phi(sym: Path):
         fit_signal = pd.DataFrame({'x': np.linspace(sim_signal['x'].min(), sim_signal['x'].max(), 1000)})
 
         fit_function = Function(config['frequency_base'] *
-                                10 ** config['frequency_power'] * 10**-13)
+                                10 ** config['frequency_power'] * 10**-12)
         try:
             params = {}
             for _ in range(3):
@@ -93,7 +92,7 @@ def generate_phi(sym: Path):
             _ax.plot(fit_signal['x'], Function.sin(fit_signal['x'],
                                                    config['amplitude'],
                                                    config['frequency_base'] * 10 **
-                                                   (config['frequency_power'] - 13),
+                                                   (config['frequency_power'] - 12),
                                                    0), label='Original function')
 
             plt.legend(loc='upper right')
@@ -118,21 +117,15 @@ def generate_phi(sym: Path):
     return sym, data_out
 
 
-def run(workers: int = 1):
-    phi_dict = {}
-    base_path = Path('D:/KMC_data/data_2019_10_10')
-    sim_key = '30_7_7_random_'
-    for y in tqdm(range(3, -1, -1)):
-        phi_dict[y] = []
-        sym = [base_path/(sim_key+str(y)+'_'+x) for x in ['a', 'b', 'c']]
-        with Pool(workers) as p:
-            data_out = p.map(generate_phi, sym)
-
-        for save_path, save_data in data_out:
-            with (save_path / 'heat_map_plots' / 'data_out.log').open('w') as f_out:
-                json.dump(save_data, f_out)
-
-
 if __name__ == '__main__':
-    _workers = 4
-    run(_workers)
+    workers = 3
+    base_path = Path('D:/KMC_data/data_2019_10_11')
+
+    sim_path_list = [sim for sim in base_path.glob("*") if sim.is_dir()]
+
+    with Pool(workers) as p:
+        _data_out = p.map(generate_phi, sim_path_list)
+
+    for save_path, save_data in _data_out:
+        with (save_path / 'heat_map_plots' / 'data_out.json').open('w') as f_out:
+            json.dump(save_data, f_out)

@@ -9,9 +9,8 @@ import matplotlib.pyplot as plt
 from utils.config import get_config
 
 
-def run():
-
-    base_path = Path('D:/KMC_data/data_2019_10_10')
+if __name__ == '__main__':
+    base_path = Path('D:/KMC_data/data_2019_10_11')
     sim_key = '30_7_7_random_'
 
     data = {'timed_jumps_center_contact_left_jump': [],
@@ -27,15 +26,15 @@ def run():
             for sub_point in ['a', 'b', 'c']:
                 simulation = base_path / (sim_key + str(y) + '_' + sub_point)
                 sim_config = get_config(simulation / 'input.kmc')
-                with (simulation / 'heat_map_plots' / 'data_out.log').open('r') as json_file:
+                with (simulation / 'heat_map_plots' / 'data_out.json').open('r') as json_file:
                     phi = json.load(json_file)
                 if key in phi:
                     points[sub_point] = phi[key]['phi_mean_rad']
                 else:
                     points[sub_point] = None
 
-            base = sim_config['Frequency base of sine function']
-            power = sim_config['Frequency power of sine function']
+            base = sim_config['frequency_base']
+            power = sim_config['frequency_power']
             row = {'freq': base*10**power}
             row.update(points)
             data[key].append(row)
@@ -52,7 +51,3 @@ def run():
                     dpi=1000,
                     bbox_inches='tight')
         plt.close(_fig)
-
-
-if __name__ == '__main__':
-    run()

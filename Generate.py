@@ -8,7 +8,7 @@ import pandas as pd
 from src.GenerateXYZ import GenerateXYZ
 
 
-def generate_sim_input(params_dict):
+def generate_sim_input(params_dict, structure: GenerateXYZ):
     (params_dict['path_to_data'] / 'heat_map').mkdir(parents=True, exist_ok=True)
 
     with (params_dict['path_to_data'] / 'input.kmc').open('w') as file_out:
@@ -30,20 +30,14 @@ def generate_sim_input(params_dict):
         file_out.write("{}\t# period\n".format(params_dict['energy_params']['periods']))
         file_out.write("{}\t# energy_base\n".format(params_dict['energy_params']['energy_base']))
 
-    if params_dict['cell_type'] == 'Random':
-        GenerateXYZ(params_dict['size'], params_dict['path_to_data']).generate_random()
-    if params_dict['cell_type'] == 'Sphere':
-        GenerateXYZ(params_dict['size'], params_dict['path_to_data']).generate_sphere(5)
-    if params_dict['cell_type'] == 'Plane':
-        GenerateXYZ(params_dict['size'], params_dict['path_to_data']).generate_plane(1)
+        structure.save_positions(params_dict['path_to_data']/'positions.xyz')
 
 
 if __name__ == '__main__':
-    version = '13'
     workers = 4
     base_periods = 2
     bin_path = Path('C:/Users/barja/source/repos/KMC/KMC/build/KMC.exe')
-    save_path = Path('D:/KMC_data/data_2019_10_10')
+    save_path = Path('D:/KMC_data/data_2019_10_12')
     save_path.mkdir(parents=True)
 
     params_base = {'cell_type': 'Random',
@@ -55,11 +49,13 @@ if __name__ == '__main__':
                    'contact_switch': (0, 0),
                    'contact': (1, 1)}
 
-    freq_list = np.logspace(9, 10, num=4)
+    freq_list = np.logspace(8, 10, num=32)
     repeat_list = ['a', 'b', 'c']
 
     params = {}
     sym_path_list = []
+    sim_structure = GenerateXYZ(params_base['size'])
+    sim_structure.generate_random()
     for index, freq in enumerate(freq_list):
         for s in repeat_list:
             params_per_sim = copy(params_base)
@@ -80,7 +76,7 @@ if __name__ == '__main__':
                                           'periods': np.ceil(freq/freq_list[0])*base_periods,
                                           'energy_base': 0}
             params_per_sim.update(temp_dict)
-            generate_sim_input(params_per_sim)
+            generate_sim_input(params_per_sim, sim_structure)
 
     run_df = {'commend': []}
     for s in repeat_list:
@@ -92,8 +88,8 @@ if __name__ == '__main__':
     run_df['commend'] = run_df['commend'].map(lambda x: x+'\n')
     for index, split in enumerate(np.split(run_df, workers)):
         if os.name == 'nt':
-            with Path(save_path, 'run_v%s_%s.ps1' % (version, index)).open('w') as f_out:
+            with Path(save_path, 'run_%s.ps1' % index).open('w') as f_out:
                 f_out.writelines(split['commend'])
         else:
-            with Path(save_path, 'run_v%s_%s.run' % (version, index)).open('w') as f_out:
+            with Path(save_path, 'run_%s.run' % index).open('w') as f_out:
                 f_out.writelines(split['commend'])

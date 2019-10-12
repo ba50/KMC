@@ -10,8 +10,8 @@
 #include "Core.h"
 
 int main(int argc, char *argv[]) {
-	//srand(static_cast<unsigned>(time(NULL)));
-	srand(1234);
+	srand(static_cast<unsigned>(time(NULL)));
+	//srand(1234);
 
 	std::string data_path(argv[1]);
 	std::string line;
