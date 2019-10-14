@@ -35,22 +35,38 @@ def generate_sim_input(params_dict, structure: GenerateXYZ):
 
 if __name__ == '__main__':
     workers = 4
-    base_periods = 2
+    base_periods = 0.5
+    low_freq = 4
+    high_freq = 9
     bin_path = Path('C:/Users/barja/source/repos/KMC/KMC/build/KMC.exe')
-    save_path = Path('D:/KMC_data/data_2019_10_12')
-    save_path.mkdir(parents=True)
+    save_path = Path('D:/KMC_data/data_2019_10_14')
+    save_path.mkdir(parents=True, exist_ok=True)
 
-    params_base = {'cell_type': 'Random',
-                   'size': [30, 7, 7],
-                   'time_end': 0,
-                   'thermalization_time': 200,
-                   'window': 10,
-                   'window_epsilon': 0.01,
-                   'contact_switch': (0, 0),
-                   'contact': (1, 1)}
+    freq_list = []
+    for i in range(low_freq+1, high_freq):
+        freq_list.extend(np.logspace(i-1, i, num=2, endpoint=False))
 
-    freq_list = np.logspace(8, 10, num=32)
-    repeat_list = ['a', 'b', 'c']
+    simulations = pd.DataFrame({'frequency': freq_list})
+
+    simulations['version'] = 'a'
+    simulations['cell_type'] = 'Random'
+    simulations['size_x'] = 30
+    simulations['size_y'] = 7
+    simulations['size_z'] = 7
+    simulations['time_end'] = 0
+    simulations['thermalization_time'] = 200
+    simulations['window'] = 10
+    simulations['window_epsilon'] = 0.01
+    simulations['contact_switch_left'] = 0
+    simulations['contact_switch_right'] = 0
+    simulations['contact_left'] = 1
+    simulations['contact_right'] = 1
+
+    simulations = simulations.loc[np.repeat(simulations.index.values, 3)].reset_index(drop=True)
+    simulations['version'] = np.array([[x for x in ['a', 'b', 'c']] for _ in range(len(freq_list))]).flatten()
+    simulations['size_x'] = simulations.index.map(lambda x: (30 * np.exp(-x/30)).astype(int))
+    print()
+    exit()
 
     params = {}
     sym_path_list = []
@@ -68,12 +84,10 @@ if __name__ == '__main__':
                                  s])
             temp_dict['path_to_data'] = save_path / sym_name
             sym_path_list.append(temp_dict['path_to_data'])
-            power = int(np.log10(freq))
 
             temp_dict['energy_params'] = {'amplitude': 0.008,
-                                          'frequency_base': freq/10**power,
-                                          'frequency_power': power,
-                                          'periods': np.ceil(freq/freq_list[0])*base_periods,
+                                          'frequency': freq,
+                                          'periods': freq/freq_list[0]*base_periods,
                                           'energy_base': 0}
             params_per_sim.update(temp_dict)
             generate_sim_input(params_per_sim, sim_structure)
