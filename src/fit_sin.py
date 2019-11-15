@@ -44,8 +44,7 @@ def generate_phi(sym: Path):
 
         fit_signal = pd.DataFrame({'x': np.linspace(sim_signal['x'].min(), sim_signal['x'].max(), 1000)})
 
-        fit_function = Function(config['frequency_base'] *
-                                10 ** config['frequency_power'] * 10**-12)
+        fit_function = Function(config['frequency'] * 10**-12)
         try:
             params = {}
             for _ in range(3):
@@ -89,11 +88,11 @@ def generate_phi(sym: Path):
             _ax = _fig.add_subplot(111)
             _ax.plot(sim_signal['x'], origin_y, label='Data', linestyle='--')
             _ax.plot(fit_signal['x'], fit_signal['y'], label='Fitted function')
-            _ax.plot(fit_signal['x'], Function.sin(fit_signal['x'],
-                                                   config['amplitude'],
-                                                   config['frequency_base'] * 10 **
-                                                   (config['frequency_power'] - 12),
-                                                   0), label='Original function')
+            _ax.plot(
+                fit_signal['x'],
+                Function.sin(fit_signal['x'], config['amplitude'], config['frequency'] * 10**-12, 0),
+                label='Original function'
+            )
 
             plt.legend(loc='upper right')
             plt.text(0,
@@ -119,7 +118,7 @@ def generate_phi(sym: Path):
 
 if __name__ == '__main__':
     workers = 3
-    base_path = Path('D:/KMC_data/data_2019_10_11')
+    base_path = Path('D:/KMC_data/data_2019_10_29')
 
     sim_path_list = [sim for sim in base_path.glob("*") if sim.is_dir()]
 

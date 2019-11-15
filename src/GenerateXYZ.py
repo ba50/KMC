@@ -19,14 +19,17 @@ class GenerateXYZ:
         self.O = 0
 
     def save_positions(self, save_path: Path):
-        with save_path.open('w') as file_out:
-            file_out.write("{}\n\n".format(self.Bi+self.Y+self.O))
-            for atom_type in self.positions:
-                for atom in self.positions[atom_type]:
-                    file_out.write("{}".format(atom_type))
-                    for r in atom:
-                        file_out.write("\t{}".format(r))
-                    file_out.write("\n")
+        if len(self.positions['Bi']) > 0:
+            with save_path.open('w') as file_out:
+                file_out.write("{}\n\n".format(self.Bi+self.Y+self.O))
+                for atom_type in self.positions:
+                    for atom in self.positions[atom_type]:
+                        file_out.write("{}".format(atom_type))
+                        for r in atom:
+                            file_out.write("\t{}".format(r))
+                        file_out.write("\n")
+        else:
+            print('No structure')
 
     def generate_sphere(self, radius):
         center = np.floor(np.array(self.kations.shape)*self.cell_size/2)

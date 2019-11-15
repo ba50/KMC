@@ -73,50 +73,50 @@ class DataProcess:
 
         :param n_points: Number of point to plot (Field, Time)
         """
-        when_which_where = pd.read_csv(self.simulation_path / 'when_which_where.csv', index_col=False)
-        field_path = pd.read_csv(self.simulation_path / 'field_plot.csv', index_col=False)
-
-        if len(when_which_where) > 1:
-
-            print("Calculating oxygen paths")
-            # Histogram
-            fig = plt.figure(figsize=(8, 6))
-            ax = fig.add_subplot(111)
-            ax.set_xlabel('Direction')
-            ax.set_ylabel('Count')
-            ax.hist(when_which_where['selected_direction'], bins=11)
-            plt.savefig(self.simulation_path / 'paths' / "Jumps.png", dpi=self.options['dpi'])
-
-            # Histogram
-            fig = plt.figure(figsize=(8, 6))
-            ax = fig.add_subplot(111)
-            ax.set_xlabel('Atom')
-            ax.set_ylabel('Count')
-            ax.hist(when_which_where['selected_atom'])
-            plt.savefig(self.simulation_path / 'paths' / "Atom.png", dpi=self.options['dpi'])
-
-            self.plot_line(save_file=self.simulation_path / 'paths' / 'Field.png',
-                           x=field_path['time'],
-                           y=field_path['delta_energy'],
-                           x_label='Time [ps]',
-                           y_label='Field [eV]')
-
-            loc_index = list(range(0, when_which_where.shape[0], int(when_which_where.shape[0] // n_points)))
-
-            self.plot_line(save_file=self.simulation_path / 'paths' / 'Time.png',
-                           x=range(len(loc_index)),
-                           y=when_which_where['time'].iloc[loc_index],
-                           x_label='Step',
-                           y_label='Time')
-
-            self.plot_line(save_file=self.simulation_path / 'paths' / 'delta_Time.png',
-                           x=range(len(loc_index)),
-                           y=when_which_where['time'].iloc[loc_index].diff(),
-                           x_label='Step',
-                           y_label='Time')
-
-            del when_which_where
-            del field_path
+        # when_which_where = pd.read_csv(self.simulation_path / 'when_which_where.csv', index_col=False)
+        # field_path = pd.read_csv(self.simulation_path / 'field_plot.csv', index_col=False)
+        #
+        # if len(when_which_where) > 1:
+        #
+        #     print("Calculating oxygen paths")
+        #     # Histogram
+        #     fig = plt.figure(figsize=(8, 6))
+        #     ax = fig.add_subplot(111)
+        #     ax.set_xlabel('Direction')
+        #     ax.set_ylabel('Count')
+        #     ax.hist(when_which_where['selected_direction'], bins=11)
+        #     plt.savefig(self.simulation_path / 'paths' / "Jumps.png", dpi=self.options['dpi'])
+        #
+        #     # Histogram
+        #     fig = plt.figure(figsize=(8, 6))
+        #     ax = fig.add_subplot(111)
+        #     ax.set_xlabel('Atom')
+        #     ax.set_ylabel('Count')
+        #     ax.hist(when_which_where['selected_atom'])
+        #     plt.savefig(self.simulation_path / 'paths' / "Atom.png", dpi=self.options['dpi'])
+        #
+        #     self.plot_line(save_file=self.simulation_path / 'paths' / 'Field.png',
+        #                    x=field_path['time'],
+        #                    y=field_path['delta_energy'],
+        #                    x_label='Time [ps]',
+        #                    y_label='Field [eV]')
+        #
+        #     loc_index = list(range(0, when_which_where.shape[0], int(when_which_where.shape[0] // n_points)))
+        #
+        #     self.plot_line(save_file=self.simulation_path / 'paths' / 'Time.png',
+        #                    x=range(len(loc_index)),
+        #                    y=when_which_where['time'].iloc[loc_index],
+        #                    x_label='Step',
+        #                    y_label='Time')
+        #
+        #     self.plot_line(save_file=self.simulation_path / 'paths' / 'delta_Time.png',
+        #                    x=range(len(loc_index)),
+        #                    y=when_which_where['time'].iloc[loc_index].diff(),
+        #                    x_label='Step',
+        #                    y_label='Time')
+        #
+        #     del when_which_where
+        #     del field_path
 
         timed_heat_map = TimeHeatMap(load_data_path=self.simulation_path, options=self.options, workers=self.workers)
         timed_heat_map.process_data()
@@ -134,8 +134,8 @@ class DataProcess:
 
 if __name__ == '__main__':
 
-    _workers = 4
-    save_path = Path('D:\KMC_data\data_2019_10_11')
+    _workers = 3
+    save_path = Path('D:/KMC_data/data_2019_11_15_v3')
     plot_steps = 100
 
     sim_path_list = [sim for sim in save_path.glob("*") if sim.is_dir()]

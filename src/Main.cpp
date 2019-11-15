@@ -114,12 +114,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	double A = std::atof(input_vector[12].c_str());
-	double frequency_base = std::atof(input_vector[13].c_str());
-	double frequency_power = std::atof(input_vector[14].c_str());
-	double period = std::atof(input_vector[15].c_str());
-	double delta_energy_base = std::atof(input_vector[16].c_str());
-
-	double frequency = frequency_base * pow(10, frequency_power);
+	double frequency = std::atof(input_vector[13].c_str());
+	double period = std::atof(input_vector[14].c_str());
+	double delta_energy_base = std::atof(input_vector[15].c_str());
 
 	Load::XYZ(types, positions, data_path);
 	std::unique_ptr<Configuration> sample = std::make_unique<Configuration>(positions, types);

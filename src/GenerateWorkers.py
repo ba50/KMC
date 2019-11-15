@@ -1,80 +1,63 @@
-import subprocess
 import time
+import queue
+import subprocess
+from pathlib import Path
+
+import pandas as pd
 
 
 class GenerateWorkers:
-    def __init__(self, command, n_processes):
-        self.command = command
-        self.n_processes = n_processes
-        self.global_index = -1
-        self.processes = None
+    global_index = 0
+    processes = {}
 
-    def __make_process(self):
-        self.global_index += 1
-        if self.global_index < len(self.command):
-            print(self.command[self.global_index])
-            return subprocess.Popen((self.command[self.global_index]).split(), stdout=subprocess.PIPE)
+    def __init__(self, commands, workers):
+        self.commands = commands
+        self.device_list = queue.Queue(workers)
+
+        for i in range(workers):
+            self.device_list.put(str(i))
+
+    def __make_process(self, device_name):
+        row = self.commands.iloc[self.global_index]
+        commend = [str(row['program']), str(row['data_path'])]
+        print("Run %s on %s" % (" ".join(commend), device_name))
+        return subprocess.Popen(commend, stdout=subprocess.PIPE)
 
     def __str__(self):
         temp = [str(i.poll()) + ", " for i in self.processes]
         return "".join(temp)
 
     def run(self):
-        self.processes = [self.__make_process() for _ in range(self.n_processes)]
+        while True:
+            for device_name, process in self.processes.items():
+                print('device_name: %s\t->\t%s' % (device_name, process.stdout.readline()))
+                # print(device_name, ": ", process.poll())
+                if process.poll() is not None:
+                    self.device_list.put(device_name)
 
-        if len(self.processes) < 2:
-            running = False
-        else:
-            running = True
+            if not self.device_list.empty():
+                device_name = self.device_list.get()
+                self.processes[device_name] = self.__make_process(device_name)
+                self.global_index += 1
 
-        while running:
-            for index in range(len(self.processes)):
-                if not self.processes[index] is None:
-                    print('index: %d\t->\t%s' % (index, self.processes[index].stdout.readline()))
-                    if self.global_index < len(self.command):
-                        if self.processes[index].poll() == 0:
-                            self.processes[index] = self.__make_process()
-                else:
-                    if all(i is None for i in self.processes):
-                        print(self.global_index)
-                        print(self.n_processes)
-                        print(len(self.command))
-                        running = False
-                        print("Exit generate worker!")
+            if self.global_index > len(self.commands) - 1:
+                break
 
-            time.sleep(.5)
+            time.sleep(0.01)
+
+        print("End of queue")
 
 
 if __name__ == '__main__':
+    _workers = 3
+    program_path = 'C:/Users/barja/source/repos/KMC/KMC/build/KMC.exe'
+    data_path = 'D:/KMC_data/data_2019_11_15_v4'
 
-    base = '../build/KMC.exe '
+    program_path = Path(program_path)
+    data_path = Path(data_path)
 
-    """
-    commends = [base+'D:/KMC_data/30_7_7_random_1',
-                base+'D:/KMC_data/30_7_7_random_2',
-                base+'D:/KMC_data/30_7_7_random_3',
-                base+'D:/KMC_data/30_7_7_random_4',
-                base+'D:/KMC_data/30_7_7_random_5',
-                base+'D:/KMC_data/30_7_7_random_6',
-                base+'D:/KMC_data/30_7_7_random_7',
-                base+'D:/KMC_data/30_7_7_random_8',
-                base+'D:/KMC_data/30_7_7_random_9',
-                base+'D:/KMC_data/30_7_7_random_10',
-                ]
-    """
+    commends = pd.DataFrame({'data_path': [i for i in data_path.glob('*') if i.is_dir()]})
+    commends['program'] = program_path
 
-    commends = [
-        base+'D:/KMC_data/data_2019_05_29/amplitude/30_7_7_random_1',
-        base+'D:/KMC_data/data_2019_05_29/amplitude/30_7_7_random_02',
-        base+'D:/KMC_data/data_2019_05_29/amplitude/30_7_7_random_004',
-        base+'D:/KMC_data/data_2019_05_29/frequency/30_7_7_random_0005',
-        base+'D:/KMC_data/data_2019_05_29/frequency/30_7_7_random_005',
-        base+'D:/KMC_data/data_2019_05_29/frequency/30_7_7_random_05',
-        base+'D:/KMC_data/data_2019_05_29/size/30_3_3_random',
-        base+'D:/KMC_data/data_2019_05_29/size/30_7_7_random',
-        base+'D:/KMC_data/data_2019_05_29/size/30_15_15_random',
-        base+'D:/KMC_data/data_2019_05_29/size/30_30_30_random'
-    ]
-
-    workers = GenerateWorkers(commends, 4)
-    workers.run()
+    swarm = GenerateWorkers(commends, _workers)
+    swarm.run()

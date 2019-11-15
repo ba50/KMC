@@ -483,7 +483,7 @@ public:
 			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 0;
 
 			if (fmod(time, window) <= window_epsilon) {
-				std::cout << "\r" << time << "/" << time_end << "[ps]";
+				std::cout << time << "/" << time_end << "[ps]" << std::endl;
 				std::ofstream file_out(data_path + "/heat_map/" + std::to_string((int)time) + ".dat");
 				for (size_t z = 0; z < heat_map_array_size_[2]; z++) {
 					for (size_t y = 0; y < heat_map_array_size_[1]; y++) {

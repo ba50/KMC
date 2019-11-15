@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 class TimeHeatMap:
     cuts_pos = None
-    options = {'mean': False, "jumps": True, "save_raw": True, 'mean_size': 6}
+    options = {'mean': False, "jumps": True, "save_raw": True, 'mean_size': 7}
 
     def __init__(self, load_data_path: Path, save_data_path: Path = None, options=None, workers: int = 1):
         """
@@ -69,7 +69,7 @@ class TimeHeatMap:
         print("\nCalculating jumps in time")
         jumps_heat_map_list = {key: {0: [], 1: []} for key in self.cuts_pos}
         with Pool(workers) as p:
-            for data_out in tqdm(p.imap(self.worker, heat_map_file_list[:1273], chunksize=1), total=len(heat_map_file_list)):
+            for data_out in tqdm(p.imap(self.worker, heat_map_file_list, chunksize=1), total=len(heat_map_file_list)):
                 for directions in range(2):
                     for key in self.cuts_pos:
                         jumps_heat_map_list[key][directions].append(data_out[key][directions])
