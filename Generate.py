@@ -53,13 +53,12 @@ def get_sim_version(path: Path):
 
 if __name__ == '__main__':
     workers = 3
-    # base_periods = 0.5
     base_periods = 0.5
-    window_points = 200
-    low_freq = 4
+    window_points = 2000
+    low_freq = 6
     high_freq = 9
-    bin_path = Path('C:/Users/barja/source/repos/KMC/KMC/build/KMC.exe')
-    save_path = Path('D:/KMC_data/data_2019_11_15')
+    bin_path = Path('C:/Users/barja/source/repos/KMC/x64/Release/KMC.exe')
+    save_path = Path('D:/KMC_data/data_2019_11_19')
     save_path = Path(str(save_path) + '_v' + str(get_sim_version(save_path)))
     save_path.mkdir(parents=True)
 
@@ -82,8 +81,8 @@ if __name__ == '__main__':
     simulations['contact_switch_right'] = 0
     simulations['contact_left'] = 1
     simulations['contact_right'] = 1
-    simulations['amplitude'] = .05
-    simulations['energy_base'] = 0
+    simulations['amplitude'] = .01
+    simulations['energy_base'] = 0.0
 
     simulations['periods'] = simulations['frequency'].map(
         lambda freq: np.clip(freq / freq_list[0] * base_periods, 0, 4)

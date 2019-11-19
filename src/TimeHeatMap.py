@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 class TimeHeatMap:
     cuts_pos = None
-    options = {'mean': False, "jumps": True, "save_raw": True, 'mean_size': 7}
+    options = {'mean': False, "jumps": True, "save_raw": True, 'mean_size': 3}
 
     def __init__(self, load_data_path: Path, save_data_path: Path = None, options=None, workers: int = 1):
         """

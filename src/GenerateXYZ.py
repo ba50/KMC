@@ -89,13 +89,6 @@ class GenerateXYZ:
             if random.uniform(0, 1) > 0.75:
                 self.anions[index] = 1
 
-        self.anions[:, :, -1] = self.anions[:, :, +1]
-        self.anions[:, :, +0] = self.anions[:, :, -2]
-        self.anions[:, -1, :] = self.anions[:, +1, :]
-        self.anions[:, +0, :] = self.anions[:, -2, :]
-        self.anions[-1, :, :] = self.anions[+1, :, :]
-        self.anions[+0, :, :] = self.anions[-2, :, :]
-
         for index, atom in np.ndenumerate(self.anions):
             position = (index[0]*self.cell_size + self.cell_size * 0.5,
                         index[1]*self.cell_size + self.cell_size * 0.5,

@@ -84,7 +84,7 @@ public:
 						temp_site[1] = static_cast<int>(floor(temp_position[1]/CELL_SIZE)) + 1;
 						temp_site[2] = static_cast<int>(floor(temp_position[2]/CELL_SIZE)) + 1;
 						oxygen_positions_.push_back(temp_site);
-						oxygen_array_[temp_site[2]][temp_site[1]][temp_site[0]] = 0;
+						oxygen_array_[temp_site[2]][temp_site[1]][temp_site[0]] = 0.0;
 					}
 				}
 			}
@@ -405,7 +405,7 @@ public:
 		long double time{ 0.0 };
 		double delta_energy{ 0.0 };
 
-		if( remove(std::string(data_path+"/when_which_wherer.csv").c_str()) != 0 )
+		if( remove(std::string(data_path+"/when_which_where.csv").c_str()) != 0 )
 			std::cout<<"Error deleting file: when_which_where.csv"<<std::endl;
 		else
 			std::cout<< "File when_which_where.csv successfully deleted"<<std::endl;
@@ -416,9 +416,12 @@ public:
 			std::cout<< "File field_plot.csv successfully deleted"<<std::endl;
 
 		FILE *when_which_where, *field_plot;
-		//fopen_s(&when_which_wheren, std::string(data_path + "/when_which_where.txt").c_str(), "a");
-		when_which_where = fopen(std::string(data_path + "/when_which_where.csv").c_str(), "a");
+		//fopen_s(&when_which_where, std::string(data_path + "/when_which_where.csv").c_str(), "a");
+		when_which_where = fopen(std::string(data_path + "/when_which_where.csv").c_str(), "w");
 		fprintf(when_which_where, "time,selected_atom,selected_direction\n");
+
+		std::ofstream f_out_oxygen_map(data_path + "/oxygen_map/" +"positions.xyz");
+
 
 		field_plot = fopen(std::string(data_path + "/field_plot.csv").c_str(), "a");
 		fprintf(field_plot, "time,delta_energy\n");
@@ -429,6 +432,7 @@ public:
 
 		while(time < time_end){
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
+
 			delta_energy = A * sin(2 * PI * frequency * pow(10.0, -12) * time) + delta_energy_base;
 
 			for (id = 0; id < jump_rate_vector_.size(); id++) {
@@ -457,18 +461,24 @@ public:
 			selected_direction_temp = std::lower_bound(jumpe_direction_sume_vector_.begin(), jumpe_direction_sume_vector_.end(), random_for_direction);
 			seleced_direction = selected_direction_temp - jumpe_direction_sume_vector_.begin() - 1;
 
-			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 1;
+			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 1.0;
 
 			oxygen_positions_[selected_atom][2] += direction_vector[seleced_direction][2];
 			oxygen_positions_[selected_atom][1] += direction_vector[seleced_direction][1];
 			oxygen_positions_[selected_atom][0] += direction_vector[seleced_direction][0];
 
-			oxygen_positions_[selected_atom][2] %= oxygen_array_size_[2]-1;
-			oxygen_positions_[selected_atom][1] %= oxygen_array_size_[1]-1;
-			oxygen_positions_[selected_atom][0] %= oxygen_array_size_[0]-1;
-
 			// bardzo slaba optymalizacja, wymyslec cos innego
 			///////////////////////////////////////////////////////////////////////////
+			if (oxygen_positions_[selected_atom][2] == oxygen_array_size_[2] - 1) {
+				oxygen_positions_[selected_atom][2] = 1;
+			}
+			if (oxygen_positions_[selected_atom][1] == oxygen_array_size_[1] - 1) {
+				oxygen_positions_[selected_atom][1] = 1;
+			}
+			if (oxygen_positions_[selected_atom][0] == oxygen_array_size_[0] - 1) {
+				oxygen_positions_[selected_atom][0] = 1;
+			}
+
 			if (oxygen_positions_[selected_atom][2] == 0) {
 				oxygen_positions_[selected_atom][2] = static_cast<int>(oxygen_array_size_[2] - 2);
 			}
@@ -479,17 +489,21 @@ public:
 				oxygen_positions_[selected_atom][0] = static_cast<int>(oxygen_array_size_[0] - 2);
 			}
 			///////////////////////////////////////////////////////////////////////////
+			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 0.0;
 
-			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 0;
+			heat_map_array_[oxygen_positions_[selected_atom][2] - 1]
+				[oxygen_positions_[selected_atom][1] - 1]
+			[oxygen_positions_[selected_atom][0] - 1]
+			[seleced_direction]++;
 
-			if (fmod(time, window) <= window_epsilon) {
+			if (fmod(time, window) < window_epsilon) {
 				std::cout << time << "/" << time_end << "[ps]" << std::endl;
-				std::ofstream file_out(data_path + "/heat_map/" + std::to_string((int)time) + ".dat");
+				std::ofstream f_out_heat_map(data_path + "/heat_map/" + std::to_string((int)time) + ".dat");
 				for (size_t z = 0; z < heat_map_array_size_[2]; z++) {
 					for (size_t y = 0; y < heat_map_array_size_[1]; y++) {
 						for (size_t x = 0; x < heat_map_array_size_[0]; x++) {
 							for (size_t i = 0; i < 6; i++) {
-								file_out << x \
+								f_out_heat_map << x \
 									<< "\t" \
 									<< y \
 									<< "\t" \
@@ -503,20 +517,17 @@ public:
 						}
 					}
 				}
-				file_out.close();
-				
+				f_out_heat_map.close();
+
 				fprintf(field_plot, "%Lf,%Lf\n", time, delta_energy);
 			}
-
-			heat_map_array_[oxygen_positions_[selected_atom][2] - 1]
-				[oxygen_positions_[selected_atom][1] - 1]
-			[oxygen_positions_[selected_atom][0] - 1]
-			[seleced_direction]++;
 			
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
-			//fprintf(when_which_where, "%Lf,%zd,%zd,\n", time, selected_atom, seleced_direction);
+			//fprintf(when_which_where, "%Lf,%zd,%zd\n", time, selected_atom, seleced_direction);
 		}
+
+		f_out_oxygen_map.close();
 		fclose(when_which_where);
 		fclose(field_plot);
 		std::cout << std::endl;
@@ -524,18 +535,20 @@ public:
 
 	inline void BourderyConditions(double*** &array, const std::vector<size_t> &array_size) {
 		size_t x, y, z;
-		// back -> front
+		//// back -> front
 		for (y = 0; y < array_size[1]; y++) {
 			for (x = 0; x < array_size[0]; x++) {
 				array[0][y][x] = array[array_size[2] - 2][y][x];
 			}
 		}
+
 		// front -> back
 		for (y = 0; y < array_size[1]; y++) {
 			for (x = 0; x < array_size[0]; x++) {
 				array[array_size[2]-1][y][x] = array[1][y][x];
 			}
 		}
+
 		// right -> left
 		for (z = 0; z < array_size[2]; z++) {
 			for (y = 0; y < array_size[1]; y++) {

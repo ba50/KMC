@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
 	std::vector<unsigned int> contact(2, 100);
 
 	input.open(data_path+"/input.kmc");
-	while(!input.eof()){
+	while (!input.eof()) {
 		getline(input, line);
 		input_vector.push_back(line.substr(0, line.find('#', 0)));
 	}
