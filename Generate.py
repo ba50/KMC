@@ -54,11 +54,11 @@ def get_sim_version(path: Path):
 if __name__ == '__main__':
     workers = 3
     base_periods = 0.5
-    window_points = 2000
-    low_freq = 6
+    window_points = 200
+    low_freq = 4
     high_freq = 9
-    bin_path = Path('C:/Users/barja/source/repos/KMC/x64/Release/KMC.exe')
-    save_path = Path('D:/KMC_data/data_2019_11_19')
+    bin_path = Path('/home/b.jasik/Documents/source/KMC/build/KMC')
+    save_path = Path('KMC_data/data_2019_11_20')
     save_path = Path(str(save_path) + '_v' + str(get_sim_version(save_path)))
     save_path.mkdir(parents=True)
 
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     simulations['contact_switch_right'] = 0
     simulations['contact_left'] = 1
     simulations['contact_right'] = 1
-    simulations['amplitude'] = .01
+    simulations['amplitude'] = .05
     simulations['energy_base'] = 0.0
 
     simulations['periods'] = simulations['frequency'].map(
@@ -98,13 +98,9 @@ if __name__ == '__main__':
     simulations = simulations.loc[np.repeat(simulations.index.values, 3)].reset_index()
     simulations['version'] = np.array([[x for x in version] for _ in range(len(freq_list))]).flatten()
 
-    # simulations['size_x'] = np.flip(np.repeat(np.clip(np.array(get_size(3, 5)), 3, 3), len(version)))
-    # simulations['size_y'] = np.flip(np.repeat(np.clip(np.array(get_size(3, 5)), 3, 3), len(version)))
-    # simulations['size_z'] = np.flip(np.repeat(np.clip(np.array(get_size(3, 5)), 3, 3), len(version)))
-
-    simulations['size_x'] = 7
-    simulations['size_y'] = 5
-    simulations['size_z'] = 5
+    simulations['size_x'] = np.flip(np.repeat(np.clip(np.array(get_size(11, 5)), 5, 11), len(version)))
+    simulations['size_y'] = np.flip(np.repeat(np.clip(np.array(get_size(7, 5)), 5, 7), len(version)))
+    simulations['size_z'] = np.flip(np.repeat(np.clip(np.array(get_size(7, 5)), 5, 7), len(version)))
 
     simulations['sim_name'] = simulations.apply(
         lambda x: '_'.join([str(x[4]), str(x[5]), str(x[6]), x[3], str(x[0]), x[2]]), axis=1
@@ -113,6 +109,7 @@ if __name__ == '__main__':
     simulations['path_to_data'] = simulations['sim_name'].map(lambda x: save_path / x)
     simulations['commend'] = simulations['path_to_data'].map(lambda x: str(bin_path)+' '+str(x)+'\n')
 
+    simulations.to_csv(save_path / 'simulations.csv', index=False)
     for index, chunk in enumerate(np.split(simulations, workers)):
         if os.name == 'nt':
             f_out = Path(save_path, 'run_%s.ps1' % index).open('w')
