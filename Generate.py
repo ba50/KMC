@@ -58,7 +58,7 @@ if __name__ == '__main__':
     low_freq = 6
     high_freq = 9
     bin_path = Path('/home/b.jasik/Documents/source/KMC/build/KMC')
-    save_path = Path('D:/KMC_data/data_2019_11_24')
+    save_path = Path('D:/KMC_data/data_2019_11_26')
     save_path = Path(str(save_path) + '_v' + str(get_sim_version(save_path)))
     save_path.mkdir(parents=True)
 
