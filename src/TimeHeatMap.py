@@ -22,17 +22,20 @@ class TimeHeatMap:
         if options:
             self.options.update(options)
 
-        self.load_data_path = load_data_path / 'heat_map'
-        self.save_data_path = save_data_path
-        self.workers = workers
+        self.load_data_path = load_data_path
+        if not (self.load_data_path/'heat_map').exists():
+            self.load_data_path = None
+        else:
+            self.save_data_path = save_data_path
+            self.workers = workers
 
-        if not self.save_data_path:
-            self.save_data_path = self.load_data_path.parent / 'heat_map_plots'
+            if not self.save_data_path:
+                self.save_data_path = self.load_data_path / 'heat_map_plots'
 
-        self.save_data_path.mkdir(parents=True, exist_ok=True)
+            self.save_data_path.mkdir(parents=True, exist_ok=True)  # TODO: delete exist_ok
 
-        self.file_list = sorted(self.load_data_path.glob('*.dat'),
-                                key=lambda i: int(os.path.splitext(os.path.basename(i))[0]))
+            self.file_list = sorted((self.load_data_path/'heat_map').glob('*.dat'),
+                                    key=lambda i: int(os.path.splitext(os.path.basename(i))[0]))
 
     def process_data(self):
         print('Loading heat map files...')
@@ -105,7 +108,6 @@ class TimeHeatMap:
                             _heat_map['direction'].append(direction)
 
         _heat_map = pd.DataFrame(_heat_map)
-
         _heat_map = _heat_map.merge(heat_map, on=['x', 'y', 'z', 'direction'])
 
         for direction in range(2):

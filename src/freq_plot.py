@@ -10,7 +10,7 @@ from utils.config import get_config
 
 
 if __name__ == '__main__':
-    base_path = Path('D:/KMC_data/data_2019_10_11')
+    base_path = Path('D:/KMC_data/data_2019_11_24_v0')
     sim_key = '30_7_7_random_'
 
     data = {'timed_jumps_center_contact_left_jump': [],

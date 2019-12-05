@@ -4,12 +4,13 @@ import h5py
 import numpy as np
 import pandas as pd
 
-import matplotlib
-matplotlib.use('Agg')
+# import matplotlib
+# matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 from TimeHeatMap import TimeHeatMap
+from TimeOxygenMap import TimeOxygenMap
 from utils.config import get_config
 
 
@@ -119,7 +120,12 @@ class DataProcess:
         #     del field_path
 
         timed_heat_map = TimeHeatMap(load_data_path=self.simulation_path, options=self.options, workers=self.workers)
-        timed_heat_map.process_data()
+        if timed_heat_map.load_data_path:
+            timed_heat_map.process_data()
+
+        timed_oxygen_map = TimeOxygenMap(load_data_path=self.simulation_path)
+        if timed_oxygen_map.load_data_path:
+            timed_oxygen_map.process_data()
 
         plt.close('all')
 
@@ -138,7 +144,7 @@ if __name__ == '__main__':
     save_path = Path('D:/KMC_data/data_2019_11_24_v0')
     plot_steps = 100
 
-    sim_path_list = [sim for sim in save_path.glob("*") if sim.is_dir()]
+    sim_path_list = [sim for sim in save_path.glob("5_5_5_random_0_b") if sim.is_dir()]
 
     plot_options = {
         'dpi': 100,

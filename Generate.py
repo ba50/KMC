@@ -5,10 +5,12 @@ from pathlib import Path
 import pandas as pd
 
 from src.GenerateXYZ import GenerateXYZ
+from src.fit_sin import Function
 
 
 def generate_sim_input(_row, _path_to_data, _structure: GenerateXYZ):
     (_path_to_data / 'heat_map').mkdir(parents=True, exist_ok=True)
+    (_path_to_data / 'oxygen_map').mkdir(parents=True, exist_ok=True)
 
     with (_path_to_data / 'input.kmc').open('w') as file_out:
         file_out.write("{}\t# cell_type\n".format(_row['cell_type'].lower()))
@@ -31,14 +33,10 @@ def generate_sim_input(_row, _path_to_data, _structure: GenerateXYZ):
         _structure.save_positions(_path_to_data/'positions.xyz')
 
 
-def exp_decay(x, amp=50, tau=5):
-    return (amp * np.exp(-x / tau)).astype(int)
-
-
 def get_size(amp, tau):
     size = []
     for x in range(len(freq_list)):
-        y = exp_decay(x, amp=amp, tau=tau)
+        y = int(Function.exp_decay(x, amp=amp, tau=tau))
         if (y % 2) == 0:
             size.append(y - 1)
         else:
@@ -55,10 +53,10 @@ if __name__ == '__main__':
     workers = 3
     base_periods = 0.5
     window_points = 200
-    low_freq = 6
+    low_freq = 4
     high_freq = 9
     bin_path = Path('/home/b.jasik/Documents/source/KMC/build/KMC')
-    save_path = Path('D:/KMC_data/data_2019_11_26')
+    save_path = Path('D:/KMC_data/data_2019_12_04')
     save_path = Path(str(save_path) + '_v' + str(get_sim_version(save_path)))
     save_path.mkdir(parents=True)
 
@@ -74,14 +72,14 @@ if __name__ == '__main__':
     simulations['size_y'] = 7
     simulations['size_z'] = 7
     simulations['time_end'] = 0
-    simulations['thermalization_time'] = 200
+    simulations['thermalization_time'] = 0
     simulations['window'] = 100
     simulations['window_epsilon'] = 0.01
     simulations['contact_switch_left'] = 0
     simulations['contact_switch_right'] = 0
     simulations['contact_left'] = 1
     simulations['contact_right'] = 1
-    simulations['amplitude'] = .05
+    simulations['amplitude'] = .1
     simulations['energy_base'] = 0.0
 
     simulations['periods'] = simulations['frequency'].map(
@@ -98,9 +96,13 @@ if __name__ == '__main__':
     simulations = simulations.loc[np.repeat(simulations.index.values, 3)].reset_index()
     simulations['version'] = np.array([[x for x in version] for _ in range(len(freq_list))]).flatten()
 
-    simulations['size_x'] = np.flip(np.repeat(np.clip(np.array(get_size(11, 5)), 5, 11), len(version)))
-    simulations['size_y'] = np.flip(np.repeat(np.clip(np.array(get_size(7, 5)), 5, 7), len(version)))
-    simulations['size_z'] = np.flip(np.repeat(np.clip(np.array(get_size(7, 5)), 5, 7), len(version)))
+    # simulations['size_x'] = np.flip(np.repeat(np.clip(np.array(get_size(11, 5)), 5, 11), len(version)))
+    # simulations['size_y'] = np.flip(np.repeat(np.clip(np.array(get_size(7, 5)), 5, 7), len(version)))
+    # simulations['size_z'] = np.flip(np.repeat(np.clip(np.array(get_size(7, 5)), 5, 7), len(version)))
+
+    simulations['size_x'] = 11
+    simulations['size_y'] = 5
+    simulations['size_z'] = 5
 
     simulations['sim_name'] = simulations.apply(
         lambda x: '_'.join([str(x[4]), str(x[5]), str(x[6]), x[3], str(x[0]), x[2]]), axis=1
