@@ -56,28 +56,33 @@ int main(int argc, char *argv[]) {
 		thermalization_time = std::stold(input_vector[4], &sz);
 	}
 
+	long double time_start;
+	{
+		std::string::size_type sz;
+		time_start = std::stold(input_vector[5], &sz);
+	}
 
 	long double time_end;
 	{
 		std::string::size_type sz;
-		time_end = std::stold(input_vector[5], &sz);
+		time_end = std::stold(input_vector[6], &sz);
 	}
 
 	long double window;
 	{
 		std::string::size_type sz;
-		window = std::stold(input_vector[6], &sz);
+		window = std::stold(input_vector[7], &sz);
 	}
 
 	long double window_epsilon;
 	{
 		std::string::size_type sz;
-		window_epsilon = std::stold(input_vector[7], &sz);
+		window_epsilon = std::stold(input_vector[8], &sz);
 	}
 
 
 
-	switch(std::atoi(input_vector[8].c_str())){
+	switch(std::atoi(input_vector[9].c_str())){
 		case 0:
 			contact_switch[0] = false;
 			break;
@@ -89,7 +94,7 @@ int main(int argc, char *argv[]) {
 			exit(1);
 	}
 
-	switch(std::atoi(input_vector[9].c_str())){
+	switch(std::atoi(input_vector[10].c_str())){
 		case 0:
 			contact_switch[1] = false;
 			break;
@@ -102,21 +107,21 @@ int main(int argc, char *argv[]) {
 	}
 
 	{
-		std::istringstream ss(input_vector[10]);
-		if (!(ss >> contact[0]))
-			std::cerr << "Invalid number " << input_vector[10] << '\n';
-	}
-
-	{
 		std::istringstream ss(input_vector[11]);
-		if (!(ss >> contact[1]))
+		if (!(ss >> contact[0]))
 			std::cerr << "Invalid number " << input_vector[11] << '\n';
 	}
 
-	double A = std::atof(input_vector[12].c_str());
-	double frequency = std::atof(input_vector[13].c_str());
-	double period = std::atof(input_vector[14].c_str());
-	double delta_energy_base = std::atof(input_vector[15].c_str());
+	{
+		std::istringstream ss(input_vector[12]);
+		if (!(ss >> contact[1]))
+			std::cerr << "Invalid number " << input_vector[12] << '\n';
+	}
+
+	double A = std::atof(input_vector[13].c_str());
+	double frequency = std::atof(input_vector[14].c_str());
+	double period = std::atof(input_vector[15].c_str());
+	double delta_energy_base = std::atof(input_vector[16].c_str());
 
 	Load::XYZ(types, positions, data_path);
 	std::unique_ptr<Configuration> sample = std::make_unique<Configuration>(positions, types);
@@ -124,6 +129,7 @@ int main(int argc, char *argv[]) {
 	std::unique_ptr<Core> core = std::make_unique<Core>(*sample, cells, types, contact_switch, contact, data_path);
 	core->Run(
 		thermalization_time,
+		time_start,
 		time_end,
 		window,
 		window_epsilon,

@@ -18,7 +18,8 @@ def generate_sim_input(_row, _path_to_data, _structure: GenerateXYZ):
         file_out.write("{}\t# size_y\n".format(_row['size_y']))
         file_out.write("{}\t# size_z\n".format(_row['size_z']))
         file_out.write("{}\t# therm_time\n".format(_row['thermalization_time']))
-        file_out.write("{}\t# sim_time\n".format(_row['time_end']))
+        file_out.write("{}\t# time_start\n".format(_row['time_start']))
+        file_out.write("{}\t# time_end\n".format(_row['time_end']))
         file_out.write("{}\t# window\n".format(_row['window']))
         file_out.write("{}\t# window_epsilon\n".format(_row['window_epsilon']))
         file_out.write("{}\t# left_contact_sw\n".format(_row['contact_switch_left']))
@@ -51,12 +52,13 @@ def get_sim_version(path: Path):
 
 if __name__ == '__main__':
     workers = 3
+    split = 3
     base_periods = 0.5
     window_points = 200
     low_freq = 4
     high_freq = 9
     bin_path = Path('/home/b.jasik/Documents/source/KMC/build/KMC')
-    save_path = Path('D:/KMC_data/data_2019_12_04')
+    save_path = Path('D:/KMC_data/data_2019_12_07')
     save_path = Path(str(save_path) + '_v' + str(get_sim_version(save_path)))
     save_path.mkdir(parents=True)
 
@@ -66,12 +68,7 @@ if __name__ == '__main__':
 
     simulations = pd.DataFrame({'frequency': freq_list})
 
-    simulations['version'] = 'a'
     simulations['cell_type'] = 'random'
-    simulations['size_x'] = 30
-    simulations['size_y'] = 7
-    simulations['size_z'] = 7
-    simulations['time_end'] = 0
     simulations['thermalization_time'] = 0
     simulations['window'] = 100
     simulations['window_epsilon'] = 0.01
@@ -86,6 +83,21 @@ if __name__ == '__main__':
         lambda freq: np.clip(freq / freq_list[0] * base_periods, 0, 4)
     )
 
+    start_stop = {'time_start': [], 'time_end': [], 'periods': [], 'frequency': [], 'split': []}
+    for index, row in simulations.iterrows():
+        total_time = row['periods']/row['frequency']*10**12
+        last_step = 0
+        steps = np.ceil(total_time / split).astype(int)
+        for split_step, next_step in enumerate(range(steps, int(total_time)+steps, steps)):
+            start_stop['time_start'].append(last_step)
+            start_stop['time_end'].append(next_step)
+            start_stop['periods'].append(row['periods'])
+            start_stop['frequency'].append(row['frequency'])
+            start_stop['split'].append(split_step)
+            last_step = next_step
+    start_stop = pd.DataFrame(start_stop)
+    simulations = simulations.merge(start_stop, on=['frequency', 'periods'])
+
     simulations['window'] = simulations[['periods', 'frequency']].apply(
         lambda x: (x[0]/(x[1]*10.0**-12))/window_points,
         axis=1
@@ -93,8 +105,11 @@ if __name__ == '__main__':
 
     version = ['a', 'b', 'c']
 
-    simulations = simulations.loc[np.repeat(simulations.index.values, 3)].reset_index()
+    freq_list = simulations['frequency']
+    simulations = simulations.loc[np.repeat(simulations.index.values, len(version))].reset_index()
     simulations['version'] = np.array([[x for x in version] for _ in range(len(freq_list))]).flatten()
+    freq_list = set(simulations['frequency'])
+    simulations['index'] = np.array([[i for _ in range(len(version)*split)] for i in range(len(freq_list))]).flatten()
 
     # simulations['size_x'] = np.flip(np.repeat(np.clip(np.array(get_size(11, 5)), 5, 11), len(version)))
     # simulations['size_y'] = np.flip(np.repeat(np.clip(np.array(get_size(7, 5)), 5, 7), len(version)))
@@ -104,8 +119,9 @@ if __name__ == '__main__':
     simulations['size_y'] = 5
     simulations['size_z'] = 5
 
-    simulations['sim_name'] = simulations.apply(
-        lambda x: '_'.join([str(x[4]), str(x[5]), str(x[6]), x[3], str(x[0]), x[2]]), axis=1
+    select_columns = ['size_x', 'size_y', 'size_z', 'cell_type', 'index', 'version', 'split']
+    simulations['sim_name'] = simulations[select_columns].apply(
+        lambda x: '_'.join([str(x[0]), str(x[1]), str(x[2]), x[3], str(x[4]), x[5], str(x[6])]), axis=1
     )
 
     simulations['path_to_data'] = simulations['sim_name'].map(lambda x: save_path / x)

@@ -284,6 +284,7 @@ public:
 	// Da sie to lepiej rozwiazac!!
 	void Run(
 		long double thermalization_time,
+		long double time_start,
 		long double time_end,
 		const long double window,
 		const long double window_epsilon,
@@ -297,12 +298,12 @@ public:
 
 		std::cout << "Starting simulation" << "\n";
 		Update(
+			time_start,
 			time_end,
 			window,
 			window_epsilon,
 			A,
 			frequency,
-			period,
 			delta_energy_base
 		);
 		std::cout << "Core exit." << "\n";
@@ -355,12 +356,18 @@ public:
 			oxygen_positions_[selected_atom][1] += direction_vector[seleced_direction][1];
 			oxygen_positions_[selected_atom][0] += direction_vector[seleced_direction][0];
 
-			oxygen_positions_[selected_atom][2] %= oxygen_array_size_[2]-1;
-			oxygen_positions_[selected_atom][1] %= oxygen_array_size_[1]-1;
-			oxygen_positions_[selected_atom][0] %= oxygen_array_size_[0]-1;
-
 			// bardzo slaba optymalizacja, wymyslec cos innego
 			///////////////////////////////////////////////////////////////////////////
+			if (oxygen_positions_[selected_atom][2] == oxygen_array_size_[2] - 1) {
+				oxygen_positions_[selected_atom][2] = 1;
+			}
+			if (oxygen_positions_[selected_atom][1] == oxygen_array_size_[1] - 1) {
+				oxygen_positions_[selected_atom][1] = 1;
+			}
+			if (oxygen_positions_[selected_atom][0] == oxygen_array_size_[0] - 1) {
+				oxygen_positions_[selected_atom][0] = 1;
+			}
+
 			if (oxygen_positions_[selected_atom][2] == 0) {
 				oxygen_positions_[selected_atom][2] = static_cast<int>(oxygen_array_size_[2] - 2);
 			}
@@ -385,12 +392,12 @@ public:
 	}
 
 	void Update(
+		long double time_start,
 		long double time_end,
 		const long double window,
 		const long double window_epsilon,
 		const double A,
 		const double frequency,
-		const double period,
 		const double delta_energy_base
 	) {
 		const double PI = 3.141592653589793238463;
@@ -402,7 +409,7 @@ public:
 		size_t selected_atom, seleced_direction;
 
 		size_t id, i;
-		long double time{ 0.0 };
+		long double time{ time_start };
 		double delta_energy{ 0.0 };
 
 		if( remove(std::string(data_path+"/when_which_where.csv").c_str()) != 0 )
@@ -422,13 +429,8 @@ public:
 
 		std::ofstream f_out_oxygen_map(data_path + "/oxygen_map/" +"positions.xyz");
 
-
 		field_plot = fopen(std::string(data_path + "/field_plot.csv").c_str(), "a");
 		fprintf(field_plot, "time,delta_energy\n");
-
-		if (time_end == 0) {
-			time_end = period / frequency * pow(10.0, 12);
-		}
 
 		while(time < time_end){
 			BourderyConditions(oxygen_array_, oxygen_array_size_);

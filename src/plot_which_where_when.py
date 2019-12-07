@@ -123,9 +123,9 @@ class DataProcess:
         if timed_heat_map.load_data_path:
             timed_heat_map.process_data()
 
-        timed_oxygen_map = TimeOxygenMap(load_data_path=self.simulation_path)
-        if timed_oxygen_map.load_data_path:
-            timed_oxygen_map.process_data()
+        # timed_oxygen_map = TimeOxygenMap(load_data_path=self.simulation_path)
+        # if timed_oxygen_map.load_data_path:
+        #     timed_oxygen_map.process_data()
 
         plt.close('all')
 
@@ -141,10 +141,10 @@ class DataProcess:
 if __name__ == '__main__':
 
     _workers = 1
-    save_path = Path('D:/KMC_data/data_2019_11_24_v0')
+    save_path = Path('D:/KMC_data/data_2019_12_07_v1')
     plot_steps = 100
 
-    sim_path_list = [sim for sim in save_path.glob("5_5_5_random_0_b") if sim.is_dir()]
+    sim_path_list = [sim for sim in save_path.glob("*") if sim.is_dir()]
 
     plot_options = {
         'dpi': 100,
