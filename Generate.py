@@ -52,13 +52,13 @@ def get_sim_version(path: Path):
 
 if __name__ == '__main__':
     workers = 3
-    split = 3
+    split = 1
     base_periods = 0.5
     window_points = 200
-    low_freq = 4
-    high_freq = 9
+    low_freq = 5
+    high_freq = 10
     bin_path = Path('/home/b.jasik/Documents/source/KMC/build/KMC')
-    save_path = Path('D:/KMC_data/data_2019_12_07')
+    save_path = Path('D:/KMC_data/data_2019_12_09')
     save_path = Path(str(save_path) + '_v' + str(get_sim_version(save_path)))
     save_path.mkdir(parents=True)
 
@@ -115,7 +115,7 @@ if __name__ == '__main__':
     # simulations['size_y'] = np.flip(np.repeat(np.clip(np.array(get_size(7, 5)), 5, 7), len(version)))
     # simulations['size_z'] = np.flip(np.repeat(np.clip(np.array(get_size(7, 5)), 5, 7), len(version)))
 
-    simulations['size_x'] = 11
+    simulations['size_x'] = 5
     simulations['size_y'] = 5
     simulations['size_z'] = 5
 

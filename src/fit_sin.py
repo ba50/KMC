@@ -8,6 +8,7 @@ import pandas as pd
 from tqdm import tqdm
 from scipy import optimize
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
 
 from utils.config import get_config
 
@@ -28,6 +29,8 @@ def fit_curve_signal(fit_function, sim_signal, fit_signal, config):
                                                    sim_signal['y'],
                                                    p0=[config['amplitude'], 0, 0])
     params = {'fit_sine_amp': params[0], 'fit_sine_phi': params[1], 'const': params[2]}
+    while abs(params['fit_sine_phi']) > 2 * np.pi:
+        params['fit_sine_phi'] -= 2 * np.pi*np.sign(params['fit_sine_phi'])
 
     fit_y = []
     for step in fit_signal['time']:
@@ -77,8 +80,7 @@ def generate_phi(sym: Path):
     hf = h5py.File(str(sym / 'heat_map_plots' / 'timed_jumps_raw_data.h5'), 'r')
     config = get_config(sym / 'input.kmc')
     data_out = {}
-    for key in hf.keys():
-        print('Key:', key)
+    for key in tqdm(hf.keys()):
         sim_signal = pd.DataFrame({'x': hf[key][:, 0], 'y': hf[key][:, 1]})
         field_signal = pd.read_csv(sym/'field_plot.csv')
         fit_signal = pd.DataFrame(
@@ -88,7 +90,7 @@ def generate_phi(sym: Path):
         sim_signal['time'] = np.linspace(fit_signal['time'].min(), fit_signal['time'].max(), len(sim_signal['x']))
         fit_function = Function(config['frequency']*10**-12)
         try:
-            for _ in range(2):
+            for _ in range(10):
                 params, fit_signal = fit_curve_signal(fit_function, sim_signal, fit_signal, config)
 
                 ideal_sim_signal = pd.DataFrame(
@@ -111,13 +113,11 @@ def generate_phi(sym: Path):
             sim_signal.dropna(inplace=True)
             params, fit_signal = fit_curve_signal(fit_function, sim_signal, fit_signal, config)
 
-            mse = Function.mse(sim_signal['y'], ideal_sim_signal['y'])
-
             _fig, _ax1 = plt.subplots()
             _ax2 = _ax1.twinx()
-            _ax1.plot(sim_signal['time'], sim_signal['y'], linestyle='--', color='b', label='Data')
-            _ax1.plot(fit_signal['time'], fit_signal['y'], color='r', label='Fitted func')
-            _ax1.plot(ideal_sim_signal['time'], ideal_sim_signal['y'], color='r', label='Fitted func')
+            _ax1.plot(sim_signal['time'], sim_signal['y'], linestyle='--', color='b')
+            _ax1.plot(fit_signal['time'], fit_signal['y'], color='r', linestyle='-', label='Fitted func')
+            # _ax1.plot(ideal_sim_signal['time'], ideal_sim_signal['y'], color='r', label='Fitted func')
             _ax2.plot(
                 fit_signal['time'],
                 Function.sin(fit_signal['time'], config['amplitude'], fit_function.sine_frequency, 0),
@@ -126,16 +126,17 @@ def generate_phi(sym: Path):
                 label='Field'
             )
 
-            _ax1.set_xlabel('X')
+            _ax1.set_xlabel('Time [ps]')
+            _ax1.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
             _ax1.set_ylabel('Data', color='b')
-            _ax2.set_ylabel('Field', color='g')
+            _ax2.set_ylabel('Field [eV]', color='g')
 
-            plt.legend(loc='upper right')
+            _ax1.legend(loc='upper left')
+            _ax2.legend(loc='upper right')
             plt.text(0,
-                     ideal_sim_signal['y'].max(),
-                     'A=%.2e; phi=%.2f \n MSE=%.2e' % (abs(params['fit_sine_amp']),
-                                                                  params['fit_sine_phi'],
-                                                                  mse))
+                     config['amplitude'] * .75,
+                     "A=%.2e [eV]\nphi=%.2f [rad]" % (abs(params['fit_sine_amp']),
+                                                      params['fit_sine_phi']))
 
             plt.savefig(sym / 'heat_map_plots' / ('fit_sin_%s.png' % key))
             plt.close(_fig)
@@ -144,7 +145,6 @@ def generate_phi(sym: Path):
                 'phi_mean_rad': params['fit_sine_phi'],
                 'phi_mean_deg': params['fit_sine_phi'] * 180 / np.pi
             }
-
         except RuntimeError as e:
             print("\nError in %s: %s\n" % (sym.name, e))
 
@@ -153,7 +153,7 @@ def generate_phi(sym: Path):
 
 if __name__ == '__main__':
     workers = 1
-    base_path = Path('D:/KMC_data/data_2019_11_24_v0')
+    base_path = Path('D:/KMC_data/data_2019_12_08_v1')
 
     sim_path_list = [sim for sim in base_path.glob("*") if sim.is_dir()]
 
