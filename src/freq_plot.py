@@ -11,7 +11,7 @@ from utils.config import get_config
 
 
 if __name__ == '__main__':
-    base_path = Path('D:/KMC_data/data_2019_12_08_v1')
+    base_path = Path('D:/KMC_data/data_2019_12_09_v0')
     sim_path_list = [sim for sim in base_path.glob("*") if sim.is_dir()]
 
     data = {'timed_jumps_center_contact_left_jump': [],
@@ -46,6 +46,8 @@ if __name__ == '__main__':
         _ax.errorbar(plot_data['frequency'], plot_data['mean'], yerr=plot_data['sem'], fmt='--o')
         _ax.set_xlabel('Frequency [Hz]')
         _ax.set_ylabel('delta phi [rad]')
+
+        plt.xscale('log')
         plt.savefig(base_path / ('phi(f)_%s.png' % column),
                     dpi=1000,
                     bbox_inches='tight')

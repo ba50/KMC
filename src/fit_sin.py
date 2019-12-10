@@ -152,8 +152,8 @@ def generate_phi(sym: Path):
 
 
 if __name__ == '__main__':
-    workers = 1
-    base_path = Path('D:/KMC_data/data_2019_12_08_v1')
+    workers = 3
+    base_path = Path('D:/KMC_data/data_2019_12_09_v0')
 
     sim_path_list = [sim for sim in base_path.glob("*") if sim.is_dir()]
 

@@ -41,6 +41,7 @@ public:
 			const std::vector<Type> types,
 			const std::vector<bool> contact_switch,
 			const std::vector<unsigned int> contact,
+			const int& temperature,
 			const std::string& data_path):
 		types( types ), 
 		data_path( data_path ),
@@ -158,7 +159,22 @@ public:
 				+ kation_array[z+1][y][x] + kation_array[z+1][y][x+1] + kation_array[z+1][y+1][x] + kation_array[z+1][y+1][x+1] - 4.0);
 		};
 
-		residence_time_ = { 9.0, 16.0, 22.0, 33.0, 48.0 };
+		switch (temperature)
+		{
+			case 0:
+				residence_time_ = { 5.0, 8.0, 11.0, 17.0, 24.0 };
+				break;
+			case 1:
+				residence_time_ = { 9.0, 16.0, 22.0, 33.0, 48.0 };
+				break;
+			case 2:
+				residence_time_ = { 18.0, 32.0, 44.0, 66.0, 96.0 };
+				break;
+			default:
+				residence_time_ = { 9.0, 16.0, 22.0, 33.0, 48.0 };
+				break;
+		}
+
 		for (size_t z = 0; z < residence_time_array_size_[2]; z++) {
 			for (size_t y = 0; y < residence_time_array_size_[1]; y++) {
 				for (size_t x = 0; x < residence_time_array_size_[0]; x++) {

@@ -122,11 +122,12 @@ int main(int argc, char *argv[]) {
 	double frequency = std::atof(input_vector[14].c_str());
 	double period = std::atof(input_vector[15].c_str());
 	double delta_energy_base = std::atof(input_vector[16].c_str());
+	double temperature = std::atof(input_vector[17].c_str());
 
 	Load::XYZ(types, positions, data_path);
 	std::unique_ptr<Configuration> sample = std::make_unique<Configuration>(positions, types);
 
-	std::unique_ptr<Core> core = std::make_unique<Core>(*sample, cells, types, contact_switch, contact, data_path);
+	std::unique_ptr<Core> core = std::make_unique<Core>(*sample, cells, types, contact_switch, contact, int(temperature), data_path);
 	core->Run(
 		thermalization_time,
 		time_start,
