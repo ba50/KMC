@@ -54,12 +54,12 @@ def get_sim_version(path: Path):
 if __name__ == '__main__':
     workers = 3
     split = 1
-    base_periods = 2.0
+    base_periods = 3.0
     window_points = 200
-    low_freq = 6
+    low_freq = 7
     high_freq = 10
     bin_path = Path('/home/b.jasik/Documents/source/KMC/build/KMC')
-    save_path = Path('D:/KMC_data/data_2019_12_10')
+    save_path = Path('D:/KMC_data/data_2019_12_11')
     save_path = Path(str(save_path) + '_v' + str(get_sim_version(save_path)))
     save_path.mkdir(parents=True)
 
@@ -77,7 +77,7 @@ if __name__ == '__main__':
     simulations['contact_switch_right'] = 0
     simulations['contact_left'] = 1
     simulations['contact_right'] = 1
-    simulations['amplitude'] = .1
+    simulations['amplitude'] = .01
     simulations['energy_base'] = 0.0
 
     simulations['periods'] = simulations['frequency'].map(
@@ -112,10 +112,10 @@ if __name__ == '__main__':
     freq_list = set(simulations['frequency'])
     simulations['index'] = np.array([[i for _ in range(len(version)*split)] for i in range(len(freq_list))]).flatten()
 
-    temperature = ['0', '1', '2']
+    temperature = np.linspace(1, 10, 100)
 
     freq_list = simulations['frequency']
-    simulations = simulations.loc[np.repeat(simulations.index.values, len(version))].reset_index()
+    simulations = simulations.loc[np.repeat(simulations.index.values, len(temperature))].reset_index()
     simulations['temperature'] = np.array([[x for x in temperature] for _ in range(len(freq_list))]).flatten()
 
     # simulations['size_x'] = np.flip(np.repeat(np.clip(np.array(get_size(11, 5)), 5, 11), len(version)))
@@ -128,7 +128,7 @@ if __name__ == '__main__':
 
     select_columns = ['size_x', 'size_y', 'size_z', 'cell_type', 'index', 'version', 'split', 'temperature']
     simulations['sim_name'] = simulations[select_columns].apply(
-        lambda x: '_'.join([str(x[0]), str(x[1]), str(x[2]), x[3], str(x[4]), x[5], str(x[6]), x[7]]), axis=1
+        lambda x: '_'.join([str(x[0]), str(x[1]), str(x[2]), x[3], str(x[4]), x[5], str(x[6]), str(x[7])]), axis=1
     )
 
     simulations['path_to_data'] = simulations['sim_name'].map(lambda x: save_path / x)

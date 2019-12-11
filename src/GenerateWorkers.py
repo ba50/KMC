@@ -51,7 +51,7 @@ class GenerateWorkers:
 if __name__ == '__main__':
     _workers = 3
     program_path = 'C:/Users/barja/source/repos/KMC/x64/Release/KMC.exe'
-    data_path = 'D:/KMC_data/data_2019_12_10_v2'
+    data_path = 'D:/KMC_data/data_2019_12_11_v3'
 
     program_path = Path(program_path)
     data_path = Path(data_path)

@@ -90,7 +90,7 @@ def generate_phi(sym: Path):
         sim_signal['time'] = np.linspace(fit_signal['time'].min(), fit_signal['time'].max(), len(sim_signal['x']))
         fit_function = Function(config['frequency']*10**-12)
         try:
-            for _ in range(10):
+            for _ in range(1):
                 params, fit_signal = fit_curve_signal(fit_function, sim_signal, fit_signal, config)
 
                 ideal_sim_signal = pd.DataFrame(
@@ -101,9 +101,9 @@ def generate_phi(sym: Path):
                          fit_function.sine_frequency,
                          params['fit_sine_phi']) + params['const']
                      }
-
                 )
-                temp_sim_signal = reduce_nose(sim_signal, ideal_sim_signal, 10)
+
+                temp_sim_signal = reduce_nose(sim_signal, ideal_sim_signal, 7)
                 if len(temp_sim_signal) > 100:
                     sim_signal = temp_sim_signal
                 else:
@@ -153,9 +153,9 @@ def generate_phi(sym: Path):
 
 if __name__ == '__main__':
     workers = 3
-    base_path = Path('D:/KMC_data/data_2019_12_09_v0')
+    base_path = Path('D:/KMC_data/data_2019_12_11_v3')
 
-    sim_path_list = [sim for sim in base_path.glob("*") if sim.is_dir()]
+    sim_path_list = [sim for sim in base_path.glob("11_7_7_random_0_c_0_2") if sim.is_dir()]
 
     with Pool(workers) as p:
         _data_out = p.map(generate_phi, sim_path_list)
