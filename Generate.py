@@ -54,12 +54,12 @@ def get_sim_version(path: Path):
 if __name__ == '__main__':
     workers = 3
     split = 1
-    base_periods = 3.0
-    window_points = 200
-    low_freq = 7
+    base_periods = 0.5
+    window_points = 20
+    low_freq = 8
     high_freq = 10
     bin_path = Path('/home/b.jasik/Documents/source/KMC/build/KMC')
-    save_path = Path('D:/KMC_data/data_2019_12_11')
+    save_path = Path('D:/KMC_data/data_2019_12_17')
     save_path = Path(str(save_path) + '_v' + str(get_sim_version(save_path)))
     save_path.mkdir(parents=True)
 
@@ -71,17 +71,16 @@ if __name__ == '__main__':
 
     simulations['cell_type'] = 'random'
     simulations['thermalization_time'] = 0
-    simulations['window'] = 100
     simulations['window_epsilon'] = 0.01
     simulations['contact_switch_left'] = 0
     simulations['contact_switch_right'] = 0
     simulations['contact_left'] = 1
     simulations['contact_right'] = 1
-    simulations['amplitude'] = .01
+    simulations['amplitude'] = .1
     simulations['energy_base'] = 0.0
 
     simulations['periods'] = simulations['frequency'].map(
-        lambda freq: np.clip(freq / freq_list[0] * base_periods, 0, 4)
+        lambda freq: np.clip(freq / freq_list[0] * base_periods, 0, 20.0)
     )
 
     start_stop = {'time_start': [], 'time_end': [], 'periods': [], 'frequency': [], 'split': []}
@@ -112,7 +111,7 @@ if __name__ == '__main__':
     freq_list = set(simulations['frequency'])
     simulations['index'] = np.array([[i for _ in range(len(version)*split)] for i in range(len(freq_list))]).flatten()
 
-    temperature = np.linspace(1, 10, 100)
+    temperature = np.linspace(1, 1, 4)
 
     freq_list = simulations['frequency']
     simulations = simulations.loc[np.repeat(simulations.index.values, len(temperature))].reset_index()
@@ -122,9 +121,9 @@ if __name__ == '__main__':
     # simulations['size_y'] = np.flip(np.repeat(np.clip(np.array(get_size(7, 5)), 5, 7), len(version)))
     # simulations['size_z'] = np.flip(np.repeat(np.clip(np.array(get_size(7, 5)), 5, 7), len(version)))
 
-    simulations['size_x'] = 7
-    simulations['size_y'] = 5
-    simulations['size_z'] = 5
+    simulations['size_x'] = 15
+    simulations['size_y'] = 7
+    simulations['size_z'] = 7
 
     select_columns = ['size_x', 'size_y', 'size_z', 'cell_type', 'index', 'version', 'split', 'temperature']
     simulations['sim_name'] = simulations[select_columns].apply(

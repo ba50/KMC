@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 class TimeHeatMap:
     cuts_pos = None
-    options = {'mean': False, "jumps": True, "save_raw": True, 'mean_size': 10}
+    options = {'mean': False, "jumps": True, "save_raw": True, 'mean_size': 30}
 
     def __init__(self, load_data_path: Path, save_data_path: Path = None, options=None, workers: int = 1):
         """
@@ -35,7 +35,7 @@ class TimeHeatMap:
             self.save_data_path.mkdir(parents=True, exist_ok=True)  # TODO: delete exist_ok
 
             self.file_list = sorted((self.load_data_path/'heat_map').glob('*.dat'),
-                                    key=lambda i: int(os.path.splitext(os.path.basename(i))[0]))
+                                    key=lambda i: float(os.path.splitext(os.path.basename(i))[0]))[:10]
 
     def process_data(self):
         print('Loading heat map files...')
@@ -49,6 +49,10 @@ class TimeHeatMap:
                 mean_jumps[pos] = {direc: np.array([(idx*self.options['time_step'], i.mean())
                                                     for idx, i in enumerate(jumps_heat_map_list[pos][direc])])
                                    for direc in directions}
+
+            for pos in positions:
+                for direc in directions:
+                    mean_jumps[pos][direc] = mean_jumps[pos][direc][~np.all(mean_jumps[pos][direc] < 0.001, axis=1)]
 
             file_name_h5py = h5py.File(str(self.save_data_path / 'timed_jumps_raw_data.h5'), 'w')
 

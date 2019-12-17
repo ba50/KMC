@@ -103,7 +103,7 @@ def generate_phi(sym: Path):
                      }
                 )
 
-                temp_sim_signal = reduce_nose(sim_signal, ideal_sim_signal, 7)
+                temp_sim_signal = reduce_nose(sim_signal, ideal_sim_signal, 1)
                 if len(temp_sim_signal) > 100:
                     sim_signal = temp_sim_signal
                 else:
@@ -152,10 +152,10 @@ def generate_phi(sym: Path):
 
 
 if __name__ == '__main__':
-    workers = 3
-    base_path = Path('D:/KMC_data/data_2019_12_11_v3')
+    workers = 1
+    base_path = Path('D:/KMC_data/data_2019_12_16_v2')
 
-    sim_path_list = [sim for sim in base_path.glob("11_7_7_random_0_c_0_2") if sim.is_dir()]
+    sim_path_list = [sim for sim in base_path.glob("*") if sim.is_dir()]
 
     with Pool(workers) as p:
         _data_out = p.map(generate_phi, sim_path_list)
