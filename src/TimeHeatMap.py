@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 class TimeHeatMap:
     cuts_pos = None
-    options = {'mean': False, "jumps": True, "save_raw": True, 'mean_size': 30}
+    options = {'mean': False, "jumps": True, "save_raw": True, 'mean_size': 3}
 
     def __init__(self, load_data_path: Path, save_data_path: Path = None, options=None, workers: int = 1):
         """
@@ -35,7 +35,7 @@ class TimeHeatMap:
             self.save_data_path.mkdir(parents=True, exist_ok=True)  # TODO: delete exist_ok
 
             self.file_list = sorted((self.load_data_path/'heat_map').glob('*.dat'),
-                                    key=lambda i: float(os.path.splitext(os.path.basename(i))[0]))[:10]
+                                    key=lambda i: float(os.path.splitext(os.path.basename(i))[0]))
 
     def process_data(self):
         print('Loading heat map files...')
@@ -46,13 +46,14 @@ class TimeHeatMap:
 
             mean_jumps = {}
             for pos in positions:
-                mean_jumps[pos] = {direc: np.array([(idx*self.options['time_step'], i.mean())
+                mean_jumps[pos] = {direc: np.array([(i[0], i[1].mean())
                                                     for idx, i in enumerate(jumps_heat_map_list[pos][direc])])
                                    for direc in directions}
 
             for pos in positions:
                 for direc in directions:
-                    mean_jumps[pos][direc] = mean_jumps[pos][direc][~np.all(mean_jumps[pos][direc] < 0.001, axis=1)]
+                    data = mean_jumps[pos][direc]
+                    mean_jumps[pos][direc] = data[data[:, 1] > 10**-5]
 
             file_name_h5py = h5py.File(str(self.save_data_path / 'timed_jumps_raw_data.h5'), 'w')
 
@@ -79,14 +80,27 @@ class TimeHeatMap:
             for data_out in tqdm(p.imap(self.worker, heat_map_file_list, chunksize=1), total=len(heat_map_file_list)):
                 for directions in range(2):
                     for key in self.cuts_pos:
-                        jumps_heat_map_list[key][directions].append(data_out[key][directions])
+                        jumps_heat_map_list[key][directions].append([data_out['time'], data_out[key][directions]])
 
         delta_heat_map = {key: {'left': [], 'right': []} for key in self.cuts_pos}
         for key in self.cuts_pos:
-            delta_heat_map[key]['left'] = [jumps_heat_map_list[key][0][i+1]-jumps_heat_map_list[key][0][i]
-                                           for i in range(len(jumps_heat_map_list[key][0])-1)]
-            delta_heat_map[key]['right'] = [jumps_heat_map_list[key][1][i+1]-jumps_heat_map_list[key][1][i]
-                                            for i in range(len(jumps_heat_map_list[key][1])-1)]
+            delta_heat_map[key]['left'] = []
+            delta_heat_map[key]['right'] = []
+            for i in range(len(jumps_heat_map_list[key][0]) - 1):
+                delta_heat_map[key]['left'].append(
+                    [
+                        jumps_heat_map_list[key][0][i][0],
+                        jumps_heat_map_list[key][0][i+1][1]-jumps_heat_map_list[key][0][i][1]
+                    ]
+                )
+
+            for i in range(len(jumps_heat_map_list[key][1]) - 1):
+                delta_heat_map[key]['right'].append(
+                    [
+                        jumps_heat_map_list[key][1][i][0],
+                        jumps_heat_map_list[key][1][i+1][1]-jumps_heat_map_list[key][1][i][1]
+                    ]
+                )
 
         return delta_heat_map
 
@@ -123,6 +137,7 @@ class TimeHeatMap:
                                                         sample,
                                                         cuts_pos_dict), axis=1)
                 data_out[key][direction] = sample
+        data_out['time'] = int(file_name.stem)
 
         return data_out
 

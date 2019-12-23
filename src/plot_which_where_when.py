@@ -140,8 +140,8 @@ class DataProcess:
 
 if __name__ == '__main__':
 
-    _workers = 3
-    save_path = Path('D:/KMC_data/data_2019_12_17_v3')
+    _workers = 1
+    save_path = Path('D:/KMC_data/data_2019_12_20_v0')
     plot_steps = 100
 
     sim_path_list = [sim for sim in save_path.glob("*") if sim.is_dir()]

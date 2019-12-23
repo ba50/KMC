@@ -505,7 +505,7 @@ public:
 
 			if (fmod(time, window) < window_epsilon) {
 				std::cout << time << "/" << time_end << "[ps]" << std::endl;
-				std::ofstream f_out_heat_map(data_path + "/heat_map/" + std::to_string(time) + ".dat");
+				std::ofstream f_out_heat_map(data_path + "/heat_map/" + std::to_string(int(time)) + ".dat");
 				for (size_t z = 0; z < heat_map_array_size_[2]; z++) {
 					for (size_t y = 0; y < heat_map_array_size_[1]; y++) {
 						for (size_t x = 0; x < heat_map_array_size_[0]; x++) {
@@ -526,12 +526,12 @@ public:
 				}
 				f_out_heat_map.close();
 
-				f_out_oxygen_map << oxygen_positions_.size() << "\n\n";
-				for (size_t x = 0; x < oxygen_positions_.size(); x++) {
-					f_out_oxygen_map << "O\t" << oxygen_positions_[x][0] << "\t" \
-											<< oxygen_positions_[x][1] << "\t" \
-											<< oxygen_positions_[x][2] << "\n";
-				}
+				//f_out_oxygen_map << oxygen_positions_.size() << "\n\n";
+				//for (size_t x = 0; x < oxygen_positions_.size(); x++) {
+				//	f_out_oxygen_map << "O\t" << oxygen_positions_[x][0] << "\t" \
+				//							<< oxygen_positions_[x][1] << "\t" \
+				//							<< oxygen_positions_[x][2] << "\n";
+				//}
 
 				fprintf(field_plot, "%Lf,%Lf\n", time, delta_energy);
 			}

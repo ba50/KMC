@@ -75,8 +75,10 @@ class Function:
         return amp * np.exp(-x / tau)
 
 
-def generate_phi(sym: Path):
-    print(sym)
+def generate_phi(x):
+    sym = x[0]
+    mean_std = x[1]
+    print(sym, mean_std)
     hf = h5py.File(str(sym / 'heat_map_plots' / 'timed_jumps_raw_data.h5'), 'r')
     config = get_config(sym / 'input.kmc')
     data_out = {}
@@ -103,7 +105,7 @@ def generate_phi(sym: Path):
                      }
                 )
 
-                temp_sim_signal = reduce_nose(sim_signal, ideal_sim_signal, 1)
+                temp_sim_signal = reduce_nose(sim_signal, ideal_sim_signal, mean_std)
                 if len(temp_sim_signal) > 100:
                     sim_signal = temp_sim_signal
                 else:
@@ -153,9 +155,10 @@ def generate_phi(sym: Path):
 
 if __name__ == '__main__':
     workers = 1
-    base_path = Path('D:/KMC_data/data_2019_12_16_v2')
+    base_path = Path('D:/KMC_data/data_2019_12_20_v0')
+    mean_std = 10.0
 
-    sim_path_list = [sim for sim in base_path.glob("*") if sim.is_dir()]
+    sim_path_list = [[sim, mean_std] for sim in base_path.glob("*") if sim.is_dir()]
 
     with Pool(workers) as p:
         _data_out = p.map(generate_phi, sim_path_list)
