@@ -33,12 +33,12 @@ class GenerateWorkers:
                 print('device_name: %s\t->\t%s' % (device_name, process.stdout.readline()))
                 # print(device_name, ": ", process.poll())
                 if process.poll() is not None:
+                    self.global_index += 1
                     self.device_list.put(device_name)
 
             if not self.device_list.empty():
                 device_name = self.device_list.get()
                 self.processes[device_name] = self.__make_process(device_name)
-                self.global_index += 1
 
             if self.global_index > len(self.commands) - 1:
                 break
@@ -49,12 +49,14 @@ class GenerateWorkers:
 
 
 if __name__ == '__main__':
-    _workers = 1
-    program_path = 'C:/Users/barja/source/repos/KMC/x64/Release/KMC.exe'
-    data_path = 'D:/KMC_data/data_2019_12_19_v7'
+    _workers = 10
+    program_path = ''
+    data_path = ''
 
     program_path = Path(program_path)
     data_path = Path(data_path)
+
+    test = list(data_path.glob('*'))
 
     commends = pd.DataFrame({'data_path': [i for i in data_path.glob('*') if i.is_dir()]})
     commends['program'] = program_path
