@@ -18,7 +18,10 @@ class GenerateWorkers:
             self.device_list.put(str(i))
 
     def __make_process(self, device_name):
-        row = self.commands.iloc[self.global_index]
+        try:
+            row = self.commands.iloc[self.global_index]
+        except Exception as error:
+            print(error, type(error))
         commend = [str(row['program']), str(row['data_path'])]
         print("Run %s on %s" % (" ".join(commend), device_name))
         return subprocess.Popen(commend, stdout=subprocess.PIPE)
@@ -29,6 +32,9 @@ class GenerateWorkers:
 
     def run(self):
         while True:
+            if self.global_index > len(self.commands) - 1:
+                break
+
             for device_name, process in self.processes.items():
                 print('device_name: %s\t->\t%s' % (device_name, process.stdout.readline()))
                 # print(device_name, ": ", process.poll())
@@ -39,9 +45,6 @@ class GenerateWorkers:
             if not self.device_list.empty():
                 device_name = self.device_list.get()
                 self.processes[device_name] = self.__make_process(device_name)
-
-            if self.global_index > len(self.commands) - 1:
-                break
 
             time.sleep(0.01)
 
