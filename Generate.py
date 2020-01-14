@@ -57,9 +57,9 @@ if __name__ == '__main__':
     base_periods = 0.1
     window_points = 200
     low_freq = 7
-    high_freq = 9
+    high_freq = 10
     bin_path = Path('/home/b.jasik/Documents/source/KMC/build/KMC')
-    save_path = Path('D:/KMC_data/data_2019_12_20')
+    save_path = Path('KMC_data/data_2019_01_14')
     save_path = Path(str(save_path) + '_v' + str(get_sim_version(save_path)))
     save_path.mkdir(parents=True)
 
@@ -71,12 +71,12 @@ if __name__ == '__main__':
 
     simulations['cell_type'] = 'random'
     simulations['thermalization_time'] = 0
-    simulations['window_epsilon'] = 10**-2
-    simulations['contact_switch_left'] = 0
-    simulations['contact_switch_right'] = 0
-    simulations['contact_left'] = 1
-    simulations['contact_right'] = 1
-    simulations['amplitude'] = .01
+    simulations['window_epsilon'] = 10**-1
+    simulations['contact_switch_left'] = 2
+    simulations['contact_switch_right'] = 2
+    simulations['contact_left'] = 100
+    simulations['contact_right'] = 100
+    simulations['amplitude'] = .02
     simulations['energy_base'] = 0.0
 
     simulations['periods'] = simulations['frequency'].map(
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     freq_list = set(simulations['frequency'])
     simulations['index'] = np.array([[i for _ in range(len(version)*split)] for i in range(len(freq_list))]).flatten()
 
-    temperature = np.linspace(1, 1, 10)
+    temperature = np.linspace(1, 10, 4)
 
     freq_list = simulations['frequency']
     simulations = simulations.loc[np.repeat(simulations.index.values, len(temperature))].reset_index()
@@ -122,8 +122,8 @@ if __name__ == '__main__':
     # simulations['size_z'] = np.flip(np.repeat(np.clip(np.array(get_size(7, 5)), 5, 7), len(version)))
 
     simulations['size_x'] = 15
-    simulations['size_y'] = 15
-    simulations['size_z'] = 15
+    simulations['size_y'] = 7
+    simulations['size_z'] = 7
 
     select_columns = ['size_x', 'size_y', 'size_z', 'cell_type', 'index', 'version', 'split', 'temperature']
     simulations['sim_name'] = simulations[select_columns].apply(
@@ -134,16 +134,8 @@ if __name__ == '__main__':
     simulations['commend'] = simulations['path_to_data'].map(lambda x: str(bin_path)+' '+str(x)+'\n')
 
     simulations.to_csv(save_path / 'simulations.csv', index=False)
-    for index, chunk in enumerate(np.split(simulations, workers)):
-        if os.name == 'nt':
-            f_out = Path(save_path, 'run_%s.ps1' % index).open('w')
-        else:
-            f_out = Path(save_path, 'run_%s.run' % index).open('w')
-        for _, row in chunk.iterrows():
-            path_to_data = save_path / row['sim_name']
-            sim_structure = GenerateXYZ((row['size_x'], row['size_y'], row['size_z']))
-            sim_structure.generate_random()
-            generate_sim_input(row, path_to_data, sim_structure)
-            commend = str(bin_path)+" "+str(path_to_data)+"\n"
-            f_out.write(commend)
-        f_out.close()
+    for _, row in simulations.iterrows():
+        path_to_data = save_path / row['sim_name']
+        sim_structure = GenerateXYZ((row['size_x'], row['size_y'], row['size_z']))
+        sim_structure.generate_random()
+        generate_sim_input(row, path_to_data, sim_structure)

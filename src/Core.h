@@ -526,12 +526,12 @@ public:
 				}
 				f_out_heat_map.close();
 
-				//f_out_oxygen_map << oxygen_positions_.size() << "\n\n";
-				//for (size_t x = 0; x < oxygen_positions_.size(); x++) {
-				//	f_out_oxygen_map << "O\t" << oxygen_positions_[x][0] << "\t" \
-				//							<< oxygen_positions_[x][1] << "\t" \
-				//							<< oxygen_positions_[x][2] << "\n";
-				//}
+				f_out_oxygen_map << oxygen_positions_.size() << "\n\n";
+				for (size_t x = 0; x < oxygen_positions_.size(); x++) {
+					f_out_oxygen_map << "O\t" << oxygen_positions_[x][0] << "\t" \
+											<< oxygen_positions_[x][1] << "\t" \
+											<< oxygen_positions_[x][2] << "\n";
+				}
 
 				fprintf(field_plot, "%Lf,%Lf\n", time, delta_energy);
 			}

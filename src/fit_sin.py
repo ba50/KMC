@@ -155,7 +155,7 @@ def generate_phi(x):
 
 if __name__ == '__main__':
     workers = 1
-    base_path = Path('D:/KMC_data/data_2019_12_20_v0')
+    base_path = Path('/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_12_30_v0')
     mean_std = 10.0
 
     sim_path_list = [[sim, mean_std] for sim in base_path.glob("*") if sim.is_dir()]

@@ -80,8 +80,6 @@ int main(int argc, char *argv[]) {
 		window_epsilon = std::stold(input_vector[8], &sz);
 	}
 
-
-
 	switch(std::atoi(input_vector[9].c_str())){
 		case 0:
 			contact_switch[0] = false;
