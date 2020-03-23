@@ -11,16 +11,19 @@ from utils.config import get_config
 
 
 if __name__ == '__main__':
-    base_path = Path('D:/KMC_data/data_2019_12_09_v0')
-    sim_path_list = [sim for sim in base_path.glob("*") if sim.is_dir()]
+    suffix = '5.0'
+    base_path = Path('D:\\KMC_data\\data_2020_01_20_v0')
+    sim_path_list = [sim for sim in base_path.glob(f"*_{suffix}") if sim.is_dir()]
 
-    data = {'timed_jumps_center_contact_left_jump': [],
-            'timed_jumps_center_contact_right_jump': [],
-            'timed_jumps_left_contact_left_jump': [],
-            'timed_jumps_left_contact_right_jump': [],
-            'timed_jumps_right_contact_left_jump': [],
-            'timed_jumps_right_contact_right_jump': [],
-            'frequency': []}
+    data = {
+        'timed_jumps_center_contact_left_jump': [],
+        'timed_jumps_center_contact_right_jump': [],
+        'timed_jumps_left_contact_left_jump': [],
+        'timed_jumps_left_contact_right_jump': [],
+        'timed_jumps_right_contact_left_jump': [],
+        'timed_jumps_right_contact_right_jump': [],
+        'frequency': []
+    }
 
     for sim in sim_path_list:
         sim_config = get_config(sim / 'input.kmc')
@@ -48,7 +51,7 @@ if __name__ == '__main__':
         _ax.set_ylabel('delta phi [rad]')
 
         plt.xscale('log')
-        plt.savefig(base_path / ('phi(f)_%s.png' % column),
+        plt.savefig(base_path / f"phi(f)_{column}_{suffix}.png",
                     dpi=1000,
                     bbox_inches='tight')
         plt.close(_fig)

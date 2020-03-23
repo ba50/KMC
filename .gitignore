@@ -1,3 +1,10 @@
-.idea
-.idea/*
 Makefile
+*.vcxproj
+*.filters
+*.user
+*.config
+
+.idea
+Debug
+__pycache__
+x64

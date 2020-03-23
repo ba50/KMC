@@ -52,14 +52,12 @@ def get_sim_version(path: Path):
 
 
 if __name__ == '__main__':
-    workers = 3
     split = 1
-    base_periods = 0.1
+    base_periods = 1.5
     window_points = 200
     low_freq = 7
     high_freq = 10
-    bin_path = Path('/home/b.jasik/Documents/source/KMC/build/KMC')
-    save_path = Path('KMC_data/data_2019_01_14')
+    save_path = Path('D:/KMC_data/data_2020_01_19')
     save_path = Path(str(save_path) + '_v' + str(get_sim_version(save_path)))
     save_path.mkdir(parents=True)
 
@@ -71,16 +69,16 @@ if __name__ == '__main__':
 
     simulations['cell_type'] = 'random'
     simulations['thermalization_time'] = 0
-    simulations['window_epsilon'] = 10**-1
+    simulations['window_epsilon'] = 0.5*10**-2
     simulations['contact_switch_left'] = 2
     simulations['contact_switch_right'] = 2
-    simulations['contact_left'] = 100
-    simulations['contact_right'] = 100
+    simulations['contact_left'] = 500
+    simulations['contact_right'] = 500
     simulations['amplitude'] = .02
     simulations['energy_base'] = 0.0
 
     simulations['periods'] = simulations['frequency'].map(
-        lambda freq: np.clip(freq / freq_list[0] * base_periods, 0, 20.0)
+        lambda freq: np.clip(freq / freq_list[0] * base_periods, 0, 4.0)
     )
 
     start_stop = {'time_start': [], 'time_end': [], 'periods': [], 'frequency': [], 'split': []}
@@ -103,7 +101,7 @@ if __name__ == '__main__':
         axis=1
     )
 
-    version = ['a', 'b', 'c']
+    version = ['a']
 
     freq_list = simulations['frequency']
     simulations = simulations.loc[np.repeat(simulations.index.values, len(version))].reset_index()
@@ -111,7 +109,7 @@ if __name__ == '__main__':
     freq_list = set(simulations['frequency'])
     simulations['index'] = np.array([[i for _ in range(len(version)*split)] for i in range(len(freq_list))]).flatten()
 
-    temperature = np.linspace(1, 10, 4)
+    temperature = np.linspace(1, 5, 4)
 
     freq_list = simulations['frequency']
     simulations = simulations.loc[np.repeat(simulations.index.values, len(temperature))].reset_index()
@@ -131,7 +129,6 @@ if __name__ == '__main__':
     )
 
     simulations['path_to_data'] = simulations['sim_name'].map(lambda x: save_path / x)
-    simulations['commend'] = simulations['path_to_data'].map(lambda x: str(bin_path)+' '+str(x)+'\n')
 
     simulations.to_csv(save_path / 'simulations.csv', index=False)
     for _, row in simulations.iterrows():
