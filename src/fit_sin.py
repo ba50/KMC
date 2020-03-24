@@ -81,8 +81,9 @@ def generate_phi(x):
     print(sym, mean_std)
     hf = h5py.File(str(sym / 'heat_map_plots' / 'timed_jumps_raw_data.h5'), 'r')
     config = get_config(sym / 'input.kmc')
-    data_out = {}
+    data_out = []
     for key in tqdm(hf.keys()):
+        direction_dict = {}
         sim_signal = pd.DataFrame({'x': hf[key][:, 0], 'y': hf[key][:, 1]})
         field_signal = pd.read_csv(sym/'field_plot.csv')
         fit_signal = pd.DataFrame(
@@ -143,26 +144,34 @@ def generate_phi(x):
             plt.savefig(sym / 'heat_map_plots' / ('fit_sin_%s.png' % key))
             plt.close(_fig)
 
-            data_out[key] = {
-                'phi_mean_rad': params['fit_sine_phi'],
-                'phi_mean_deg': params['fit_sine_phi'] * 180 / np.pi
-            }
+            direction_dict['phi_rad'] = params['fit_sine_phi']
+            direction_dict['phi_deg'] = params['fit_sine_phi'] * 180 / np.pi
+
         except RuntimeError as e:
+            direction_dict['phi_rad'] = None
+            direction_dict['phi_deg'] = None
             print("\nError in %s: %s\n" % (sym.name, e))
 
-    return sym, data_out
+        direction_dict['path'] = sym
+        direction_dict['direction'] = (lambda split: split[4])(key.split('_'))
+        direction_dict['location'] = (lambda split: split[2])(key.split('_'))
+        direction_dict['version'] = (lambda split: split[5])(sym.name.split('_'))
+        direction_dict['temp_mul'] = (lambda split: split[-1])(sym.name.split('_'))
+        direction_dict['frequency_index'] = (lambda split: split[4])(sym.name.split('_'))
+        data_out.append(direction_dict)
+
+    return data_out
 
 
 if __name__ == '__main__':
-    workers = 1
-    base_path = Path('/home/b.jasik/Documents/source/KMC/KMC_data/data_2019_12_30_v0')
-    mean_std = 10.0
+    workers = 3
+    base_path = Path('D:\\KMC_data\\data_2020_01_20_v0')
+    mean_std = 50.0
 
     sim_path_list = [[sim, mean_std] for sim in base_path.glob("*") if sim.is_dir()]
 
     with Pool(workers) as p:
         _data_out = p.map(generate_phi, sim_path_list)
-
-    for save_path, save_data in _data_out:
-        with (save_path / 'heat_map_plots' / 'data_out.json').open('w') as f_out:
-            json.dump(save_data, f_out)
+        _data_out = [item for sublist in _data_out for item in sublist]
+        _data_out = pd.DataFrame(_data_out)
+        _data_out.to_csv(base_path/'simulations_data.csv', index=False)
