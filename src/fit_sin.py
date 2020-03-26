@@ -75,46 +75,55 @@ class Function:
         return amp * np.exp(-x / tau)
 
 
-def generate_phi(x):
-    sym = x[0]
-    mean_std = x[1]
-    print(sym, mean_std)
-    hf = h5py.File(str(sym / 'heat_map_plots' / 'timed_jumps_raw_data.h5'), 'r')
-    config = get_config(sym / 'input.kmc')
+def generate_phi(inputs):
+    sim = inputs[0]
+    config = inputs[1]
+    hf = h5py.File(str(sim / 'heat_map_plots' / 'timed_jumps_raw_data.h5'), 'r')
+    sim_config = get_config(sim / 'input.kmc')
     data_out = []
     for key in tqdm(hf.keys()):
         direction_dict = {}
-        sim_signal = pd.DataFrame({'x': hf[key][:, 0], 'y': hf[key][:, 1]})
-        field_signal = pd.read_csv(sym/'field_plot.csv')
+        field_signal = pd.read_csv(sim/'field_plot.csv')
         fit_signal = pd.DataFrame(
             {'time': np.linspace(field_signal['time'].min(), field_signal['time'].max(), len(field_signal['time']))}
         )
+        fit_function = Function(sim_config['frequency']*10**-12)
 
-        sim_signal['time'] = np.linspace(fit_signal['time'].min(), fit_signal['time'].max(), len(sim_signal['x']))
-        fit_function = Function(config['frequency']*10**-12)
+        sim_signal = None
         try:
-            for _ in range(1):
-                params, fit_signal = fit_curve_signal(fit_function, sim_signal, fit_signal, config)
+            done = False
+            mean_std = config['mean_std']
+            while not done:
+                sim_signal = pd.DataFrame({'x': hf[key][:, 0], 'y': hf[key][:, 1]})
+                sim_signal['time'] = np.linspace(fit_signal['time'].min(),
+                                                 fit_signal['time'].max(),
+                                                 len(sim_signal['x']))
+                original_len = len(sim_signal)
+                for _ in range(config['repeat']):
+                    params, fit_signal = fit_curve_signal(fit_function, sim_signal, fit_signal, sim_config)
 
-                ideal_sim_signal = pd.DataFrame(
-                    {'time': sim_signal['time'],
-                     'y': fit_function.sin(
-                         sim_signal['time'],
-                         params['fit_sine_amp'],
-                         fit_function.sine_frequency,
-                         params['fit_sine_phi']) + params['const']
-                     }
-                )
+                    ideal_sim_signal = pd.DataFrame(
+                        {'time': sim_signal['time'],
+                         'y': fit_function.sin(
+                             sim_signal['time'],
+                             params['fit_sine_amp'],
+                             fit_function.sine_frequency,
+                             params['fit_sine_phi']) + params['const']
+                         }
+                    )
 
-                temp_sim_signal = reduce_nose(sim_signal, ideal_sim_signal, mean_std)
-                if len(temp_sim_signal) > 100:
-                    sim_signal = temp_sim_signal
-                else:
-                    print('Too small len')
-                    break
+                    temp_sim_signal = reduce_nose(sim_signal, ideal_sim_signal, mean_std)
+                    if len(temp_sim_signal) > original_len * .75:
+                        done = True
+                        sim_signal = temp_sim_signal
+                    else:
+                        done = False
+                        mean_std += config['auto_tune_step']
+                        break
 
+            print(f"{sim} end at {mean_std} mean std")
             sim_signal.dropna(inplace=True)
-            params, fit_signal = fit_curve_signal(fit_function, sim_signal, fit_signal, config)
+            params, fit_signal = fit_curve_signal(fit_function, sim_signal, fit_signal, sim_config)
 
             _fig, _ax1 = plt.subplots()
             _ax2 = _ax1.twinx()
@@ -123,7 +132,7 @@ def generate_phi(x):
             # _ax1.plot(ideal_sim_signal['time'], ideal_sim_signal['y'], color='r', label='Fitted func')
             _ax2.plot(
                 fit_signal['time'],
-                Function.sin(fit_signal['time'], config['amplitude'], fit_function.sine_frequency, 0),
+                Function.sin(fit_signal['time'], sim_config['amplitude'], fit_function.sine_frequency, 0),
                 linestyle='-',
                 color='g',
                 label='Field'
@@ -137,11 +146,11 @@ def generate_phi(x):
             _ax1.legend(loc='upper left')
             _ax2.legend(loc='upper right')
             plt.text(0,
-                     config['amplitude'] * .75,
+                     sim_config['amplitude'] * .75,
                      "A=%.2e [eV]\nphi=%.2f [rad]" % (abs(params['fit_sine_amp']),
                                                       params['fit_sine_phi']))
 
-            plt.savefig(sym / 'heat_map_plots' / ('fit_sin_%s.png' % key))
+            plt.savefig(sim / 'heat_map_plots' / ('fit_sin_%s.png' % key))
             plt.close(_fig)
 
             direction_dict['phi_rad'] = params['fit_sine_phi']
@@ -150,28 +159,37 @@ def generate_phi(x):
         except RuntimeError as e:
             direction_dict['phi_rad'] = None
             direction_dict['phi_deg'] = None
-            print("\nError in %s: %s\n" % (sym.name, e))
+            print("\nError in %s: %s\n" % (sim.name, e))
 
-        direction_dict['path'] = sym
+        direction_dict['path'] = sim
         direction_dict['direction'] = (lambda split: split[4])(key.split('_'))
         direction_dict['location'] = (lambda split: split[2])(key.split('_'))
-        direction_dict['version'] = (lambda split: split[5])(sym.name.split('_'))
-        direction_dict['temp_mul'] = (lambda split: split[-1])(sym.name.split('_'))
-        direction_dict['frequency_index'] = (lambda split: split[4])(sym.name.split('_'))
+        direction_dict['version'] = (lambda split: split[5])(sim.name.split('_'))
+        direction_dict['temp_mul'] = (lambda split: split[-1])(sim.name.split('_'))
+        direction_dict['frequency_index'] = (lambda split: split[4])(sim.name.split('_'))
         data_out.append(direction_dict)
 
     return data_out
 
 
-if __name__ == '__main__':
-    workers = 3
-    base_path = Path('D:\\KMC_data\\data_2020_01_20_v0')
-    mean_std = 50.0
+def main():
+    config = {
+        'workers': 3,
+        'base_path': Path('D:\\KMC_data\\data_2020_01_20_v0'),
+        'mean_std': 2.,
+        'auto_tune_step': 2.,
+        'repeat': 3,
+        'original_len': .75  # in %
+    }
 
-    sim_path_list = [[sim, mean_std] for sim in base_path.glob("*") if sim.is_dir()]
+    sim_path_list = [(sim, config) for sim in config['base_path'].glob("*") if sim.is_dir()]
 
-    with Pool(workers) as p:
+    with Pool(config['workers']) as p:
         _data_out = p.map(generate_phi, sim_path_list)
         _data_out = [item for sublist in _data_out for item in sublist]
         _data_out = pd.DataFrame(_data_out)
-        _data_out.to_csv(base_path/'simulations_data.csv', index=False)
+        _data_out.to_csv(config['base_path']/'simulations_data.csv', index=False)
+
+
+if __name__ == '__main__':
+    main()
