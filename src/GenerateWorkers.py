@@ -1,5 +1,6 @@
 import time
 import queue
+import argparse
 import subprocess
 from pathlib import Path
 
@@ -48,16 +49,21 @@ class GenerateWorkers:
         print("End of queue")
 
 
-if __name__ == '__main__':
-    _workers = 3
-    program_path = 'C:/Users/Bartek/source/repos/KMC/x64/Release/KMC.exe'
-    data_path = 'C:/KMC_data/data_2019_12_09_v0'
+def main(args):
+    commends = pd.DataFrame({'data_path': [i for i in args.data_path.glob('*') if i.is_dir()]})
+    commends['program'] = args.program_path
 
-    program_path = Path(program_path)
-    data_path = Path(data_path)
-
-    commends = pd.DataFrame({'data_path': [i for i in data_path.glob('*') if i.is_dir()]})
-    commends['program'] = program_path
-
-    swarm = GenerateWorkers(commends, _workers)
+    swarm = GenerateWorkers(commends, args.workers)
     swarm.run()
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--program_path", required=True, help="path to program bin")
+    parser.add_argument("--data_path", required=True, help="path to data")
+    parser.add_argument("--workers", type=int, help="number of workers", default=1)
+    args = parser.parse_args()
+
+    args.program_path = Path(args.program_path)
+    args.data_path = Path(args.data_path)
+    main(args)

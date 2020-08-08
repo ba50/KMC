@@ -1,4 +1,5 @@
 import os
+import argparse
 import numpy as np
 from pathlib import Path
 
@@ -50,44 +51,38 @@ def get_sim_version(path: Path):
     return len(sim_paths)
 
 
-if __name__ == '__main__':
-    workers = 3
-    split = 1
-    base_periods = 0.5
-    window_points = 200
-    low_freq = 4
-    high_freq = 10
-    bin_path = Path('/home/b.jasik/Documents/source/KMC/build/KMC')
-    save_path = Path('C:/KMC_data/data_2019_12_09')
-    save_path = Path(str(save_path) + '_v' + str(get_sim_version(save_path)))
+
+
+def main(args):
+    save_path = Path(str(args.save_path) + '_v' + str(get_sim_version(args.save_path)))
     save_path.mkdir(parents=True)
 
     freq_list = []
-    for i in range(low_freq+1, high_freq):
+    for i in range(args.low_freq+1, args.high_freq):
         freq_list.extend(np.logspace(i-1, i, num=2, endpoint=False))
 
     simulations = pd.DataFrame({'frequency': freq_list})
 
-    simulations['cell_type'] = 'random'
-    simulations['thermalization_time'] = 0
-    simulations['window'] = 100
-    simulations['window_epsilon'] = 0.01
-    simulations['contact_switch_left'] = 0
-    simulations['contact_switch_right'] = 0
-    simulations['contact_left'] = 1
-    simulations['contact_right'] = 1
-    simulations['amplitude'] = .1
-    simulations['energy_base'] = 0.0
+    simulations['cell_type'] = args.cell_type
+    simulations['thermalization_time'] = args.thermalization_time
+    simulations['window'] = args.window
+    simulations['window_epsilon'] = args.window_epsilon
+    simulations['contact_switch_left'] = args.contact_switch_left
+    simulations['contact_switch_right'] = args.contact_switch_right
+    simulations['contact_left'] = args.contact_left
+    simulations['contact_right'] = args.contact_right
+    simulations['amplitude'] = args.amplitude
+    simulations['energy_base'] = args.energy_base
 
     simulations['periods'] = simulations['frequency'].map(
-        lambda freq: np.clip(freq / freq_list[0] * base_periods, 0, 4)
+        lambda freq: np.clip(freq / freq_list[0] * args.base_periods, 0, 4)
     )
 
     start_stop = {'time_start': [], 'time_end': [], 'periods': [], 'frequency': [], 'split': []}
     for index, row in simulations.iterrows():
         total_time = row['periods']/row['frequency']*10**12
         last_step = 0
-        steps = np.ceil(total_time / split).astype(int)
+        steps = np.ceil(total_time / args.split).astype(int)
         for split_step, next_step in enumerate(range(steps, int(total_time)+steps, steps)):
             start_stop['time_start'].append(last_step)
             start_stop['time_end'].append(next_step)
@@ -99,7 +94,7 @@ if __name__ == '__main__':
     simulations = simulations.merge(start_stop, on=['frequency', 'periods'])
 
     simulations['window'] = simulations[['periods', 'frequency']].apply(
-        lambda x: (x[0]/(x[1]*10.0**-12))/window_points,
+        lambda x: (x[0]/(x[1]*10.0**-12))/args.window_points,
         axis=1
     )
 
@@ -109,7 +104,7 @@ if __name__ == '__main__':
     simulations = simulations.loc[np.repeat(simulations.index.values, len(version))].reset_index()
     simulations['version'] = np.array([[x for x in version] for _ in range(len(freq_list))]).flatten()
     freq_list = set(simulations['frequency'])
-    simulations['index'] = np.array([[i for _ in range(len(version)*split)] for i in range(len(freq_list))]).flatten()
+    simulations['index'] = np.array([[i for _ in range(len(version)*args.split)] for i in range(len(freq_list))]).flatten()
 
     # simulations['size_x'] = np.flip(np.repeat(np.clip(np.array(get_size(11, 5)), 5, 11), len(version)))
     # simulations['size_y'] = np.flip(np.repeat(np.clip(np.array(get_size(7, 5)), 5, 7), len(version)))
@@ -125,19 +120,42 @@ if __name__ == '__main__':
     )
 
     simulations['path_to_data'] = simulations['sim_name'].map(lambda x: save_path / x)
-    simulations['commend'] = simulations['path_to_data'].map(lambda x: str(bin_path)+' '+str(x)+'\n')
+    simulations['commend'] = simulations['path_to_data'].map(lambda x: str(args.bin_path)+' '+str(x)+'\n')
 
     simulations.to_csv(save_path / 'simulations.csv', index=False)
-    for index, chunk in enumerate(np.split(simulations, workers)):
-        if os.name == 'nt':
-            f_out = Path(save_path, 'run_%s.ps1' % index).open('w')
-        else:
-            f_out = Path(save_path, 'run_%s.run' % index).open('w')
-        for _, row in chunk.iterrows():
-            path_to_data = save_path / row['sim_name']
-            sim_structure = GenerateXYZ((row['size_x'], row['size_y'], row['size_z']))
-            sim_structure.generate_random()
-            generate_sim_input(row, path_to_data, sim_structure)
-            commend = str(bin_path)+" "+str(path_to_data)+"\n"
-            f_out.write(commend)
-        f_out.close()
+
+    for _, row in simulations.iterrows():
+        path_to_data = save_path / row['sim_name']
+        sim_structure = GenerateXYZ((row['size_x'], row['size_y'], row['size_z']))
+        sim_structure.generate_random()
+        generate_sim_input(row, path_to_data, sim_structure)
+        commend = str(args.bin_path)+" "+str(path_to_data)+"\n"
+    
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--bin_path", required=True, help="path to compile file")
+    parser.add_argument("--save_path", required=True, help="path to save models")
+
+    parser.add_argument("--split", type=int, help="number of subparts", default=1)
+    parser.add_argument("--base_periods", type=float, help="base sin period", default=0.5)
+    parser.add_argument("--window_points", type=int, help="points in window", default=200)
+    parser.add_argument("--low_freq", type=int, help="low freq, pow of 10", default=4)
+    parser.add_argument("--high_freq", type=int, help="hie freq, pow of 10", default=10)
+
+    parser.add_argument("--cell_type", default='random')
+    parser.add_argument("--thermalization_time", type=int, default=0)
+    parser.add_argument("--window", type=int, default=100)
+    parser.add_argument("--window_epsilon", type=float, default=.01)
+    parser.add_argument("--contact_switch_left", type=bool, default=False)
+    parser.add_argument("--contact_switch_right", type=bool, default=False)
+    parser.add_argument("--contact_left", type=float, default=1.)
+    parser.add_argument("--contact_right", type=float, default=1.)
+    parser.add_argument("--amplitude", type=float, default=.1)
+    parser.add_argument("--energy_base", type=float, default=.0)
+    args = parser.parse_args()
+
+    args.bin_path = Path(args.bin_path)
+    args.save_path = Path(args.save_path)
+    main(args)
+
