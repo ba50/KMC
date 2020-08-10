@@ -1,11 +1,11 @@
 python Generate.py `
-    --save_path D:\KMC_data\data_2020_08_10_sphere `
+    --save_path D:\KMC_data\data_2020_08_10_plane `
     --split 1 `
     --base_periods 0.5 `
     --window_points 200 `
     --low_freq 8 `
     --high_freq 10 `
-    --cell_type sphere `
+    --cell_type plane `
     --model_size 45 11 11 `
     --thermalization_time 0 `
     --window 100 `

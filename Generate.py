@@ -125,7 +125,6 @@ def main(args):
     )
 
     simulations['path_to_data'] = simulations['sim_name'].map(lambda x: save_path / x)
-    simulations['commend'] = simulations['path_to_data'].map(lambda x: str(args.bin_path)+' '+str(x)+'\n')
 
     simulations.to_csv(save_path / 'simulations.csv', index=False)
 
@@ -135,9 +134,9 @@ def main(args):
         if args.cell_type == 'random':
             sim_structure.generate_random()
         elif args.cell_type == 'sphere':
-            sim_structure.generate_sphere(5)
+            sim_structure.generate_sphere(11)
         elif args.cell_type == 'plane':
-            sim_structure.generate_plane()
+            sim_structure.generate_plane(3)
         else:
             print('no type')
         generate_sim_input(row, path_to_data, sim_structure)
@@ -166,7 +165,6 @@ if __name__ == '__main__':
     parser.add_argument("--energy_base", type=float, default=.0)
     args = parser.parse_args()
 
-    args.bin_path = Path(args.bin_path)
     args.save_path = Path(args.save_path)
     main(args)
 

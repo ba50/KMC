@@ -12,9 +12,9 @@ def main(args):
     cells = 45,11,11
     model = GenerateXYZ(cells)
 
-    bi = bi[np.where(bi[:, 0] < cells[0]/2)]
-    y = y[np.where(y[:, 0] < cells[0]/2)]
-    o = o[np.where(o[:, 0] < cells[0]/2)]
+    bi = bi[np.where(bi[:, 2] < cells[2]/2)]
+    y = y[np.where(y[:, 2] < cells[2]/2)]
+    o = o[np.where(o[:, 2] < cells[2]/2)]
 
     model.generate_from_array(bi, y, o)
     model.save_positions(args.save_path)
