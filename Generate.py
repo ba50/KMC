@@ -110,9 +110,9 @@ def main(args):
     # simulations['size_y'] = np.flip(np.repeat(np.clip(np.array(get_size(7, 5)), 5, 7), len(version)))
     # simulations['size_z'] = np.flip(np.repeat(np.clip(np.array(get_size(7, 5)), 5, 7), len(version)))
 
-    simulations['size_x'] = 5
-    simulations['size_y'] = 5
-    simulations['size_z'] = 5
+    simulations['size_x'] = args.model_size[0]
+    simulations['size_y'] = args.model_size[1]
+    simulations['size_z'] = args.model_size[2]
 
     select_columns = ['size_x', 'size_y', 'size_z', 'cell_type', 'index', 'version', 'split']
     simulations['sim_name'] = simulations[select_columns].apply(
@@ -127,7 +127,14 @@ def main(args):
     for _, row in simulations.iterrows():
         path_to_data = save_path / row['sim_name']
         sim_structure = GenerateXYZ((row['size_x'], row['size_y'], row['size_z']))
-        sim_structure.generate_random()
+        if args.cell_type == 'random':
+            sim_structure.generate_random()
+        elif args.cell_type == 'sphere':
+            sim_structure.generate_sphere(5)
+        elif args.cell_type == 'plane':
+            sim_structure.generate_plane()
+        else:
+            print('no type')
         generate_sim_input(row, path_to_data, sim_structure)
         commend = str(args.bin_path)+" "+str(path_to_data)+"\n"
     
@@ -143,7 +150,8 @@ if __name__ == '__main__':
     parser.add_argument("--low_freq", type=int, help="low freq, pow of 10", default=4)
     parser.add_argument("--high_freq", type=int, help="hie freq, pow of 10", default=10)
 
-    parser.add_argument("--cell_type", default='random')
+    parser.add_argument("--cell_type", choices=['random', 'sphere', 'plane'], default='random')
+    parser.add_argument("--model_size", type=int, nargs='+', default=[5, 5, 5])
     parser.add_argument("--thermalization_time", type=int, default=0)
     parser.add_argument("--window", type=int, default=100)
     parser.add_argument("--window_epsilon", type=float, default=.01)
