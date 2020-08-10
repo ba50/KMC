@@ -9,9 +9,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
+from GenerateXYZ import GenerateXYZ
 from TimeHeatMap import TimeHeatMap
-from TimeOxygenMap import TimeOxygenMap
 from utils.config import get_config
+from TimeOxygenMap import TimeOxygenMap
 
 
 class DataProcess:
@@ -36,28 +37,8 @@ class DataProcess:
         print('Save in:', self.simulation_path / 'paths')
         (self.simulation_path / 'paths').mkdir(parents=True, exist_ok=True)
 
-        bi_base_positions = []
-        y_base_positions = []
-        o_base_positions = []
-        with (self.simulation_path / 'positions.xyz').open('r') as file_in:
-            for line in file_in.readlines()[2:]:
-                line = line.split('\t')
-                if line[0] == 'Bi':
-                    bi_base_positions.append([float(line[1]),
-                                              float(line[2]),
-                                              float(line[3])])
-                if line[0] == 'Y':
-                    y_base_positions.append([float(line[1]),
-                                             float(line[2]),
-                                             float(line[3])])
-                if line[0] == 'O':
-                    o_base_positions.append([float(line[1]),
-                                             float(line[2]),
-                                             float(line[3])])
-
-        self.bi_base_positions = np.array(bi_base_positions)
-        self.y_base_positions = np.array(y_base_positions)
-        self.o_base_positions = np.array(o_base_positions)
+        self.bi_base_positions, self.y_base_positions, self.o_base_positions = \
+            GenerateXYZ.read_file(self.simulation_path / 'positions.xyz')
 
         file_out = h5py.File((self.simulation_path / 'paths' / 'o_paths.hdf5'), 'w')
         self.o_paths = file_out.create_dataset('o_path',

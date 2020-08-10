@@ -122,3 +122,38 @@ class GenerateXYZ:
             if random.uniform(0, 1) > 0.75:
                 self.positions['O'].append(position)
                 self.O += 1
+
+    def generate_from_array(self, bi, y, o):
+        for pos in bi:
+            self.positions['Bi'].append(pos)
+            self.Bi += 1
+        for pos in y:
+            self.positions['Y'].append(pos)
+            self.Y += 1
+        for pos in o:
+            self.positions['O'].append(pos)
+            self.O += 1
+
+    @staticmethod
+    def read_file(simulation_path):
+        bi_base_positions = []
+        y_base_positions = []
+        o_base_positions = []
+        with (simulation_path).open('r') as file_in:
+            for line in file_in.readlines()[2:]:
+                line = line.split('\t')
+                if line[0] == 'Bi':
+                    bi_base_positions.append([float(line[1]),
+                                              float(line[2]),
+                                              float(line[3])])
+                if line[0] == 'Y':
+                    y_base_positions.append([float(line[1]),
+                                             float(line[2]),
+                                             float(line[3])])
+                if line[0] == 'O':
+                    o_base_positions.append([float(line[1]),
+                                             float(line[2]),
+                                             float(line[3])])
+
+        return np.array(bi_base_positions), np.array(y_base_positions), np.array(o_base_positions)
+
