@@ -52,6 +52,7 @@ class GenerateWorkers:
 def main(args):
     commends = pd.DataFrame({'data_path': [i for i in args.data_path.glob('*') if i.is_dir()]})
     commends['program'] = args.program_path
+    assert len(commends) != 0, "No simulations to run"
 
     swarm = GenerateWorkers(commends, args.workers)
     swarm.run()

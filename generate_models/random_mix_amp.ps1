@@ -1,13 +1,13 @@
 python Generate.py `
-    --bin_path C:\Users\Bartek\Documents\source\repos\KMC\KMC\build\KMC.exe `
-    --save_path C:\KMC_data\data_2020_08_08 `
+    --save_path F:\KMC_data\data_2020_09_23_random `
     --split 1 `
     --base_periods 0.5 `
     --window_points 200 `
     --low_freq 8 `
     --high_freq 10 `
     --cell_type random `
-    --thermalization_time 0 `
+    --model_size 7 7 7 `
+    --thermalization_time 200 `
     --window 100 `
     --window_epsilon 0.01 `
     --contact_switch_left False `

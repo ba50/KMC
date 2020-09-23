@@ -428,13 +428,14 @@ public:
 			std::cout<< "File field_plot.csv successfully deleted"<<std::endl;
 
 		FILE *when_which_where, *field_plot;
-		//fopen_s(&when_which_where, std::string(data_path + "/when_which_where.csv").c_str(), "a");
-		when_which_where = fopen(std::string(data_path + "/when_which_where.csv").c_str(), "w");
+		fopen_s(&when_which_where, std::string(data_path + "/when_which_where.csv").c_str(), "a");
+		//when_which_where = fopen(std::string(data_path + "/when_which_where.csv").c_str(), "w");
 		fprintf(when_which_where, "time,selected_atom,selected_direction\n");
 
 		std::ofstream f_out_oxygen_map(data_path + "/oxygen_map/" +"positions.xyz");
 
-		field_plot = fopen(std::string(data_path + "/field_plot.csv").c_str(), "a");
+		fopen_s(&field_plot, std::string(data_path + "/field_plot.csv").c_str(), "a"); 
+		//field_plot = fopen(std::string(data_path + "/field_plot.csv").c_str(), "a");
 		fprintf(field_plot, "time,delta_energy\n");
 
 		while(time < time_end){
