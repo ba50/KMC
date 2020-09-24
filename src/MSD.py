@@ -1,36 +1,38 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import os.path as path
-from multiprocessing import Pool
 import time
+from pathlib import Path
+from multiprocessing import Pool
+
+import h5py
+import numpy as np
+import pandas as pd
+from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 
 class MSD:
-    def __init__(self, data):
-        path_to_data = data[0]
-        self.file_name = data[1]
-        param_file = path.join(path_to_data, 'param_'+self.file_name+'.dat')
-        time_file = path.join(path_to_data, 'time_vector_'+self.file_name+'.npy')
-        data_file = path.join(path_to_data, 'update_vector_'+self.file_name+'.npy')
-        shape = np.genfromtxt(param_file).astype(np.int)
-        self.oxygen_path = np.load(data_file)
+    def __init__(self, inputs):
+        pos = inputs[0]
+        data_path = inputs[1]
+        self.file_name = data_path.stem
+        file_in = h5py.File(data_path/'paths'/'o_paths.hdf5', 'r')
+        o_paths = file_in.get('o_paths')
 
-        self.time = np.load(time_file)
-        self.start = time.time()
+        when_which_where = pd.read_csv(
+            data_path / 'when_which_where.csv',
+            index_col=False,
+            memory_map=True,
+            nrows=10**5
+        )
 
-        self.oxygen_path = self.oxygen_path.reshape(shape[0], shape[1], 3)
-
-        if len(data) < 2:
-            atom_numbers = data[2]
-        else:
-            atom_numbers = self.oxygen_path.shape[1]
+        self.time = when_which_where['time']
 
         self.data = []
-        for index in range(atom_numbers):
-            self.data.append(self.msd_fft(self.oxygen_path[:, index]))
+        for index in tqdm(range(o_paths.shape[1]), position=pos):
+            self.data.append(self.msd_fft(o_paths[:, index, :]))
+        self.time = np.array(self.time)
         self.data = np.array(self.data)
         self.data = self.data.mean(axis=0)
-        print('End: ', self.file_name, '{0:.2f} [s]'.format(time.time()-self.start))
+        self.data = self.data[:-1]
 
     def autocorrFFT(self, x):
         N = len(x)
@@ -55,12 +57,10 @@ class MSD:
 
 
 if __name__ == "__main__":
-    p = Pool(3)
-    msd_list = p.map(MSD, [
-        ('./data', '7_random_2'),
-        ('./data', '7_sphere_2'),
-        ('./data', '7_plane_2')
-    ])
+    with Pool(1) as p:
+        msd_list = p.map(MSD, [
+            (0, Path('F:\\KMC_data\\data_2020_09_23_random_mix_amp_v0\\11_7_7_random_0_a_0_1.0_low')),
+        ])
 
     fig = plt.figure()
     ax = fig.add_subplot(111)

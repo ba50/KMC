@@ -1,4 +1,3 @@
-import os
 import argparse
 import numpy as np
 from pathlib import Path
@@ -6,7 +5,6 @@ from pathlib import Path
 import pandas as pd
 
 from src.GenerateXYZ import GenerateXYZ
-from src.fit_sin import Function
 
 
 def generate_sim_input(_row, _path_to_data, _structure: GenerateXYZ):
@@ -34,17 +32,6 @@ def generate_sim_input(_row, _path_to_data, _structure: GenerateXYZ):
         file_out.write("{}\t# temperature\n".format(_row['temperature']))
 
         _structure.save_positions(_path_to_data/'positions.xyz')
-
-
-def get_size(amp, tau):
-    size = []
-    for x in range(len(freq_list)):
-        y = int(Function.exp_decay(x, amp=amp, tau=tau))
-        if (y % 2) == 0:
-            size.append(y - 1)
-        else:
-            size.append(y)
-    return size
 
 
 def get_sim_version(path: Path):
@@ -111,10 +98,6 @@ def main(args):
     simulations = simulations.loc[np.repeat(simulations.index.values, len(temperature))].reset_index()
     simulations['temperature'] = np.array([[x for x in temperature] for _ in range(len(freq_list))]).flatten()
 
-    # simulations['size_x'] = np.flip(np.repeat(np.clip(np.array(get_size(11, 5)), 5, 11), len(version)))
-    # simulations['size_y'] = np.flip(np.repeat(np.clip(np.array(get_size(7, 5)), 5, 7), len(version)))
-    # simulations['size_z'] = np.flip(np.repeat(np.clip(np.array(get_size(7, 5)), 5, 7), len(version)))
-
     simulations['size_x'] = args.model_size[0]
     simulations['size_y'] = args.model_size[1]
     simulations['size_z'] = args.model_size[2]
@@ -163,8 +146,7 @@ if __name__ == '__main__':
     parser.add_argument("--contact_right", type=float, default=1.)
     parser.add_argument("--amplitude", type=float, default=.1)
     parser.add_argument("--energy_base", type=float, default=.0)
-    args = parser.parse_args()
+    main_args = parser.parse_args()
 
-    args.save_path = Path(args.save_path)
-    main(args)
-
+    main_args.save_path = Path(main_args.save_path)
+    main(main_args)

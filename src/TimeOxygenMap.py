@@ -22,7 +22,7 @@ class TimeOxygenMap:
             if not self.save_data_path:
                 self.save_data_path = self.load_data_path.parent / 'oxygen_map_plots'
 
-            self.save_data_path.mkdir(parents=True, exist_ok=True)
+            self.save_data_path.mkdir(parents=True)
 
     def process_data(self):
         print('Loading oxygen map files...')

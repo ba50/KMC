@@ -16,7 +16,7 @@ class OxygenPath:
         if steps:
             self.steps = int(steps)
         else:
-            dat_path =  os.path.join(data_path, os.path.splitext(os.path.basename(when_which_where_path))[0]+'.dat')
+            dat_path = os.path.join(data_path, os.path.splitext(os.path.basename(when_which_where_path))[0]+'.dat')
             self.steps = sum(1 for line in open(dat_path)) 
 
         self.start_positions = []

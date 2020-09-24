@@ -539,7 +539,7 @@ public:
 			
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
-			//fprintf(when_which_where, "%Lf,%zd,%zd\n", time, selected_atom, seleced_direction);
+			fprintf(when_which_where, "%Lf,%zd,%zd\n", time, selected_atom, seleced_direction);
 		}
 
 		f_out_oxygen_map.close();

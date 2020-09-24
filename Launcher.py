@@ -40,7 +40,6 @@ def gen_sym(params_dict):
             GenerateXYZ(params_dict['size'], params_dict['path_to_data']).generate_plane(1)
 
 
-
 class Launcher(Ui_KMC_GUI):
     cell_type = None
     root_directory = None

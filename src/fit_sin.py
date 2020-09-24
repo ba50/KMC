@@ -1,4 +1,5 @@
 import json
+import argparse
 from pathlib import Path
 from multiprocessing import Pool
 
@@ -173,13 +174,24 @@ def generate_phi(inputs):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data_path", required=True, help="path to data from simulation")
+    parser.add_argument("--workers", type=int, help="number of workers", default=1)
+    parser.add_argument("--mean_std", type=float, help="Mean std to skip point", default=2.)
+    parser.add_argument("--auto_tune", type=int, help="Auto tune steps", default=2)
+    parser.add_argument("--repeat", type=int, help="Number of iterations", default=3)
+    parser.add_argument("--original_len", type=float, help="Precentage of minimal left points", default=.75)
+    args = parser.parse_args()
+
+    args.data_path = Path(args.data_path)
+
     config = {
-        'workers': 3,
-        'base_path': Path('D:\\KMC_data\\data_2020_01_20_v0'),
-        'mean_std': 2.,
-        'auto_tune_step': 2.,
-        'repeat': 3,
-        'original_len': .75  # in %
+        'base_path': args.data_path,
+        'workers': args.workers,
+        'mean_std': args.mean_std,
+        'auto_tune_step': args.auto_tune,
+        'repeat': args.repeat,
+        'original_len': args.original_len  # in %
     }
 
     sim_path_list = [(sim, config) for sim in config['base_path'].glob("*") if sim.is_dir()]
