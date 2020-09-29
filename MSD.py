@@ -15,6 +15,7 @@ class MSD:
         pos = inputs[0]
         data_path = inputs[1]
         ion_count = inputs[2]
+        time_points = inputs[3]
 
         self.file_name = data_path.name
         file_in = h5py.File(data_path/'paths'/'o_paths.hdf5', 'r')
@@ -27,13 +28,15 @@ class MSD:
             nrows=o_paths.shape[0]
         )
 
-        self.time = when_which_where['time']
+        loc_index = list(range(0, when_which_where.shape[0], int(when_which_where.shape[0] // time_points)))
+
+        self.time = when_which_where['time'].iloc[loc_index]
 
         self.data = []
         if ion_count is None:
             ion_count = o_paths.shape[1]
         for index in tqdm(range(ion_count), position=pos):
-            self.data.append(self.msd_fft(o_paths[:, index, :]))
+            self.data.append(self.msd_fft(o_paths[loc_index, index, :]))
         self.time = np.array(self.time)
         self.data = np.array(self.data)
         self.data = self.data.mean(axis=0)
@@ -62,7 +65,7 @@ class MSD:
 
 def main(args):
     sim_path_list = [sim for sim in args.data_path.glob("*") if sim.is_dir()]
-    sim_path_list = [(index % args.workers, sim, None) for index, sim in enumerate(sim_path_list)]
+    sim_path_list = [(index % args.workers, sim, args.ions, 10**3) for index, sim in enumerate(sim_path_list)]
 
     with Pool(args.workers) as p:
         msd_list = p.map(MSD, sim_path_list)
@@ -88,6 +91,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_path", type=str, required=True, help="path to simulation data")
     parser.add_argument("--workers", type=int, help="number of workers", default=1)
+    parser.add_argument("--ions", type=int, help="number of ions.", default=None)
     main_args = parser.parse_args()
 
     main_args.data_path = Path(main_args.data_path)

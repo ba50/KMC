@@ -1,8 +1,16 @@
 import argparse
 from pathlib import Path
+from multiprocessing import Pool
 
-from src.utils.config import get_config
-from src.DataProcess import DataProcess
+from src.DataProcess import data_process
+
+
+def main(args):
+    sim_path_list = [sim for sim in args.data_path.glob("*") if sim.is_dir()]
+    sim_path_list = [((index % args.workers), sim, args) for index, sim in enumerate(sim_path_list)]
+
+    with Pool(args.workers) as p:
+        p.map(data_process, sim_path_list)
 
 
 if __name__ == '__main__':
@@ -20,9 +28,4 @@ if __name__ == '__main__':
 
     main_args.data_path = Path(main_args.data_path)
 
-    sim_path_list = [sim for sim in main_args.data_path.glob("*") if sim.is_dir()]
-
-    for sim_path in sim_path_list:
-        sim_config = get_config(sim_path/'input.kmc')
-        if list(sim_path.glob('heat_map/*')):
-            DataProcess(simulation_path=sim_path).run(main_args)
+    main(main_args)
