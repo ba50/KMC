@@ -9,6 +9,8 @@ from tqdm import tqdm
 
 from src.utils import plotting
 
+import matplotlib.pyplot as plt
+
 
 class MSD:
     def __init__(self, inputs):
@@ -29,7 +31,6 @@ class MSD:
         )
 
         loc_index = list(range(0, when_which_where.shape[0], int(when_which_where.shape[0] // time_points)))
-
         self.time = when_which_where['time'].iloc[loc_index]
 
         self.data = []
@@ -37,7 +38,9 @@ class MSD:
             ion_count = o_paths.shape[1]
         for index in tqdm(range(ion_count), position=pos):
             self.data.append(self.msd_fft(o_paths[loc_index, index, :]))
-        self.time = np.array(self.time)
+
+        # self.time = np.array(self.time) TODO: Fix time
+        self.time = np.array(range(len(self.data[0])))
         self.data = np.array(self.data)
         self.data = self.data.mean(axis=0)
 
@@ -78,13 +81,13 @@ def main(args):
         y_list.append(msd.data)
         label_list.append(msd.file_name)
 
-    plotting.plot_line(save_file=args.data_path / 'MSD.png',
-                       x_list=x_list,
-                       y_list=y_list,
-                       label_list=label_list,
-                       x_label='Time [ps]',
-                       y_label='MSD [au]',
-                       dpi=250)
+    plotting.plot_log(save_file=args.data_path / 'MSD.png',
+                      x_list=x_list,
+                      y_list=y_list,
+                      label_list=label_list,
+                      x_label='Time [ps]',
+                      y_label='MSD [au]',
+                      dpi=250)
 
 
 if __name__ == "__main__":

@@ -36,7 +36,7 @@ def data_process(inputs):
 
     if args.plots or args.o_paths:
         print('Save in:', simulation_path / 'paths')
-        (simulation_path / 'paths').mkdir(parents=True)
+        (simulation_path / 'paths').mkdir(parents=True, exist_ok=False)
 
         when_which_where = pd.read_csv(
             simulation_path / 'when_which_where.csv',
@@ -94,22 +94,36 @@ def data_process(inputs):
     if args.o_paths:
         # TIMExATOMSxPOS
         file_out = h5py.File((simulation_path / 'paths' / 'o_paths.hdf5'), 'w')
+
+        when_which_where_o_paths = when_which_where
+        if args.ions:
+            ions = np.sort(np.random.choice(when_which_where['selected_atom'].unique(), size=(args.ions,)))
+            when_which_where_o_paths = when_which_where.where(
+                when_which_where['selected_atom'].map(lambda x: True if x in ions else False)
+            ).dropna()
+        else:
+            ions = np.arange(o_base_positions.shape[0])
+
         o_paths = file_out.create_dataset('o_paths',
                                           (1,
-                                           o_base_positions.shape[0],
+                                           len(ions),
                                            o_base_positions.shape[1]),
                                           maxshape=(None,
-                                                    o_base_positions.shape[0],
+                                                    len(ions),
                                                     o_base_positions.shape[1]),
-                                          data=o_base_positions,
-                                          dtype=np.float16)
+                                          data=o_base_positions[ions, :],
+                                          dtype=np.float32)
 
-        for step in tqdm(range(len(when_which_where)), position=pos):
-            event = when_which_where.iloc[step]
+        for step in tqdm(range(len(when_which_where_o_paths)), position=pos):
+            event = when_which_where_o_paths.iloc[step]
+            selected_atom = int(event['selected_atom'])
+            selected_direction = int(event['selected_direction'])
+
             o_paths.resize(o_paths.shape[0]+1, axis=0)
             o_paths[-1, :, :] = o_paths[o_paths.shape[0]-2, :, :]
-            o_paths[-1, int(event['selected_atom']), :] = \
-                o_paths[-1, int(event['selected_atom']), :] + jumps[int(event['selected_direction'])]
+            o_index = np.where(ions == selected_atom)
+            o_paths[-1, o_index, :] = \
+                o_paths[-1, o_index, :] + jumps[selected_direction]  # TODO: Error in processing. Mapping mismatch.
 
     if args.heat_map:
         timed_heat_map = TimeHeatMap(
