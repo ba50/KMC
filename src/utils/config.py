@@ -20,7 +20,6 @@ def get_config(path: Path):
             _key = _data[1].strip()
             _config[_key] = bool(_data[0].strip())
 
-
         if index in float_index:
             _data = line.split('#')
             _key = _data[1].strip()

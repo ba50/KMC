@@ -23,7 +23,6 @@ if __name__ == '__main__':
     parser.add_argument("--dpi", type=int, help="Plotting dpi", default=100)
     parser.add_argument("--plots", action='store_true', help="Process plots")
     parser.add_argument("--o_paths", action='store_true', help="Process oxygen paths")
-    parser.add_argument("--heat_map", action='store_true', help="Process heat map")
     parser.add_argument("--ox_map", action='store_true', help="Process oxygen map")
     main_args = parser.parse_args()
 

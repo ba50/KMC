@@ -32,14 +32,14 @@ class GenerateWorkers:
                 if process.poll() is not None:
                     self.device_list.put(device_name)
 
-            if not self.device_list.empty():
+            if not self.device_list.empty() and self.global_index < len(self.commands):
                 device_name = self.device_list.get()
                 self.processes[device_name] = self.__make_process(device_name)
                 self.global_index += 1
 
-            if self.global_index > len(self.commands) - 1:
+            if all(self.processes) is None:
                 break
 
-            time.sleep(0.01)
+            time.sleep(0.1)
 
         print("End of queue")

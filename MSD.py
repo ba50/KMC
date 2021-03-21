@@ -81,13 +81,13 @@ def main(args):
         y_list.append(msd.data)
         label_list.append(msd.file_name)
 
-    plotting.plot_log(save_file=args.data_path / 'MSD.png',
-                      x_list=x_list,
-                      y_list=y_list,
-                      label_list=label_list,
-                      x_label='Time [ps]',
-                      y_label='MSD [au]',
-                      dpi=250)
+    plotting.plot_line(save_file=args.data_path / 'MSD.png',
+                       x_list=x_list,
+                       y_list=y_list,
+                       label_list=label_list,
+                       x_label='Time [ps]',
+                       y_label='MSD [au]',
+                       dpi=250)
 
 
 if __name__ == "__main__":

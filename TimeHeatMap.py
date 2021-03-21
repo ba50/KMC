@@ -1,4 +1,5 @@
 import os
+import argparse
 from pathlib import Path
 
 import h5py
@@ -10,9 +11,6 @@ import matplotlib.pyplot as plt
 
 
 class TimeHeatMap:
-    cuts_pos = None
-    options = {'mean': False, "jumps": True, "save_raw": True, 'mean_size': 3}
-
     def __init__(
             self,
             load_data_path: Path,
@@ -25,6 +23,8 @@ class TimeHeatMap:
         :param load_data_path:
         :param save_data_path:
         """
+        self.options = {'mean': False, "jumps": True, "save_raw": True, 'mean_size': 3}
+
         if options:
             self.options.update(options)
 
@@ -44,7 +44,7 @@ class TimeHeatMap:
                                     key=lambda i: float(os.path.splitext(os.path.basename(i))[0]))
 
     def process_data(self):
-        print('Loading heat map files...')
+        print(f"Loading heat map files... {self.load_data_path.name}")
         if self.options['jumps']:
             positions = ['left', 'center', 'right']
             directions = ['left', 'right']
@@ -174,3 +174,25 @@ class TimeHeatMap:
         _ax.plot(x, y)
         plt.savefig(str(save_file), dpi=dpi)
         plt.close(_fig)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data_path", type=str, required=True, help="path to simulation data")
+    parser.add_argument("--workers", type=int, help="number of workers", default=1)
+    parser.add_argument("--dpi", type=int, help="Plotting dpi", default=100)
+
+    main_args = parser.parse_args()
+
+    main_args.data_path = Path(main_args.data_path)
+    
+    sim_path_list = [sim for sim in main_args.data_path.glob("*") if sim.is_dir()]
+
+    for simulation_path in sim_path_list:
+        timed_heat_map = TimeHeatMap(
+                load_data_path=simulation_path,
+                options={'dpi': main_args.dpi},
+                workers=main_args.workers
+                )
+        if timed_heat_map.load_data_path:
+            timed_heat_map.process_data()

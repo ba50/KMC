@@ -77,7 +77,7 @@ public:
 			std::vector<int> temp_site(3);
 			for (auto sort_map : configuration.GetSortMap()) {
 				if (sort_map.first == Type::O) {
-					for (auto position : sort_map.second) {
+					for (auto &position : sort_map.second) {
 						temp_position = position.GetPosition();
 
 						//+1 because bourdery conditions
@@ -122,7 +122,7 @@ public:
 			std::vector<size_t> temp_site(3);
 			for (auto sort_map : configuration.GetSortMap()) {
 				if (sort_map.first == Type::Bi) {
-					for (auto position : sort_map.second) {
+					for (auto &position : sort_map.second) {
 						temp_position = position.GetPosition();
 						temp_site[0] = static_cast<size_t>(floor(temp_position[0]/CELL_SIZE));
 						temp_site[1] = static_cast<size_t>(floor(temp_position[1]/CELL_SIZE));

@@ -92,9 +92,9 @@ def main(args):
     freq_list = set(simulations['frequency'])
     simulations['index'] = np.array([[i for _ in range(len(version)*args.split)] for i in range(len(freq_list))]).flatten()
 
-    temperature = np.linspace(1, 5, 4)
-
     freq_list = simulations['frequency']
+
+    temperature = args.temperature
     simulations = simulations.loc[np.repeat(simulations.index.values, len(temperature))].reset_index()
     simulations['temperature'] = np.array([[x for x in temperature] for _ in range(len(freq_list))]).flatten()
 
@@ -139,13 +139,14 @@ if __name__ == '__main__':
     parser.add_argument("--model_size", type=int, nargs='+', default=[5, 5, 5])
     parser.add_argument("--thermalization_time", type=int, default=0)
     parser.add_argument("--window", type=int, default=100)
-    parser.add_argument("--window_epsilon", type=float, default=.01)
+    parser.add_argument("--window_epsilon", type=float, default=.5)
     parser.add_argument("--contact_switch_left", type=bool, default=False)
     parser.add_argument("--contact_switch_right", type=bool, default=False)
     parser.add_argument("--contact_left", type=float, default=1.)
     parser.add_argument("--contact_right", type=float, default=1.)
     parser.add_argument("--amplitude", type=float, default=.1)
     parser.add_argument("--energy_base", type=float, default=.0)
+    parser.add_argument("--temperature", type=float, nargs='+',  default=[1.0])
     main_args = parser.parse_args()
 
     main_args.save_path = Path(main_args.save_path)
