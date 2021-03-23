@@ -45,7 +45,7 @@ def main(args):
 
     freq_list = []
     for i in range(args.low_freq+1, args.high_freq):
-        freq_list.extend(np.logspace(i-1, i, num=2, endpoint=False))
+        freq_list.extend(np.logspace(i-1, i, num=4, endpoint=False))
 
     simulations = pd.DataFrame({'frequency': freq_list})
 
@@ -139,7 +139,7 @@ if __name__ == '__main__':
     parser.add_argument("--model_size", type=int, nargs='+', default=[5, 5, 5])
     parser.add_argument("--thermalization_time", type=int, default=0)
     parser.add_argument("--window", type=int, default=100)
-    parser.add_argument("--window_epsilon", type=float, default=.5)
+    parser.add_argument("--window_epsilon", type=float, default=.05)
     parser.add_argument("--contact_switch_left", type=bool, default=False)
     parser.add_argument("--contact_switch_right", type=bool, default=False)
     parser.add_argument("--contact_left", type=float, default=1.)
