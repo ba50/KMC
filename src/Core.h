@@ -414,7 +414,7 @@ public:
 		size_t selected_atom, seleced_direction;
 
 		size_t id, i;
-		long double time{ time_start };
+		long double time{ time_start }, record_delta{ 0.0 }, d_t{ 0.0 };
 		double delta_energy{ 0.0 };
 
 		if( remove(std::string(data_path+"/when_which_where.csv").c_str()) != 0 )
@@ -427,10 +427,11 @@ public:
 		else
 			std::cout<< "File field_plot.csv successfully deleted"<<std::endl;
 
-		FILE *when_which_where, *field_plot;
-		fopen_s(&when_which_where, std::string(data_path + "/when_which_where.csv").c_str(), "a");
+		//FILE *when_which_where;
+		FILE *field_plot;
+		//fopen_s(&when_which_where, std::string(data_path + "/when_which_where.csv").c_str(), "a");
 		//when_which_where = fopen(std::string(data_path + "/when_which_where.csv").c_str(), "w");
-		fprintf(when_which_where, "time,selected_atom,selected_direction\n");
+		//fprintf(when_which_where, "time,selected_atom,selected_direction\n");
 
 		std::ofstream f_out_oxygen_map(data_path + "/oxygen_map/" +"positions.xyz");
 
@@ -504,9 +505,9 @@ public:
 			[oxygen_positions_[selected_atom][0] - 1]
 			[seleced_direction]++;
 
-			if (fmod(time, window) < window_epsilon) {
+			if (abs(record_delta - window) < window_epsilon) {
 				std::cout << time << "/" << time_end << "[ps]" << std::endl;
-				std::ofstream f_out_heat_map(data_path + "/heat_map/" + std::to_string(int(time)) + ".dat");
+				std::ofstream f_out_heat_map(data_path + "/heat_map/" + std::to_string(float(time)) + ".dat");
 				for (size_t z = 0; z < heat_map_array_size_[2]; z++) {
 					for (size_t y = 0; y < heat_map_array_size_[1]; y++) {
 						for (size_t x = 0; x < heat_map_array_size_[0]; x++) {
@@ -535,15 +536,18 @@ public:
 				}
 
 				fprintf(field_plot, "%Lf,%Lf\n", time, delta_energy);
+				record_delta = 0.0;
 			}
 			
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
-			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
-			fprintf(when_which_where, "%Lf,%zd,%zd\n", time, selected_atom, seleced_direction);
+			d_t = (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
+			time += d_t;
+			record_delta += d_t;
+			//fprintf(when_which_where, "%Lf,%zd,%zd\n", time, selected_atom, seleced_direction);
 		}
 
 		f_out_oxygen_map.close();
-		fclose(when_which_where);
+		//fclose(when_which_where);
 		fclose(field_plot);
 		std::cout << std::endl;
 	}

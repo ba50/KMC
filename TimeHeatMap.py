@@ -143,7 +143,7 @@ class TimeHeatMap:
                                                         sample,
                                                         cuts_pos_dict), axis=1)
                 data_out[key][direction] = sample
-        data_out['time'] = int(file_name.stem)
+        data_out['time'] = float(file_name.stem)
 
         return data_out
 
