@@ -17,23 +17,24 @@ if __name__ == "__main__":
     num_atoms, raw_frames = GenerateXYZ.read_frames_dataframe(data_path)
 
     time_steps = raw_frames['frame'].unique()
-    max_x = max(raw_frames['x'])
-    chunks = 8
-    chunk_size = max_x//chunks
+    x_positions = raw_frames['x'].unique()
+    x_positions.sort()
 
     ions_dd = {'time': [], 'x': [], 'y': []}
     for time_step in time_steps:
         pos_frame = raw_frames[raw_frames['frame'] == time_step]
-        for x_step in range(chunks):
-
-            ions_count = len(pos_frame.loc[(x_step*chunk_size <= pos_frame['x']) & (pos_frame['x'] < x_step*chunk_size+chunk_size)])
+        for x_step in x_positions:
+            ions_count = len(pos_frame.loc[x_step == pos_frame['x']])
 
             ions_dd['time'].append(time_step)
             ions_dd['x'].append(x_step)
             ions_dd['y'].append(ions_count/num_atoms)
     ions_dd = pd.DataFrame(ions_dd)
 
-    for time_step in time_steps[:50]:
-        plt.plot(range(chunks), ions_dd[ions_dd['time'] == time_step]['y'])
+    for time_step in time_steps[[0, 100, 199]]:
+        plt.plot(x_positions, ions_dd[ions_dd['time'] == time_step]['y'], label=f'{time_step} [ps]')
 
+    plt.xlabel('x')
+    plt.ylabel('Ions density')
+    plt.legend()
     plt.show()
