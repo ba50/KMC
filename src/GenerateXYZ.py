@@ -168,7 +168,7 @@ class GenerateXYZ:
         index_list = data_in[data_in['x'].isnull()].index
 
         frame = data_in[1:n_atoms+1].reset_index(drop=True)
-        frame_index = [{'frame': 0} for _ in range(n_atoms)]
+        frame_index = [{'time_frames': 0} for _ in range(n_atoms)]
         frame_index = pd.DataFrame(frame_index)
         frames = pd.concat([frame, frame_index], axis=1)
 
@@ -177,10 +177,13 @@ class GenerateXYZ:
 
         for index in index_list[1:]:
             frame = data_in[index+1:n_atoms+index+1].reset_index(drop=True)
-            frame_index = [{'frame': index} for _ in range(n_atoms)]
+            frame_index = [{'time_frames': index} for _ in range(n_atoms)]
             frame_index = pd.DataFrame(frame_index)
             frame = pd.concat([frame, frame_index], axis=1)
             frames = frames.append(frame)
+        
+        frames['ids'] = frames.index
+        frames = frames.reset_index(drop=True)
 
         return n_atoms, frames
 

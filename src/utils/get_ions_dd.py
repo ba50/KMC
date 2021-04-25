@@ -15,13 +15,13 @@ def main(args):
 
     num_atoms, raw_frames = GenerateXYZ.read_frames_dataframe(data_path)
 
-    time_steps = raw_frames['frame'].unique()
+    time_steps = raw_frames['time_frames'].unique()
     x_positions = raw_frames['x'].unique()
     x_positions.sort()
 
     ions_dd = {'time': [], 'x': [], 'y': []}
     for time_step in time_steps:
-        pos_frame = raw_frames[raw_frames['frame'] == time_step]
+        pos_frame = raw_frames[raw_frames['time_frames'] == time_step]
         for x_step in x_positions:
             ions_count = len(pos_frame.loc[x_step == pos_frame['x']])
 
