@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 
 import pandas as pd
@@ -7,11 +8,10 @@ from src.GenerateXYZ import GenerateXYZ
 from src.utils.config import get_config
 
 
-if __name__ == "__main__":
-    sim_path = Path("F:\\KMC_data\\data_2021_04_17_v0\\45_9_9_random_0_a_0_1.0_sw_500")
-    data_path = sim_path / 'oxygen_map\\positions.xyz'
+def main(args):
+    data_path = args.data_path / 'oxygen_map' / 'positions.xyz'
 
-    config = get_config(sim_path / 'input.kmc')
+    config = get_config(args.data_path / 'input.kmc')
 
     num_atoms, raw_frames = GenerateXYZ.read_frames_dataframe(data_path)
 
@@ -37,3 +37,15 @@ if __name__ == "__main__":
     plt.ylabel('Ions density')
     plt.legend()
     plt.show()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data_path", type=str, required=True, help="path to simulation data")
+
+    main_args = parser.parse_args()
+
+    main_args.data_path = Path(main_args.data_path)
+
+    main(main_args)
+

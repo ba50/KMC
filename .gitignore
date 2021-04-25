@@ -4,6 +4,7 @@ Debug/
 x64/
 
 Makefile
+build/
 *.un~
 *.swp
 
