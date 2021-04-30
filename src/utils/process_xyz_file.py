@@ -2,7 +2,7 @@ import argparse
 from pathlib import Path
 
 import numpy as np
-import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 from src.GenerateXYZ import GenerateXYZ
 
@@ -21,41 +21,24 @@ def filter_path(x, filter_threshold):
     return x
 
 
-def plot_3d(atom_0):
-    import matplotlib.pyplot as plt
-
-    plt.figure()
-    ax = plt.axes(projection='3d')
-
-    xline = atom_0['x']
-    yline = atom_0['y']
-    zline = atom_0['z']
-
-    ax.plot3D(xline, yline, zline)
-    plt.show()
-
-
 def main(args):
     data_path = args.data_path / 'oxygen_map' / 'positions.xyz'
+    save_path = args.data_path / 'oxygen_map' / 'positions_inf.xyz'
 
     num_atoms, raw_frames = GenerateXYZ.read_frames_dataframe(data_path)
 
-    atom_0 = raw_frames[raw_frames['ids'] == 0]
+    for atom_id in tqdm(range(num_atoms)):
+        atom = raw_frames[raw_frames['ids'] == atom_id]
 
-    x = atom_0['x'].values
-    y = atom_0['y'].values
-    z = atom_0['z'].values
+        x = atom['x'].values
+        y = atom['y'].values
+        z = atom['z'].values
 
-    x = filter_path(x, 25)
-    y = filter_path(y, 15)
-    z = filter_path(z, 15)
+        raw_frames.loc[raw_frames['ids'] == atom_id, 'x'] = filter_path(x, 25)
+        raw_frames.loc[raw_frames['ids'] == atom_id, 'y'] = filter_path(y, 15)
+        raw_frames.loc[raw_frames['ids'] == atom_id, 'z'] = filter_path(z, 15)
 
-    raw_frames.loc[raw_frames['ids'] == 0, 'x'] = x
-    raw_frames.loc[raw_frames['ids'] == 0, 'y'] = y
-    raw_frames.loc[raw_frames['ids'] == 0, 'z'] = z
-
-    atom_0 = raw_frames[raw_frames['ids'] == 0]
-    plot_3d(atom_0)
+    GenerateXYZ.write_frames_from_dataframe(save_path, raw_frames, num_atoms)
 
 
 if __name__ == "__main__":

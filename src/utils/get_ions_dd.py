@@ -5,13 +5,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from src.GenerateXYZ import GenerateXYZ
-from src.utils.config import get_config
 
 
 def main(args):
     data_path = args.data_path / 'oxygen_map' / 'positions.xyz'
-
-    config = get_config(args.data_path / 'input.kmc')
 
     num_atoms, raw_frames = GenerateXYZ.read_frames_dataframe(data_path)
 

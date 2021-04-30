@@ -3,6 +3,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 
 class GenerateXYZ:
@@ -189,10 +190,11 @@ class GenerateXYZ:
 
     @staticmethod
     def write_frames_from_dataframe(save_path: Path, data: pd.DataFrame, num_atoms):
-        index_list = data['frame'].unique()
+        print('Saving...\n')
+        index_list = data['time_frames'].unique()
         with save_path.open('w') as f_out:
-            for index in index_list:
-                frame = data[data['frame'] == index]
+            for index in tqdm(index_list):
+                frame = data[data['time_frames'] == index]
                 f_out.write(f"{num_atoms}\n\n")
                 for _, row in frame.iterrows():
                     f_out.write(f"{row.atom}\t{int(row.x)}\t{int(row.y)}\t{int(row.z)}\n")
