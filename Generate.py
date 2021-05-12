@@ -44,8 +44,8 @@ def main(args):
     save_path.mkdir(parents=True)
 
     freq_list = []
-    for i in range(args.low_freq+1, args.high_freq):
-        freq_list.extend(np.logspace(i-1, i, num=4, endpoint=False))
+    for i in range(args.low_freq+1, args.high_freq+2):
+        freq_list.extend(np.logspace(i-1, i, num=3, endpoint=False))
 
     simulations = pd.DataFrame({'frequency': freq_list})
 
@@ -133,15 +133,15 @@ if __name__ == '__main__':
     parser.add_argument("--base_periods", type=float, help="base sin period", default=0.5)
     parser.add_argument("--window_points", type=int, help="points in window", default=200)
     parser.add_argument("--low_freq", type=int, help="low freq, pow of 10", default=4)
-    parser.add_argument("--high_freq", type=int, help="hie freq, pow of 10", default=10)
+    parser.add_argument("--high_freq", type=int, help="hie freq, pow of 10", default=8)
 
     parser.add_argument("--cell_type", choices=['random', 'sphere', 'plane'], default='random')
     parser.add_argument("--model_size", type=int, nargs='+', default=[5, 5, 5])
     parser.add_argument("--thermalization_time", type=int, default=200)
     parser.add_argument("--window", type=int, default=100)
     parser.add_argument("--window_epsilon", type=float, default=8.0)
-    parser.add_argument("--contact_switch_left", type=bool, default=0, help='0-off, 2-on')
-    parser.add_argument("--contact_switch_right", type=bool, default=0, help='0-off, 2-on')
+    parser.add_argument("--contact_switch_left", type=int, default=0, help='0-off, 2-on')
+    parser.add_argument("--contact_switch_right", type=int, default=0, help='0-off, 2-on')
     parser.add_argument("--contact_left", type=float, default=1.)
     parser.add_argument("--contact_right", type=float, default=1.)
     parser.add_argument("--amplitude", type=float, default=.001)

@@ -27,7 +27,7 @@ class GenerateWorkers:
     def run(self):
         while True:
             for device_name, process in self.processes.items():
-                print('device_name: %s\t->\t%s' % (device_name, process.stdout.readline()))
+                # print('device_name: %s\t->\t%s' % (device_name, process.stdout.readline()))
                 # print(device_name, ": ", process.poll())
                 if process.poll() is not None:
                     self.device_list.put(device_name)
@@ -40,6 +40,6 @@ class GenerateWorkers:
             if all(self.processes) is None:
                 break
 
-            time.sleep(0.1)
+            time.sleep(1)
 
         print("End of queue")
