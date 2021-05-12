@@ -18,7 +18,8 @@ class GenerateWorkers:
         row = self.commands.iloc[self.global_index]
         commend = [str(row['program']), str(row['data_path'])]
         print("Run %s on %s" % (" ".join(commend), device_name))
-        return subprocess.Popen(commend, stdout=subprocess.PIPE)
+        # return subprocess.Popen(commend, stdout=subprocess.PIPE)
+        return subprocess.Popen(commend, stdout=None)
 
     def __str__(self):
         temp = [str(i.poll()) + ", " for i in self.processes]
