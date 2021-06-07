@@ -45,7 +45,7 @@ def main(args):
 
     freq_list = []
     for i in range(args.low_freq+1, args.high_freq+2):
-        freq_list.extend(np.logspace(i-1, i, num=3, endpoint=False))
+        freq_list.extend(np.logspace(i-1, i, num=8, endpoint=False))
 
     simulations = pd.DataFrame({'frequency': freq_list})
 
@@ -61,7 +61,8 @@ def main(args):
     simulations['energy_base'] = args.energy_base
 
     simulations['periods'] = simulations['frequency'].map(
-        lambda freq: np.clip(freq / freq_list[0] * args.base_periods, 0, 4)
+        # lambda freq: np.clip(freq / freq_list[0] * args.base_periods, 0, 4)
+        lambda freq: freq / freq_list[0] * args.base_periods
     )
 
     start_stop = {'time_start': [], 'time_end': [], 'periods': [], 'frequency': [], 'split': []}
