@@ -45,7 +45,7 @@ def main(args):
 
     freq_list = []
     for i in range(args.low_freq+1, args.high_freq+2):
-        freq_list.extend(np.logspace(i-1, i, num=8, endpoint=False))
+        freq_list.extend(np.logspace(i-1, i, num=3, endpoint=False))
 
     simulations = pd.DataFrame({'frequency': freq_list})
 
