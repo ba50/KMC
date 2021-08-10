@@ -2,6 +2,7 @@
 __pycache__/
 Debug/
 x64/
+.DS_Store
 
 Makefile
 build/
