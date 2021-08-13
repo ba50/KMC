@@ -119,8 +119,6 @@ def main(args):
     with Pool(args.workers) as p:
         data_out = p.map(generate_phi, sim_path_list)
         data_out = pd.DataFrame(data_out)
-        print(data_out)
-        exit()
         data_out.to_csv(args.data_path/'simulations_data.csv', index=False)
 
 
