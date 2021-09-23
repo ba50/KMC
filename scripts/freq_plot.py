@@ -33,7 +33,7 @@ def main(args):
 
     plt.xscale("log")
     plt.savefig(
-        args.delta_phi.parent / f"delta_phi_rad_vs_f.png", dpi=1000, bbox_inches="tight"
+        args.delta_phi.parent / f"delta_phi_rad_vs_freq_{args.delta_phi.parent.name}.png", dpi=1000, bbox_inches="tight"
     )
     plt.close(fig)
 
