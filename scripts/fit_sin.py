@@ -1,5 +1,4 @@
 import argparse
-import json
 from multiprocessing import Pool
 from pathlib import Path
 
@@ -8,6 +7,7 @@ import matplotlib.ticker as mtick
 import numpy as np
 import pandas as pd
 from scipy import optimize
+
 from KMC.Config import Config
 
 
@@ -122,8 +122,8 @@ def generate_phi(sim_path):
         "phi_deg": params["fit_sine_phi"] * 180 / np.pi,
         "path": sim_path,
         "version": (lambda split: split[5])(sim_path.name.split("_")),
-        "temp_mul": (lambda split: split[-1])(sim_path.name.split("_")),
-        "frequency_index": (lambda split: split[4])(sim_path.name.split("_")),
+        "temperature_scale": sim_config.temperature_scale,
+        "frequency": sim_config.frequency,
     }
     return direction_dict
 
@@ -134,7 +134,12 @@ def main(args):
     with Pool(args.workers) as p:
         data_out = p.map(generate_phi, sim_path_list)
         data_out = pd.DataFrame(data_out)
-        data_out.to_csv(args.data_path / "simulations_data.csv", index=False)
+        data_out = data_out.sort_values(["frequency", "version"])
+        data_out.to_csv(
+            args.data_path
+            / ("delta_phi_" + args.data_path.name + ".csv"),
+            index=False,
+        )
 
 
 if __name__ == "__main__":

@@ -22,7 +22,7 @@ class Config:
         self.frequency = inputs["frequency"]
         self.periods = inputs["periods"]
         self.energy_base = inputs["energy_base"]
-        self.temperature = inputs["temperature"]
+        self.temperature_scale = inputs["temperature_scale"]
 
     def save(self, save_path: Path):
         with (save_path / "input.kmc").open("w") as file_out:
@@ -30,20 +30,26 @@ class Config:
             file_out.write("{}\t# size_x\n".format(self.size["x"]))
             file_out.write("{}\t# size_y\n".format(self.size["y"]))
             file_out.write("{}\t# size_z\n".format(self.size["z"]))
-            file_out.write("{}\t# thermalization_time\n".format(self.thermalization_time))
+            file_out.write(
+                "{}\t# thermalization_time\n".format(self.thermalization_time)
+            )
             file_out.write("{}\t# time_start\n".format(self.time_start))
             file_out.write("{}\t# time_end\n".format(self.time_end))
             file_out.write("{}\t# window\n".format(self.window))
             file_out.write("{}\t# window_epsilon\n".format(self.window_epsilon))
-            file_out.write("{}\t# contact_switch_left\n".format(self.contact_switch_left))
-            file_out.write("{}\t# contact_switch_right\n".format(self.contact_switch_right))
+            file_out.write(
+                "{}\t# contact_switch_left\n".format(self.contact_switch_left)
+            )
+            file_out.write(
+                "{}\t# contact_switch_right\n".format(self.contact_switch_right)
+            )
             file_out.write("{}\t# contact_left\n".format(self.contact_left))
             file_out.write("{}\t# contact_right\n".format(self.contact_right))
             file_out.write("{}\t# amplitude\n".format(self.amplitude))
             file_out.write("{}\t# frequency\n".format(self.frequency))
             file_out.write("{}\t# periods\n".format(self.periods))
             file_out.write("{}\t# energy_base\n".format(self.energy_base))
-            file_out.write("{}\t# temperature\n".format(self.temperature))
+            file_out.write("{}\t# temperature_scale\n".format(self.temperature_scale))
 
     @staticmethod
     def load(load_path: Path):

@@ -76,12 +76,11 @@ def main(args):
 
     freq_list = simulations["frequency"]
 
-    temperature = args.temperature
     simulations = simulations.loc[
-        np.repeat(simulations.index.values, len(temperature))
+        np.repeat(simulations.index.values, len(args.temperature_scale))
     ].reset_index()
-    simulations["temperature"] = np.array(
-        [[x for x in temperature] for _ in range(len(freq_list))]
+    simulations["temperature_scale"] = np.array(
+        [[x for x in args.temperature_scale] for _ in range(len(freq_list))]
     ).flatten()
 
     simulations["size_x"] = args.model_size[0]
@@ -96,7 +95,7 @@ def main(args):
         "index",
         "version",
         "split",
-        "temperature",
+        "temperature_scale",
     ]
     simulations["sim_name"] = simulations[select_columns].apply(
         lambda x: "_".join(
@@ -171,7 +170,7 @@ if __name__ == "__main__":
     parser.add_argument("--contact_right", type=float, default=1.0)
     parser.add_argument("--amplitude", type=float, default=0.005)
     parser.add_argument("--energy_base", type=float, default=0.0)
-    parser.add_argument("--temperature", type=float, nargs="+", default=[1.0])
+    parser.add_argument("--temperature_scale", type=float, nargs="+", default=[1.0])
     parser.add_argument("--version", type=str, nargs="+", default=["a"])
     main_args = parser.parse_args()
 

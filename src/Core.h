@@ -30,6 +30,7 @@ class Core {
 
 	std::vector<std::vector<int>> direction_vector;
 	std::vector<double> jumpe_direction_sume_vector_;
+	const double temperature_scale;
 	const std::string data_path;
 
 public:
@@ -44,6 +45,7 @@ public:
 			const double& temperature_scale,
 			const std::string& data_path):
 		types( types ), 
+		temperature_scale( temperature_scale ),
 		data_path( data_path ),
 		steps( 0 )
 	{
@@ -383,7 +385,7 @@ public:
 		const double delta_energy_base
 	) {
 		const double PI = 3.141592653589793238463;
-		const double kT{(800.0 + 273.15)*8.6173304e-5};
+		const double kT{(800.0 * temperature_scale + 273.15) * 8.6173304e-5};
 		double random_for_atom, random_for_direction;
 		double random_for_time;
 

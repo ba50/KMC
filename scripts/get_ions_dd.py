@@ -1,11 +1,12 @@
 import argparse
 from pathlib import Path
 
-import pandas as pd
 import matplotlib.pyplot as plt
-from analysis.GenerateModel import GenerateModel
-from analysis.Config import Config
+import pandas as pd
 from tqdm import tqdm
+
+from KMC.Config import Config
+from KMC.GenerateModel import GenerateModel
 
 
 def get_ions_dd_last_points(data_path, smooth=8):
