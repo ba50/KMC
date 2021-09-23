@@ -2,9 +2,8 @@ import argparse
 from pathlib import Path
 
 import numpy as np
-from tqdm import tqdm
-
 from src.GenerateXYZ import GenerateXYZ
+from tqdm import tqdm
 
 
 def filter_path(x, filter_threshold):
@@ -16,34 +15,36 @@ def filter_path(x, filter_threshold):
     distance_test.sort()
 
     for index in distance_test:
-        for i in range(index, len(x)-1):
+        for i in range(index, len(x) - 1):
             x[i + 1] -= x_diff[index]
     return x
 
 
 def main(args):
-    data_path = args.data_path / 'oxygen_map' / 'positions.xyz'
-    save_path = args.data_path / 'oxygen_map' / 'positions_inf.xyz'
+    data_path = args.data_path / "oxygen_map" / "positions.xyz"
+    save_path = args.data_path / "oxygen_map" / "positions_inf.xyz"
 
     num_atoms, raw_frames = GenerateXYZ.read_frames_dataframe(data_path)
 
     for atom_id in tqdm(range(num_atoms)):
-        atom = raw_frames[raw_frames['ids'] == atom_id]
+        atom = raw_frames[raw_frames["ids"] == atom_id]
 
-        x = atom['x'].values
-        y = atom['y'].values
-        z = atom['z'].values
+        x = atom["x"].values
+        y = atom["y"].values
+        z = atom["z"].values
 
-        raw_frames.loc[raw_frames['ids'] == atom_id, 'x'] = filter_path(x, 25)
-        raw_frames.loc[raw_frames['ids'] == atom_id, 'y'] = filter_path(y, 15)
-        raw_frames.loc[raw_frames['ids'] == atom_id, 'z'] = filter_path(z, 15)
+        raw_frames.loc[raw_frames["ids"] == atom_id, "x"] = filter_path(x, 25)
+        raw_frames.loc[raw_frames["ids"] == atom_id, "y"] = filter_path(y, 15)
+        raw_frames.loc[raw_frames["ids"] == atom_id, "z"] = filter_path(z, 15)
 
     GenerateXYZ.write_frames_from_dataframe(save_path, raw_frames, num_atoms)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_path", type=str, required=True, help="path to simulation data")
+    parser.add_argument(
+        "--data_path", type=str, required=True, help="path to simulation data"
+    )
 
     main_args = parser.parse_args()
 

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <iostream>
+#include <chrono>
+#include <ctime> 
 #include <map>
 #include <algorithm>
 #include <fstream>
@@ -33,10 +35,8 @@ class Core {
 public:
 	long double steps;
 
-	unsigned short**** heat_map_array_;
-	std::vector<size_t> heat_map_array_size_; 
-
-	Core(const Configuration& configuration,
+	Core(
+		const Configuration& configuration,
 			const std::vector<size_t> cells,
 			const std::vector<Type> types,
 			const std::vector<bool> contact_switch,
@@ -53,7 +53,6 @@ public:
 		oxygen_array_size_ = std::vector<size_t>(3, 5);
 		kation_array_size_ = std::vector<size_t>(3, 5);
 		residence_time_array_size_ = std::vector<size_t>(3, 5);
-		heat_map_array_size_ = std::vector<size_t>(3, 5);
 
 		oxygen_array_size_[0] = 2 * cells[0] + 2;
 		oxygen_array_size_[1] = 2 * cells[1] + 2;
@@ -225,30 +224,6 @@ public:
 		for (size_t i = 0; i < direction_vector.size()+1; i++) 
 			jumpe_direction_sume_vector_.push_back(0.0);
 
-		// Define HEAT MAP
-		heat_map_array_size_[0] = 2 * cells[0];
-		heat_map_array_size_[1] = 2 * cells[1];
-		heat_map_array_size_[2] = 2 * cells[2];
-
-		heat_map_array_ = new unsigned short***[heat_map_array_size_[2]];
-		for (size_t z = 0; z < heat_map_array_size_[2]; z++)
-			heat_map_array_[z] = new unsigned short**[heat_map_array_size_[1]];
-		for (size_t z = 0; z < heat_map_array_size_[2]; z++)
-			for (size_t y = 0; y < heat_map_array_size_[1]; y++)
-				heat_map_array_[z][y] = new unsigned short*[heat_map_array_size_[0]];
-
-		for (size_t z = 0; z < heat_map_array_size_[2]; z++)
-			for (size_t y = 0; y < heat_map_array_size_[1]; y++)
-				for (size_t x = 0; x < heat_map_array_size_[0]; x++)
-					heat_map_array_[z][y][x] = new unsigned short[6];
-
-
-		for (size_t z = 0; z < heat_map_array_size_[2]; z++)
-			for (size_t y = 0; y < heat_map_array_size_[1]; y++)
-				for (size_t x = 0; x < heat_map_array_size_[0]; x++)
-					for (size_t i = 0; i < 6; i++)
-						heat_map_array_[z][y][x][i] = 0;
-		std::string folder_heat_map(data_path + "/heat_map");
 	}
 
 	~Core() {
@@ -277,13 +252,6 @@ public:
 		}
 		delete[] residence_time_array_;
 
-		for (size_t z = 0; z < heat_map_array_size_[2]; z++) {
-			for (size_t y = 0; y < heat_map_array_size_[1]; y++)
-				delete[] heat_map_array_[z][y];
-
-			delete[] heat_map_array_[z];
-		}
-		delete[] heat_map_array_;
 	}
 
 	// Da sie to lepiej rozwiazac!!
@@ -298,11 +266,17 @@ public:
 		const double period,
 		const double delta_energy_base
 	){
-		std::cout << "Starting thermalization" << "\n";
+		if( remove(std::string(data_path + "time.log").c_str()) != 0 )
+			std::cout<<"Error deleting file: time.log"<<std::endl;
+		else
+			std::cout<< "File time.log successfully deleted"<<std::endl;
+
+		std::cout << "Starting thermalization\n";
+		auto start_timer = std::chrono::system_clock::now();
 		Thermalization(thermalization_time);
 
 		std::cout << "Starting simulation" << "\n";
-		Update(
+		SimulationLoop(
 			time_start,
 			time_end,
 			window,
@@ -311,11 +285,19 @@ public:
 			frequency,
 			delta_energy_base
 		);
-		std::cout << "Core exit." << "\n";
+		std::cout << data_path << ": Core exit.\n";
+		auto end_timer = std::chrono::system_clock::now();
+
+		std::chrono::duration<double> elapsed_time = end_timer-start_timer;
+
+		std::time_t end_time = std::chrono::system_clock::to_time_t(end_timer);
+
+		std::ofstream time_log(data_path + "/time.log");
+		time_log << "Finished simulation at:" << std::ctime(&end_time)
+			     << "elapsed time: " << elapsed_time.count() << "[s]\n";
 	}
 
 	void Thermalization(long double time_end){
-		double kT{(800.0 + 273.15)*8.6173304e-5};
 		double random_for_atom, random_for_direction;
 		double random_for_time;
 
@@ -385,18 +367,13 @@ public:
 			///////////////////////////////////////////////////////////////////////////
 
 			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 0;
-
-			heat_map_array_[oxygen_positions_[selected_atom][2] - 1]
-				[oxygen_positions_[selected_atom][1] - 1]
-			[oxygen_positions_[selected_atom][0] - 1]
-			[seleced_direction]++;
 			
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
 		}
 	}
 
-	void Update(
+	void SimulationLoop(
 		long double time_start,
 		long double time_end,
 		const long double window,
@@ -417,27 +394,20 @@ public:
 		long double time{ time_start }, record_delta{ 0.0 }, d_t{ 0.0 };
 		double delta_energy{ 0.0 };
 
-		if( remove(std::string(data_path+"/when_which_where.csv").c_str()) != 0 )
-			std::cout<<"Error deleting file: when_which_where.csv"<<std::endl;
-		else
-			std::cout<< "File when_which_where.csv successfully deleted"<<std::endl;
-
 		if( remove(std::string(data_path+"/field_plot.csv").c_str()) != 0 )
 			std::cout<<"Error deleting file: field_plot.csv"<<std::endl;
 		else
 			std::cout<< "File field_plot.csv successfully deleted"<<std::endl;
 
-		//FILE *when_which_where;
-		FILE *field_plot;
-		//fopen_s(&when_which_where, std::string(data_path + "/when_which_where.csv").c_str(), "a");
-		//when_which_where = fopen(std::string(data_path + "/when_which_where.csv").c_str(), "w");
-		//fprintf(when_which_where, "time,selected_atom,selected_direction\n");
+		if( remove(std::string(data_path + "/oxygen_map/" +"positions.xyz").c_str()) != 0 )
+			std::cout<<"Error deleting file: positions.xyz"<<std::endl;
+		else
+			std::cout<< "File positions.xyz successfully deleted"<<std::endl;
 
 		std::ofstream f_out_oxygen_map(data_path + "/oxygen_map/" +"positions.xyz");
+		std::ofstream field_plot(data_path + "/field_plot.csv"); 
 
-		fopen_s(&field_plot, std::string(data_path + "/field_plot.csv").c_str(), "a"); 
-		//field_plot = fopen(std::string(data_path + "/field_plot.csv").c_str(), "a");
-		fprintf(field_plot, "time,delta_energy\n");
+		field_plot << "time,delta_energy\n";
 
 		while(time < time_end){
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
@@ -500,33 +470,8 @@ public:
 			///////////////////////////////////////////////////////////////////////////
 			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 0.0;
 
-			heat_map_array_[oxygen_positions_[selected_atom][2] - 1]
-				[oxygen_positions_[selected_atom][1] - 1]
-			[oxygen_positions_[selected_atom][0] - 1]
-			[seleced_direction]++;
-
 			if (abs(record_delta - window) < window_epsilon) {
-				std::cout << time << "/" << time_end << "[ps]" << std::endl;
-				std::ofstream f_out_heat_map(data_path + "/heat_map/" + std::to_string(float(time)) + ".dat");
-				for (size_t z = 0; z < heat_map_array_size_[2]; z++) {
-					for (size_t y = 0; y < heat_map_array_size_[1]; y++) {
-						for (size_t x = 0; x < heat_map_array_size_[0]; x++) {
-							for (size_t i = 0; i < 6; i++) {
-								f_out_heat_map << x \
-									<< "\t" \
-									<< y \
-									<< "\t" \
-									<< z \
-									<< "\t" \
-									<< i \
-									<< "\t" \
-									<< heat_map_array_[z][y][x][i] \
-									<< std::endl;
-							}
-						}
-					}
-				}
-				f_out_heat_map.close();
+				std::cout << data_path <<": " << time << "/" << time_end << "[ps]" << std::endl;
 
 				f_out_oxygen_map << oxygen_positions_.size() << "\n\n";
 				for (size_t x = 0; x < oxygen_positions_.size(); x++) {
@@ -535,7 +480,7 @@ public:
 											<< oxygen_positions_[x][2] << "\n";
 				}
 
-				fprintf(field_plot, "%Lf,%Lf\n", time, delta_energy);
+				field_plot << time << "," << delta_energy << "\n";
 				record_delta = 0.0;
 			}
 			
@@ -543,12 +488,10 @@ public:
 			d_t = (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
 			time += d_t;
 			record_delta += d_t;
-			//fprintf(when_which_where, "%Lf,%zd,%zd\n", time, selected_atom, seleced_direction);
 		}
 
 		f_out_oxygen_map.close();
-		//fclose(when_which_where);
-		fclose(field_plot);
+		field_plot.close();
 		std::cout << std::endl;
 	}
 
