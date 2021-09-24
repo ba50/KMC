@@ -35,7 +35,7 @@ def main(args):
     simulations["energy_base"] = args.energy_base
 
     simulations["periods"] = simulations["frequency"].map(
-        lambda freq: np.clip(freq / freq_list[0] * args.base_periods, 0, 4)
+        lambda freq: np.clip(freq / freq_list[0] * args.base_periods, 0, 1.5)
     )
 
     start_stop = {
