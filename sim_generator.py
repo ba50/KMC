@@ -18,8 +18,10 @@ def main(args):
     save_path.mkdir(parents=True)
 
     freq_list = []
-    for i in range(args.low_freq + 1, args.high_freq + 1):
-        freq_list.extend(np.logspace(i - 1, i, num=args.num_per_decade, endpoint=True))
+    for i in range(args.low_freq, args.high_freq):
+        test = np.logspace(i, i + 1, num=args.num_per_decade, endpoint=False)
+        freq_list.extend(test)
+    freq_list.append(pow(10, args.high_freq))
 
     simulations = pd.DataFrame({"frequency": freq_list})
 
@@ -168,7 +170,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--contact_left", type=float, default=1.0)
     parser.add_argument("--contact_right", type=float, default=1.0)
-    parser.add_argument("--amplitude", type=float, default=0.005)
+    parser.add_argument("--amplitude", type=float, default=0.01)
     parser.add_argument("--energy_base", type=float, default=0.0)
     parser.add_argument("--temperature_scale", type=float, nargs="+", default=[1.0])
     parser.add_argument("--version", type=str, nargs="+", default=["a"])

@@ -3,7 +3,7 @@ from pathlib import Path
 
 from scripts.fit_sin import fit_sin
 from scripts.freq_plot import freq_plot
-from scripts.get_ions_dd import get_ions_dd
+from scripts.ions_density_dist import ions_density_dist
 
 
 def main(args):
@@ -15,9 +15,8 @@ def main(args):
             delta_phi=data_path / ("delta_phi_" + data_path.name + ".csv")
         )
 
-
         if args.ions_dd:
-            get_ions_dd(get_ions_dd_args)
+            ions_density_dist(get_ions_dd_args)
 
         if args.fit_sin:
             fit_sin(fit_sin_args)
@@ -40,7 +39,6 @@ if __name__ == "__main__":
     parser.add_argument('--ions-dd', action='store_true')
     parser.add_argument('--fit-sin', action='store_true')
     parser.add_argument('--freq-plot', action='store_true')
-
 
     main_args = parser.parse_args()
 
