@@ -9,10 +9,8 @@ from scripts.freq_plot import freq_plot
 def main(args):
     for data_path in args.data_paths:
 
-        """
         get_ions_dd_args = argparse.Namespace(data_path=data_path)
         get_ions_dd(get_ions_dd_args)
-        """
 
         fit_sin_args = argparse.Namespace(data_path=data_path, workers=args.workers)
         fit_sin(fit_sin_args)
