@@ -43,7 +43,7 @@ def get_ions_dd_last_points(data_path, smooth=8):
     return field_data
 
 
-def main(args):
+def get_ions_dd(args):
     sim_path_list = args.data_path.glob("*")
     sim_path_list = [i for i in sim_path_list if i.is_dir()]
 
@@ -87,4 +87,4 @@ if __name__ == "__main__":
 
     main_args.data_path = Path(main_args.data_path)
 
-    main(main_args)
+    get_ions_dd(main_args)

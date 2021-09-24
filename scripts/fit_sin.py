@@ -128,7 +128,7 @@ def generate_phi(sim_path):
     return direction_dict
 
 
-def main(args):
+def fit_sin(args):
     sim_path_list = [sim for sim in args.data_path.glob("*") if sim.is_dir()]
 
     with Pool(args.workers) as p:
@@ -136,9 +136,7 @@ def main(args):
         data_out = pd.DataFrame(data_out)
         data_out = data_out.sort_values(["frequency", "version"])
         data_out.to_csv(
-            args.data_path
-            / ("delta_phi_" + args.data_path.name + ".csv"),
-            index=False,
+            args.data_path / ("delta_phi_" + args.data_path.name + ".csv"), index=False,
         )
 
 
@@ -148,6 +146,6 @@ if __name__ == "__main__":
         "--data-path", type=Path, required=True, help="path to data from simulation"
     )
     parser.add_argument("--workers", type=int, help="number of workers", default=1)
-    args = parser.parse_args()
+    main_args = parser.parse_args()
 
-    main(args)
+    fit_sin(main_args)
