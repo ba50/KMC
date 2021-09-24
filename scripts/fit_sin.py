@@ -136,7 +136,8 @@ def fit_sin(args):
         data_out = pd.DataFrame(data_out)
         data_out = data_out.sort_values(["frequency", "version"])
         data_out.to_csv(
-            args.data_path / ("delta_phi_" + args.data_path.name + ".csv"), index=False,
+            args.data_path / ("delta_phi_" + args.data_path.name + ".csv"),
+            index=False,
         )
 
 

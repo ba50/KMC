@@ -1,9 +1,9 @@
 import argparse
 from pathlib import Path
 
-from scripts.get_ions_dd import get_ions_dd
 from scripts.fit_sin import fit_sin
 from scripts.freq_plot import freq_plot
+from scripts.get_ions_dd import get_ions_dd
 
 
 def main(args):
