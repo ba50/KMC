@@ -25,22 +25,8 @@ def get_ions_density_dist(num_atoms: int, raw_frames: pd.DataFrame, time_steps: 
     return pd.DataFrame(data)
 
 
-def get_mean_last_point_in_time(field_data: pd.DataFrame, ions_dd: pd.DataFrame, time_steps: list, smooth: int):
-    last_points = []
-    for time_step in time_steps:
-        smooth_y = ions_dd[ions_dd["time"] == time_step]["y"]
-        smooth_y = smooth_y.rolling(smooth).sum()
-        last_points.append(np.mean(smooth_y.iloc[-2]))
-
-    field_data["last_points"] = last_points[:len(field_data["time"])]
-    field_data["last_points"] = field_data["last_points"].rolling(smooth).sum()
-    field_data = field_data.dropna()
-
-    return field_data
-
-
 def ions_density_dist(args):
-    sim_path_list = args.data_path.glob("*_5_*")
+    sim_path_list = args.data_path.glob("*")
     sim_path_list = [i for i in sim_path_list if i.is_dir()]
 
     output_mean_last_points = []
@@ -56,10 +42,14 @@ def ions_density_dist(args):
 
         time_steps = raw_frames["time_frames"].unique()
 
-        ions_dd = get_ions_density_dist(num_atoms, raw_frames, time_steps)
+        ions_dd = get_ions_density_dist(num_atoms, raw_frames, time_steps, args.smooth)
         ions_dd.to_csv(sim_path / "ions_density_distribution.csv", index=False)
 
+        last_points = []
         for time, chunk in ions_dd.groupby("time"):
+            chunk["y"] = chunk["y"].rolling(args.smooth).sum().dropna()
+            last_points.append(np.mean(chunk["y"].iloc[-16:]))
+
             plt.figure()
             plt.plot(chunk["x"], chunk["y"])
             plt.xlabel("x")
@@ -67,16 +57,16 @@ def ions_density_dist(args):
             plt.savefig(sim_path / "ions_density_distribution" / f"time_{time:.2e}.png")
             plt.close()
 
-        mean_last_points = get_mean_last_point_in_time(field_data, ions_dd, time_steps, args.smooth)
+        field_data["last_points"] = last_points
 
         plt.figure()
-        plt.plot(mean_last_points["time"], mean_last_points["last_points"])
+        plt.plot(field_data["time"], field_data["last_points"])
         plt.xlabel("time [ps]")
         plt.ylabel("Ions density last point")
         plt.savefig(sim_path / f"ions_dd_last_points_{conf.frequency:.2e}.png")
         plt.close()
 
-        output_mean_last_points.append((mean_last_points, conf.frequency))
+        output_mean_last_points.append((field_data, conf.frequency))
 
     plt.figure()
     for output_df, freq in output_mean_last_points:
@@ -93,12 +83,9 @@ def ions_density_dist(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--data-path", type=str, required=True, help="path to simulation data"
+        "--data-path", type=Path, required=True, help="path to simulation data"
     )
-    parser.add_argument("--smooth", type=int, default=1, help="smoothing factor")
-
+    parser.add_argument("--smooth", type=int, default=8, help="smoothing factor")
     main_args = parser.parse_args()
-
-    main_args.data_path = Path(main_args.data_path)
 
     ions_density_dist(main_args)
