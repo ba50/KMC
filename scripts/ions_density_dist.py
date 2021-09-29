@@ -48,7 +48,7 @@ def ions_density_dist(args):
         last_points = []
         for time, chunk in ions_dd.groupby("time"):
             chunk["y"] = chunk["y"].rolling(args.smooth).sum().dropna()
-            last_points.append(np.mean(chunk["y"].iloc[-16:]))
+            last_points.append(chunk["y"].iloc[-2])
 
             plt.figure()
             plt.plot(chunk["x"], chunk["y"])
@@ -58,6 +58,7 @@ def ions_density_dist(args):
             plt.close()
 
         field_data["last_points"] = last_points
+        field_data.to_csv(sim_path / "time_vs_ion_dd_last_points.csv", index=False)
 
         plt.figure()
         plt.plot(field_data["time"], field_data["last_points"])

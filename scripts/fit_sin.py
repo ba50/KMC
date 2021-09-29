@@ -17,10 +17,9 @@ def fit_curve_signal(fit_function, sim_signal, config):
         sim_signal["time"],
         sim_signal["y"],
         p0=[config.amplitude, 0, 0],
+        bounds=([-np.inf, -2*np.pi, -np.inf], [np.inf, 0, np.inf])
     )
     params = {"fit_sine_amp": params[0], "fit_sine_phi": params[1], "const": params[2]}
-    while abs(params["fit_sine_phi"]) > 2 * np.pi:
-        params["fit_sine_phi"] -= 2 * np.pi * np.sign(params["fit_sine_phi"])
 
     fit_y = []
     fit_signal = pd.DataFrame(
@@ -80,7 +79,7 @@ class Function:
 
 
 def generate_phi(sim_path):
-    data = pd.read_csv(sim_path / "ions_density.csv", sep=",")
+    data = pd.read_csv(sim_path / "time_vs_ion_dd_last_points.csv", sep=",")
     sim_config = Config.load(sim_path / "input.kmc")
 
     fit_function = Function(sim_config.frequency * 10 ** -12)
