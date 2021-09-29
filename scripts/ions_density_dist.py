@@ -42,7 +42,7 @@ def ions_density_dist(args):
 
         time_steps = raw_frames["time_frames"].unique()
 
-        ions_dd = get_ions_density_dist(num_atoms, raw_frames, time_steps, args.smooth)
+        ions_dd = get_ions_density_dist(num_atoms, raw_frames, time_steps)
         ions_dd.to_csv(sim_path / "ions_density_distribution.csv", index=False)
 
         last_points = []
