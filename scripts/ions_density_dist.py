@@ -4,7 +4,6 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 from tqdm import tqdm
-import numpy as np
 
 from KMC.Config import Config
 from KMC.GenerateModel import GenerateModel
