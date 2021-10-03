@@ -45,7 +45,7 @@ def ions_mass_center(args):
         plt.close()
 
         plt.figure()
-        plt.plot(mass_center["time"], mass_center["y"])
+        plt.plot(mass_center["time"], mass_center["z"])
         plt.xlabel("time [ps]")
         plt.ylabel("Ions mass center")
         plt.savefig(sim_path / f"ions_mass_center_z_{conf.frequency:.2e}.png")
