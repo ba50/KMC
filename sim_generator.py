@@ -140,39 +140,39 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--save_path", required=True, help="path to save models")
+    parser.add_argument("--save-path", required=True, help="path to save models")
 
     parser.add_argument("--split", type=int, help="number of subparts", default=1)
     parser.add_argument(
-        "--base_periods", type=float, help="base sin period", default=0.5
+        "--base-periods", type=float, help="base sin period", default=0.5
     )
     parser.add_argument(
-        "--window_points", type=int, help="points in window", default=200
+        "--window-points", type=int, help="points in window", default=200
     )
-    parser.add_argument("--low_freq", type=int, help="low freq, pow of 10", default=5)
-    parser.add_argument("--high_freq", type=int, help="high freq, pow of 10", default=8)
+    parser.add_argument("--low-freq", type=int, help="low freq, pow of 10", default=5)
+    parser.add_argument("--high-freq", type=int, help="high freq, pow of 10", default=8)
     parser.add_argument(
-        "--num_per_decade", type=int, help="number of point per decade", default=5
+        "--num-per-decade", type=int, help="number of point per decade", default=5
     )
 
     parser.add_argument(
-        "--cell_type", choices=["random", "sphere", "plane"], default="random"
+        "--cell-type", choices=["random", "sphere", "plane"], default="random"
     )
-    parser.add_argument("--model_size", type=int, nargs="+", default=[5, 3, 3])
-    parser.add_argument("--thermalization_time", type=int, default=200)
+    parser.add_argument("--model-size", type=int, nargs="+", default=[5, 3, 3])
+    parser.add_argument("--thermalization-time", type=int, default=200)
     parser.add_argument("--window", type=int, default=100)
-    parser.add_argument("--window_epsilon", type=float, default=8.0)
+    parser.add_argument("--window-epsilon", type=float, default=8.0)
     parser.add_argument(
-        "--contact_switch_left", type=int, default=0, help="0-off, 2-on"
+        "--contact-switch-left", type=int, default=0, help="0-off, 2-on"
     )
     parser.add_argument(
-        "--contact_switch_right", type=int, default=0, help="0-off, 2-on"
+        "--contact-switch-right", type=int, default=0, help="0-off, 2-on"
     )
-    parser.add_argument("--contact_left", type=float, default=1.0)
-    parser.add_argument("--contact_right", type=float, default=1.0)
+    parser.add_argument("--contact-left", type=float, default=1.0)
+    parser.add_argument("--contact-right", type=float, default=1.0)
     parser.add_argument("--amplitude", type=float, default=0.01)
-    parser.add_argument("--energy_base", type=float, default=0.0)
-    parser.add_argument("--temperature_scale", type=float, nargs="+", default=[1.0])
+    parser.add_argument("--energy-base", type=float, default=0.0)
+    parser.add_argument("--temperature-scale", type=float, nargs="+", default=[1.0])
     parser.add_argument("--version", type=str, nargs="+", default=["a"])
     main_args = parser.parse_args()
 

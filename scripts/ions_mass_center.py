@@ -15,7 +15,7 @@ def ions_mass_center(args):
 
     for sim_path in tqdm(sim_path_list):
         conf = Config.load(sim_path / "input.kmc")
-        sim_frames_path = sim_path / "simulation_frames.xyz"
+        sim_frames_path = sim_path / "simulation_frames_inf.xyz"
         field_data = pd.read_csv(sim_path / "field_data.csv")
         (sim_path / "mass_center").mkdir(parents=True, exist_ok=True)
 

@@ -192,7 +192,7 @@ class GenerateModel:
         data_in = pd.read_table(data_path, names=["atom", "x", "y", "z"])
         index_list = data_in[data_in["x"].isnull()].index
 
-        frame = data_in[1 : n_atoms + 1].reset_index(drop=True)
+        frame = data_in[1: n_atoms + 1].reset_index(drop=True)
         frame_index = [{"time_index": 0} for _ in range(n_atoms)]
         frame_index = pd.DataFrame(frame_index)
         frames = pd.concat([frame, frame_index], axis=1)
@@ -200,8 +200,8 @@ class GenerateModel:
         if num_frames:
             index_list = index_list[:num_frames]
 
-        for index, time_index in enumerate(index_list[1:]):
-            frame = data_in[time_index + 1 : n_atoms + time_index + 1].reset_index(
+        for index, time_index in enumerate(index_list[1:], start=1):
+            frame = data_in[time_index + 1: n_atoms + time_index + 1].reset_index(
                 drop=True
             )
             frame_index = [{"time_index": index} for _ in range(n_atoms)]
@@ -217,12 +217,10 @@ class GenerateModel:
     @staticmethod
     def write_frames_from_dataframe(save_path: Path, data: pd.DataFrame, num_atoms):
         print("Saving...\n")
-        index_list = data["time_frames"].unique()
         with save_path.open("w") as f_out:
-            for index in tqdm(index_list):
-                frame = data[data["time_frames"] == index]
+            for time_index, chunk in tqdm(data.groupby("time_index")):
                 f_out.write(f"{num_atoms}\n\n")
-                for _, row in frame.iterrows():
+                for _, row in chunk.iterrows():
                     f_out.write(
                         f"{row.atom}\t{int(row.x)}\t{int(row.y)}\t{int(row.z)}\n"
                     )
