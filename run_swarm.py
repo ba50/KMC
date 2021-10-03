@@ -60,8 +60,8 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--program_path", required=True, help="path to program bin")
-    parser.add_argument("--data_path", required=True, help="path to data")
+    parser.add_argument("--program-path", required=True, help="path to program bin")
+    parser.add_argument("--data-path", required=True, help="path to data")
     parser.add_argument("--workers", type=int, help="number of workers", default=1)
     main_args = parser.parse_args()
 
