@@ -19,9 +19,7 @@ def ions_mass_center(args):
         field_data = pd.read_csv(sim_path / "field_data.csv")
         (sim_path / "mass_center").mkdir(parents=True, exist_ok=True)
 
-        _, simulation_frames = GenerateModel.read_frames_dataframe(
-            sim_frames_path
-        )
+        _, simulation_frames = GenerateModel.read_frames_dataframe(sim_frames_path)
 
         mass_center = {"time": [], "x": [], "y": [], "z": []}
         for time_index, chunk in simulation_frames.groupby("time_index"):

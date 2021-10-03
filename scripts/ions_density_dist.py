@@ -63,7 +63,7 @@ def ions_density_dist(args):
                 plt.close()
 
         last_points = last_points[1:]
-        field_data = field_data[:len(last_points)]
+        field_data = field_data[: len(last_points)]
 
         field_data["last_points"] = last_points
         field_data.to_csv(

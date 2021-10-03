@@ -1,5 +1,5 @@
-from datetime import time
 import random
+from datetime import time
 from pathlib import Path
 
 import numpy as np
@@ -201,7 +201,9 @@ class GenerateModel:
             index_list = index_list[:num_frames]
 
         for index, time_index in enumerate(index_list[1:]):
-            frame = data_in[time_index + 1 : n_atoms + time_index + 1].reset_index(drop=True)
+            frame = data_in[time_index + 1 : n_atoms + time_index + 1].reset_index(
+                drop=True
+            )
             frame_index = [{"time_index": index} for _ in range(n_atoms)]
             frame_index = pd.DataFrame(frame_index)
             frame = pd.concat([frame, frame_index], axis=1)
