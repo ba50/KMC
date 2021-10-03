@@ -396,18 +396,18 @@ public:
 		long double time{ time_start }, record_delta{ 0.0 }, d_t{ 0.0 };
 		double delta_energy{ 0.0 };
 
-		if( remove(std::string(data_path+"/field_plot.csv").c_str()) != 0 )
-			std::cout<<"Error deleting file: field_plot.csv"<<std::endl;
+		if( remove(std::string(data_path + "/field_data.csv").c_str()) != 0 )
+			std::cout<<"Error deleting file: field_data.csv"<<std::endl;
 		else
-			std::cout<< "File field_plot.csv successfully deleted"<<std::endl;
+			std::cout<< "File field_data.csv successfully deleted"<<std::endl;
 
-		if( remove(std::string(data_path + "/oxygen_map/" +"positions.xyz").c_str()) != 0 )
-			std::cout<<"Error deleting file: positions.xyz"<<std::endl;
+		if( remove(std::string(data_path + "/simulation_frames.xyz").c_str()) != 0 )
+			std::cout<<"Error deleting file: simulation_frames.xyz"<<std::endl;
 		else
-			std::cout<< "File positions.xyz successfully deleted"<<std::endl;
+			std::cout<< "File simulation_frames.xyz successfully deleted"<<std::endl;
 
-		std::ofstream f_out_oxygen_map(data_path + "/oxygen_map/" +"positions.xyz");
-		std::ofstream field_plot(data_path + "/field_plot.csv"); 
+		std::ofstream f_out_oxygen_map(data_path + "/simulation_frames.xyz");
+		std::ofstream field_plot(data_path + "/field_data.csv"); 
 
 		field_plot << "time,delta_energy\n";
 

@@ -123,7 +123,7 @@ def main(args):
 
     for _, row in simulations.iterrows():
         sim_path = save_path / row["sim_name"]
-        (sim_path / "oxygen_map").mkdir(parents=True, exist_ok=True)
+        sim_path.mkdir(parents=True, exist_ok=True)
         Config(row).save(sim_path)
 
         structure = GenerateModel((row["size_x"], row["size_y"], row["size_z"]))
@@ -135,7 +135,7 @@ def main(args):
             structure.generate_plane(3)
         else:
             print("wrong cell type")
-        structure.save_positions(sim_path / "positions.xyz")
+        structure.save_positions(sim_path / "model.xyz")
 
 
 if __name__ == "__main__":

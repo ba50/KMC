@@ -10,7 +10,7 @@
 namespace Load {
 	static void XYZ(std::vector<Type> &types, std::vector<std::vector<double>> &positions, const std::string &data_path) {
 		std::ifstream file;
-		std::string _data_path = data_path+"/positions.xyz";
+		std::string _data_path = data_path+"/model.xyz";
 		file.open(_data_path);
 		if(file){
 			std::cout<<"Loading file "<<_data_path<<std::endl;
