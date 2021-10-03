@@ -17,7 +17,7 @@ def fit_curve_signal(fit_function, sim_signal, config):
         sim_signal["time"],
         sim_signal["y"],
         p0=[config.amplitude, 0, 0],
-        bounds=([-np.inf, -2*np.pi, -np.inf], [np.inf, 0, np.inf])
+        bounds=([-np.inf, -2 * np.pi, -np.inf], [np.inf, 0, np.inf]),
     )
     params = {"fit_sine_amp": params[0], "fit_sine_phi": params[1], "const": params[2]}
 

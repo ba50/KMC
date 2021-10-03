@@ -1,3 +1,4 @@
+from datetime import time
 import random
 from pathlib import Path
 
@@ -184,15 +185,14 @@ class GenerateModel:
         )
 
     @staticmethod
-    def read_frames_dataframe(data_path: Path, num_frames=None) -> (int, pd.DataFrame):
+    def read_frames_dataframe(data_path: Path, num_frames=None):
         with data_path.open("r") as f_in:
             n_atoms = int(f_in.readline())
 
         data_in = pd.read_table(data_path, names=["atom", "x", "y", "z"])
         index_list = data_in[data_in["x"].isnull()].index
-        index_list = range(0, len(index_list))
 
-        frame = data_in[1: n_atoms + 1].reset_index(drop=True)
+        frame = data_in[1 : n_atoms + 1].reset_index(drop=True)
         frame_index = [{"time_index": 0} for _ in range(n_atoms)]
         frame_index = pd.DataFrame(frame_index)
         frames = pd.concat([frame, frame_index], axis=1)
@@ -200,8 +200,8 @@ class GenerateModel:
         if num_frames:
             index_list = index_list[:num_frames]
 
-        for index in index_list[1:]:
-            frame = data_in[index + 1: n_atoms + index + 1].reset_index(drop=True)
+        for index, time_index in enumerate(index_list[1:]):
+            frame = data_in[time_index + 1 : n_atoms + time_index + 1].reset_index(drop=True)
             frame_index = [{"time_index": index} for _ in range(n_atoms)]
             frame_index = pd.DataFrame(frame_index)
             frame = pd.concat([frame, frame_index], axis=1)

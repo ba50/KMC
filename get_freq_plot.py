@@ -36,9 +36,9 @@ if __name__ == "__main__":
     )
     parser.add_argument("--smooth", type=int, default=14, help="smoothing factor")
     parser.add_argument("--workers", type=int, help="number of workers", default=4)
-    parser.add_argument('--ions-dd', action='store_true')
-    parser.add_argument('--fit-sin', action='store_true')
-    parser.add_argument('--freq-plot', action='store_true')
+    parser.add_argument("--ions-dd", action="store_true")
+    parser.add_argument("--fit-sin", action="store_true")
+    parser.add_argument("--freq-plot", action="store_true")
 
     main_args = parser.parse_args()
 

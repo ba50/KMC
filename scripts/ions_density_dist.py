@@ -9,21 +9,6 @@ from KMC.Config import Config
 from KMC.GenerateModel import GenerateModel
 
 
-def get_ions_density_dist(num_atoms: int, raw_frames: pd.DataFrame, time_steps: list):
-    x_positions = raw_frames["x"].unique()
-    x_positions.sort()
-    data = {"time": [], "x": [], "y": []}  # ions density distribution
-    for time_step in time_steps:
-        pos_frame = raw_frames[raw_frames["time_frames"] == time_step]
-        for x_step in x_positions:
-            ions_count = len(pos_frame.loc[x_step == pos_frame["x"]])
-
-            data["time"].append(time_step)
-            data["x"].append(x_step)
-            data["y"].append(ions_count / num_atoms)
-    return pd.DataFrame(data)
-
-
 def ions_density_dist(args):
     sim_path_list = args.data_path.glob("*")
     sim_path_list = [i for i in sim_path_list if i.is_dir()]
@@ -37,7 +22,9 @@ def ions_density_dist(args):
         (sim_path / "ions_density_distribution").mkdir(exist_ok=True)
         (sim_path / "ions_density_distribution" / "x_mean_plots").mkdir(exist_ok=True)
 
-        num_atoms, simulation_frames = GenerateModel.read_frames_dataframe(sim_frames_path)
+        num_atoms, simulation_frames = GenerateModel.read_frames_dataframe(
+            sim_frames_path
+        )
 
         x_positions = simulation_frames["x"].unique()
         x_positions.sort()
@@ -52,28 +39,49 @@ def ions_density_dist(args):
                 ions_dd["y"].append(ions_count / num_atoms)
 
         ions_dd = pd.DataFrame(ions_dd)
-        ions_dd.to_csv(sim_path / "ions_density_distribution" / "ions_density_distribution.csv", index=False)
+        ions_dd.to_csv(
+            sim_path / "ions_density_distribution" / "ions_density_distribution.csv",
+            index=False,
+        )
 
         last_points = []
         for time, chunk in ions_dd.groupby("time"):
-            chunk["y"] = chunk["y"].rolling(args.smooth).sum().dropna()
+            chunk["y"] = chunk["y"].rolling(args.smooth).sum()
             last_points.append(chunk["y"].iloc[-2])
 
-            plt.figure()
-            plt.plot(chunk["x"], chunk["y"])
-            plt.xlabel("x")
-            plt.ylabel("Ions density")
-            plt.savefig(sim_path / "ions_density_distribution" / "x_mean_plots" / f"time_{time:.2e}.png")
-            plt.close()
+            if args.x_mean_plots:
+                plt.figure()
+                plt.plot(chunk["x"], chunk["y"])
+                plt.xlabel("x")
+                plt.ylabel("Ions density")
+                plt.savefig(
+                    sim_path
+                    / "ions_density_distribution"
+                    / "x_mean_plots"
+                    / f"time_{time:.2e}.png"
+                )
+                plt.close()
+
+        last_points = last_points[1:]
+        field_data = field_data[:len(last_points)]
 
         field_data["last_points"] = last_points
-        field_data.to_csv(sim_path / "ions_density_distribution" / "time_vs_ion_dd_last_points.csv", index=False)
+        field_data.to_csv(
+            sim_path / "ions_density_distribution" / "time_vs_ion_dd_last_points.csv",
+            index=False,
+        )
+
+        field_data["last_points"] = field_data["last_points"].rolling(args.smooth).sum()
 
         plt.figure()
         plt.plot(field_data["time"], field_data["last_points"])
         plt.xlabel("time [ps]")
         plt.ylabel("Ions density last point")
-        plt.savefig(sim_path / "ions_density_distribution" / f"ions_dd_last_points_{conf.frequency:.2e}.png")
+        plt.savefig(
+            sim_path
+            / "ions_density_distribution"
+            / f"ions_dd_last_points_{conf.frequency:.2e}.png"
+        )
         plt.close()
 
         output_mean_last_points.append((field_data, conf.frequency))
@@ -96,6 +104,7 @@ if __name__ == "__main__":
         "--data-path", type=Path, required=True, help="path to simulation data"
     )
     parser.add_argument("--smooth", type=int, default=8, help="smoothing factor")
+    parser.add_argument("--x-mean-plots", action="store_true")
     main_args = parser.parse_args()
 
     ions_density_dist(main_args)
