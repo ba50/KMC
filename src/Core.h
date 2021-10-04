@@ -17,6 +17,7 @@ class Core {
 	double*** oxygen_array_;
 	std::vector<size_t> oxygen_array_size_; 
 	std::vector<std::vector<int>> oxygen_positions_;
+	std::vector<std::vector<int>> oxygen_positions_inf_;
 
 	double*** kation_array_;
 	std::vector<size_t> kation_array_size_; 
@@ -86,6 +87,7 @@ public:
 						temp_site[1] = static_cast<int>(floor(temp_position[1]/CELL_SIZE)) + 1;
 						temp_site[2] = static_cast<int>(floor(temp_position[2]/CELL_SIZE)) + 1;
 						oxygen_positions_.push_back(temp_site);
+						oxygen_positions_inf_.push_back(temp_site);
 						oxygen_array_[temp_site[2]][temp_site[1]][temp_site[0]] = 0.0;
 					}
 				}
@@ -406,7 +408,13 @@ public:
 		else
 			std::cout<< "File simulation_frames.xyz successfully deleted"<<std::endl;
 
+		if( remove(std::string(data_path + "/simulation_frames_inf.xyz").c_str()) != 0 )
+			std::cout<<"Error deleting file: simulation_frames_inf.xyz"<<std::endl;
+		else
+			std::cout<< "File simulation_frames_inf.xyz successfully deleted"<<std::endl;
+
 		std::ofstream f_out_oxygen_map(data_path + "/simulation_frames.xyz");
+		std::ofstream f_out_oxygen_map_inf(data_path + "/simulation_frames_inf.xyz");
 		std::ofstream field_plot(data_path + "/field_data.csv"); 
 
 		field_plot << "time,delta_energy\n";
@@ -448,6 +456,10 @@ public:
 			oxygen_positions_[selected_atom][1] += direction_vector[seleced_direction][1];
 			oxygen_positions_[selected_atom][0] += direction_vector[seleced_direction][0];
 
+			oxygen_positions_inf_[selected_atom][2] += direction_vector[seleced_direction][2];
+			oxygen_positions_inf_[selected_atom][1] += direction_vector[seleced_direction][1];
+			oxygen_positions_inf_[selected_atom][0] += direction_vector[seleced_direction][0];
+
 			// bardzo slaba optymalizacja, wymyslec cos innego
 			///////////////////////////////////////////////////////////////////////////
 			if (oxygen_positions_[selected_atom][2] == oxygen_array_size_[2] - 1) {
@@ -482,6 +494,13 @@ public:
 											<< oxygen_positions_[x][2] << "\n";
 				}
 
+				f_out_oxygen_map_inf << oxygen_positions_.size() << "\n\n";
+				for (size_t x = 0; x < oxygen_positions_.size(); x++) {
+					f_out_oxygen_map_inf << "O\t" << oxygen_positions_inf_[x][0] << "\t" \
+											<< oxygen_positions_inf_[x][1] << "\t" \
+											<< oxygen_positions_inf_[x][2] << "\n";
+				}
+
 				field_plot << time << "," << delta_energy << "\n";
 				record_delta = 0.0;
 			}
@@ -493,6 +512,7 @@ public:
 		}
 
 		f_out_oxygen_map.close();
+		f_out_oxygen_map_inf.close();
 		field_plot.close();
 		std::cout << std::endl;
 	}
