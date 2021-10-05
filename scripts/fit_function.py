@@ -129,12 +129,6 @@ def generate_phi(sim_path):
 def fit_function(args):
     sim_path_list = [sim for sim in args.data_path.glob("*") if sim.is_dir()]
 
-    """
-    for sim_path in sim_path_list:
-        data_out = generate_phi(sim_path)
-        exit()
-    """
-
     with Pool(args.workers) as p:
         data_out = p.map(generate_phi, sim_path_list)
         data_out = pd.DataFrame(data_out)
