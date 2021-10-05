@@ -11,15 +11,28 @@ from scipy import optimize
 from KMC.Config import Config
 
 
-def fit_curve_signal(fit_function, sim_signal, config):
+def remove_line_function(fitting_function, signal):
     params, _ = optimize.curve_fit(
-        fit_function.fit_sin,
+        fitting_function.sin_with_line,
+        signal["time"],
+        signal["y"],
+        p0=[0, 0, 0, 0],
+    )
+    params = {"sine_amp": params[0], "sine_phi": params[1], "line_a": params[2], "line_b": params[3]}
+
+    for index in range(len(signal)):
+        signal["y"].iloc[index] -= fitting_function.line(signal["time"].iloc[index], params["line_a"], params["line_b"])
+    return signal
+
+
+def fit_curve_signal(fitting_function, sim_signal):
+    params, _ = optimize.curve_fit(
+        fitting_function.sin,
         sim_signal["time"],
         sim_signal["y"],
-        p0=[config.amplitude, 0, 0],
-        bounds=([-np.inf, -2 * np.pi, -np.inf], [np.inf, 0, np.inf]),
+        p0=[0, 0],
     )
-    params = {"fit_sine_amp": params[0], "fit_sine_phi": params[1], "const": params[2]}
+    params = {"sine_amp": params[0], "sine_phi": abs(params[1])}
 
     fit_y = []
     fit_signal = pd.DataFrame(
@@ -32,11 +45,7 @@ def fit_curve_signal(fit_function, sim_signal, config):
         }
     )
     for step in fit_signal["time"]:
-        fit_y.append(
-            fit_function.fit_sin(
-                step, params["fit_sine_amp"], params["fit_sine_phi"], params["const"]
-            )
-        )
+        fit_y.append(fitting_function.sin(step, params["sine_amp"], params["sine_phi"]))
     fit_signal["y"] = np.array(fit_y)
     return params, fit_signal
 
@@ -45,25 +54,15 @@ class Function:
     def __init__(self, sine_frequency):
         self.sine_frequency = sine_frequency
 
-    def fit_sin_add_line(self, x, fit_sine_amp, fit_sine_phi, fit_line_a, fit_line_b):
-        return (
-            fit_sine_amp * np.sin(2 * np.pi * self.sine_frequency * x + fit_sine_phi)
-            + fit_line_a * x
-            + fit_line_b
-        )
+    def sin(self, x, amp, phi):
+        return amp * np.sin(2 * np.pi * self.sine_frequency * x + phi)
 
-    def fit_sin(self, x, fit_sine_amp, fit_sine_phi, const):
-        return (
-            fit_sine_amp * np.sin(2 * np.pi * self.sine_frequency * x + fit_sine_phi)
-        ) + const
+    def sin_with_line(self, x, amp, phi, a, b):
+        return amp * np.sin(2 * np.pi * self.sine_frequency * x + phi) + a * x + b
 
     @staticmethod
     def line(x, a, b):
         return a * x + b
-
-    @staticmethod
-    def sin(x, amp, a, b):
-        return amp * np.sin(2 * np.pi * a * x + b)
 
     @staticmethod
     def mse(y_true, y_pred):
@@ -79,28 +78,28 @@ class Function:
 
 
 def generate_phi(sim_path):
-    data = pd.read_csv(sim_path / "time_vs_ion_dd_last_points.csv", sep=",")
-    sim_config = Config.load(sim_path / "input.kmc")
+    config = Config.load(sim_path / "input.kmc")
+    data = pd.read_csv(sim_path / "mass_center" / "ions_mass_center.csv", sep=",")
+    field_data = pd.read_csv(sim_path / "field_data.csv")
 
-    fit_function = Function(sim_config.frequency * 10 ** -12)
-    sim_signal = pd.DataFrame({"time": data["time"], "y": data["last_points"]})
-    params, fit_signal = fit_curve_signal(fit_function, sim_signal, sim_config)
+    fitting_function = Function(config.frequency * 10 ** -12)
+    signal = pd.DataFrame({"time": data["time"], "y": data["x"]})
+    signal = remove_line_function(fitting_function, signal)
+    params, fit_signal = fit_curve_signal(fitting_function, signal)
 
     _fig, _ax1 = plt.subplots()
     _ax2 = _ax1.twinx()
-    _ax1.plot(sim_signal["time"], sim_signal["y"], linestyle="--", color="b")
+    _ax1.scatter(signal["time"], signal["y"], marker=".", color="b")
     _ax1.plot(
         fit_signal["time"],
         fit_signal["y"],
         color="r",
-        linestyle="-",
+        linestyle="--",
         label="Fitted func",
     )
     _ax2.plot(
-        fit_signal["time"],
-        Function.sin(
-            fit_signal["time"], sim_config.amplitude, fit_function.sine_frequency, 0
-        ),
+        field_data["time"],
+        field_data["delta_energy"],
         linestyle="-",
         color="g",
         label="Field",
@@ -117,18 +116,24 @@ def generate_phi(sim_path):
     plt.savefig(sim_path / "fit_sin_ion_dd.png")
     plt.close(_fig)
     direction_dict = {
-        "phi_rad": params["fit_sine_phi"],
-        "phi_deg": params["fit_sine_phi"] * 180 / np.pi,
+        "phi_rad": params["sine_phi"],
+        "phi_deg": params["sine_phi"] * 180 / np.pi,
         "path": sim_path,
         "version": (lambda split: split[5])(sim_path.name.split("_")),
-        "temperature_scale": sim_config.temperature_scale,
-        "frequency": sim_config.frequency,
+        "temperature_scale": config.temperature_scale,
+        "frequency": config.frequency,
     }
     return direction_dict
 
 
-def fit_sin(args):
+def fit_function(args):
     sim_path_list = [sim for sim in args.data_path.glob("*") if sim.is_dir()]
+
+    """
+    for sim_path in sim_path_list:
+        data_out = generate_phi(sim_path)
+        exit()
+    """
 
     with Pool(args.workers) as p:
         data_out = p.map(generate_phi, sim_path_list)
@@ -148,4 +153,4 @@ if __name__ == "__main__":
     parser.add_argument("--workers", type=int, help="number of workers", default=1)
     main_args = parser.parse_args()
 
-    fit_sin(main_args)
+    fit_function(main_args)

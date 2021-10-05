@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-from scripts.fit_sin import fit_sin
+from scripts.fit_function import fit_sin
 from scripts.freq_plot import freq_plot
 from scripts.ions_density_dist import ions_density_dist
 

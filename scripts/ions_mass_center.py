@@ -31,12 +31,15 @@ def ions_mass_center(args):
             mass_center["z"].append(mean_position["z"])
 
         mass_center = pd.DataFrame(mass_center)
-        mass_center.to_csv(
-            sim_path / "mass_center" / "ions_mass_center.csv", index=False
-        )
 
         mass_center[["x", "y", "z"]] = (
-            mass_center[["x", "y", "z"]].rolling(args.smooth).mean().dropna()
+            mass_center[["x", "y", "z"]].rolling(args.smooth).mean()
+        )
+
+        mass_center = mass_center.dropna()
+
+        mass_center.to_csv(
+            sim_path / "mass_center" / "ions_mass_center.csv", index=False
         )
 
         plt.figure()
