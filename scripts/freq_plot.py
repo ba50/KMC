@@ -52,9 +52,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--delta-phi", type=Path, required=True, help="path to delta phi csv"
     )
-    parser.add_argument(
-        "--suffix", type=str, required=True
-    )
+    parser.add_argument("--suffix", type=str, required=True)
     main_args = parser.parse_args()
 
     freq_plot(main_args)

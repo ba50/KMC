@@ -18,10 +18,17 @@ def remove_line_function(fitting_function, signal):
         signal["y"],
         p0=[0, 0, 0, 0],
     )
-    params = {"sine_amp": params[0], "sine_phi": params[1], "line_a": params[2], "line_b": params[3]}
+    params = {
+        "sine_amp": params[0],
+        "sine_phi": params[1],
+        "line_a": params[2],
+        "line_b": params[3],
+    }
 
     for index in range(len(signal)):
-        signal["y"].iloc[index] -= fitting_function.line(signal["time"].iloc[index], params["line_a"], params["line_b"])
+        signal["y"].iloc[index] -= fitting_function.line(
+            signal["time"].iloc[index], params["line_a"], params["line_b"]
+        )
     return signal
 
 
@@ -82,7 +89,7 @@ def generate_phi(sim_path):
     field_data = pd.read_csv(sim_path / "field_data.csv")
 
     outputs = {}
-    for df_type in ['msd', 'mass_center']:
+    for df_type in ["msd", "mass_center"]:
         input_path = list((sim_path / df_type).glob("*.csv"))
         assert len(input_path) == 1, f"in {sim_path}: {input_path}"
         data = pd.read_csv(input_path[0], sep=",")
@@ -118,7 +125,9 @@ def generate_phi(sim_path):
         _ax1.legend(loc="upper left")
         _ax2.legend(loc="upper right")
 
-        plt.savefig(sim_path / df_type / f"fit_sin_{df_type}_x_freq_{config.frequency:.2e}.png")
+        plt.savefig(
+            sim_path / df_type / f"fit_sin_{df_type}_x_freq_{config.frequency:.2e}.png"
+        )
         plt.close(_fig)
         direction_dict = {
             "phi_rad": params["sine_phi"],
@@ -138,12 +147,11 @@ def fit_function(args):
     with Pool(args.workers) as p:
         data_out = p.map(generate_phi, sim_path_list)
 
-
     msd_df = []
     mass_center_df = []
     for chunk in data_out:
-        msd_df.append(chunk['msd'])
-        mass_center_df.append(chunk['mass_center'])
+        msd_df.append(chunk["msd"])
+        mass_center_df.append(chunk["mass_center"])
 
     msd_df = pd.DataFrame(msd_df)
     mass_center_df = pd.DataFrame(mass_center_df)

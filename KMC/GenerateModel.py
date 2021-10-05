@@ -192,7 +192,7 @@ class GenerateModel:
         data_in = pd.read_table(data_path, names=["atom", "x", "y", "z"])
         index_list = data_in[data_in["x"].isnull()].index
 
-        frame = data_in[1: n_atoms + 1].reset_index(drop=True)
+        frame = data_in[1 : n_atoms + 1].reset_index(drop=True)
         frame_index = [{"time_index": 0} for _ in range(n_atoms)]
         frame_index = pd.DataFrame(frame_index)
         frames = pd.concat([frame, frame_index], axis=1)
@@ -201,7 +201,7 @@ class GenerateModel:
             index_list = index_list[:num_frames]
 
         for index, time_index in enumerate(index_list[1:], start=1):
-            frame = data_in[time_index + 1: n_atoms + time_index + 1].reset_index(
+            frame = data_in[time_index + 1 : n_atoms + time_index + 1].reset_index(
                 drop=True
             )
             frame_index = [{"time_index": index} for _ in range(n_atoms)]

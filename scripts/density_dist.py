@@ -22,7 +22,9 @@ def density_dist(args):
         (sim_path / "ions_density_distribution").mkdir(exist_ok=True)
 
         if args.x_mean_plots:
-            (sim_path / "ions_density_distribution" / "x_mean_plots").mkdir(exist_ok=True)
+            (sim_path / "ions_density_distribution" / "x_mean_plots").mkdir(
+                exist_ok=True
+            )
 
         num_atoms, simulation_frames = GenerateModel.read_frames_dataframe(
             sim_frames_path
