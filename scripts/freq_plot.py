@@ -40,7 +40,7 @@ def freq_plot(args):
     plt.xscale("log")
     plt.savefig(
         args.delta_phi.parent
-        / f"delta_phi_rad_vs_freq_{args.delta_phi.parent.name}.png",
+        / f"delta_phi_rad_vs_freq_{args.delta_phi.parent.name}_{args.suffix}.png",
         dpi=1000,
         bbox_inches="tight",
     )
@@ -51,6 +51,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--delta-phi", type=Path, required=True, help="path to delta phi csv"
+    )
+    parser.add_argument(
+        "--suffix", type=str, required=True
     )
     main_args = parser.parse_args()
 

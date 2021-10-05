@@ -9,7 +9,7 @@ from KMC.Config import Config
 from KMC.GenerateModel import GenerateModel
 
 
-def ions_mass_center(args):
+def mass_center(args):
     sim_path_list = args.data_path.glob("*")
     sim_path_list = [i for i in sim_path_list if i.is_dir()]
 
@@ -39,7 +39,7 @@ def ions_mass_center(args):
         mass_center = mass_center.dropna()
 
         mass_center.to_csv(
-            sim_path / "mass_center" / "ions_mass_center.csv", index=False
+            sim_path / "mass_center" / f"ions_mass_center_smooth_{args.smooth}_freq_{conf.frequency:.2e}.csv", index=False
         )
 
         plt.figure()
@@ -47,7 +47,7 @@ def ions_mass_center(args):
         plt.xlabel("time [ps]")
         plt.ylabel("Ions mass center")
         plt.savefig(
-            sim_path / "mass_center" / f"ions_mass_center_x_{conf.frequency:.2e}.png"
+            sim_path / "mass_center" / f"ions_mass_center_x_freq_{conf.frequency:.2e}.png"
         )
         plt.close()
 
@@ -56,7 +56,7 @@ def ions_mass_center(args):
         plt.xlabel("time [ps]")
         plt.ylabel("Ions mass center")
         plt.savefig(
-            sim_path / "mass_center" / f"ions_mass_center_y_{conf.frequency:.2e}.png"
+            sim_path / "mass_center" / f"ions_mass_center_y_freq_{conf.frequency:.2e}.png"
         )
         plt.close()
 
@@ -65,7 +65,7 @@ def ions_mass_center(args):
         plt.xlabel("time [ps]")
         plt.ylabel("Ions mass center")
         plt.savefig(
-            sim_path / "mass_center" / f"ions_mass_center_z_{conf.frequency:.2e}.png"
+            sim_path / "mass_center" / f"ions_mass_center_z_freq_{conf.frequency:.2e}.png"
         )
         plt.close()
 
@@ -78,4 +78,4 @@ if __name__ == "__main__":
     parser.add_argument("--smooth", type=int, default=8, help="smoothing factor")
     main_args = parser.parse_args()
 
-    ions_mass_center(main_args)
+    mass_center(main_args)

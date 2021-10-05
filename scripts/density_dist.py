@@ -9,7 +9,7 @@ from KMC.Config import Config
 from KMC.GenerateModel import GenerateModel
 
 
-def ions_density_dist(args):
+def density_dist(args):
     sim_path_list = args.data_path.glob("*")
     sim_path_list = [i for i in sim_path_list if i.is_dir()]
 
@@ -20,7 +20,9 @@ def ions_density_dist(args):
         field_data = pd.read_csv(sim_path / "field_data.csv")
 
         (sim_path / "ions_density_distribution").mkdir(exist_ok=True)
-        (sim_path / "ions_density_distribution" / "x_mean_plots").mkdir(exist_ok=True)
+
+        if args.x_mean_plots:
+            (sim_path / "ions_density_distribution" / "x_mean_plots").mkdir(exist_ok=True)
 
         num_atoms, simulation_frames = GenerateModel.read_frames_dataframe(
             sim_frames_path
@@ -80,7 +82,7 @@ def ions_density_dist(args):
         plt.savefig(
             sim_path
             / "ions_density_distribution"
-            / f"ions_dd_last_points_{conf.frequency:.2e}.png"
+            / f"ions_dd_last_points_freq_{conf.frequency:.2e}.png"
         )
         plt.close()
 
@@ -107,4 +109,4 @@ if __name__ == "__main__":
     parser.add_argument("--x-mean-plots", action="store_true")
     main_args = parser.parse_args()
 
-    ions_density_dist(main_args)
+    density_dist(main_args)
