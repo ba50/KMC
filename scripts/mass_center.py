@@ -21,24 +21,24 @@ def mass_center(args):
 
         _, simulation_frames = GenerateModel.read_frames_dataframe(sim_frames_path)
 
-        mass_center = {"time": [], "x": [], "y": [], "z": []}
+        mass_center_df = {"time": [], "x": [], "y": [], "z": []}
         for time_index, chunk in simulation_frames.groupby("time_index"):
-            mass_center["time"].append(field_data["time"][time_index])
+            mass_center_df["time"].append(field_data["time"][time_index])
             mean_position = chunk[["x", "y", "z"]].mean()
 
-            mass_center["x"].append(mean_position["x"])
-            mass_center["y"].append(mean_position["y"])
-            mass_center["z"].append(mean_position["z"])
+            mass_center_df["x"].append(mean_position["x"])
+            mass_center_df["y"].append(mean_position["y"])
+            mass_center_df["z"].append(mean_position["z"])
 
-        mass_center = pd.DataFrame(mass_center)
+        mass_center_df = pd.DataFrame(mass_center_df)
 
-        mass_center[["x", "y", "z"]] = (
-            mass_center[["x", "y", "z"]].rolling(args.smooth).mean()
+        mass_center_df[["x", "y", "z"]] = (
+            mass_center_df[["x", "y", "z"]].rolling(args.smooth).mean()
         )
 
-        mass_center = mass_center.dropna()
+        mass_center_df = mass_center_df.dropna()
 
-        mass_center.to_csv(
+        mass_center_df.to_csv(
             sim_path
             / "mass_center"
             / f"ions_mass_center_smooth_{args.smooth}_freq_{conf.frequency:.2e}.csv",
@@ -46,7 +46,7 @@ def mass_center(args):
         )
 
         plt.figure()
-        plt.plot(mass_center["time"], mass_center["x"])
+        plt.plot(mass_center_df["time"], mass_center_df["x"])
         plt.xlabel("time [ps]")
         plt.ylabel("Ions mass center")
         plt.savefig(
@@ -57,7 +57,7 @@ def mass_center(args):
         plt.close()
 
         plt.figure()
-        plt.plot(mass_center["time"], mass_center["y"])
+        plt.plot(mass_center_df["time"], mass_center_df["y"])
         plt.xlabel("time [ps]")
         plt.ylabel("Ions mass center")
         plt.savefig(
@@ -68,7 +68,7 @@ def mass_center(args):
         plt.close()
 
         plt.figure()
-        plt.plot(mass_center["time"], mass_center["z"])
+        plt.plot(mass_center_df["time"], mass_center_df["z"])
         plt.xlabel("time [ps]")
         plt.ylabel("Ions mass center")
         plt.savefig(

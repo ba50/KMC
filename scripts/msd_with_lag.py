@@ -3,9 +3,7 @@ from multiprocessing import Pool
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
-from tqdm import tqdm
 
 from KMC.Config import Config
 from KMC.GenerateModel import GenerateModel
