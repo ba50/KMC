@@ -32,11 +32,12 @@ def mass_center(args):
 
         mass_center_df = pd.DataFrame(mass_center_df)
 
-        mass_center_df[["x", "y", "z"]] = (
-            mass_center_df[["x", "y", "z"]].rolling(args.smooth).mean()
-        )
+        if args.smooth:
+            mass_center_df[["x", "y", "z"]] = (
+                mass_center_df[["x", "y", "z"]].rolling(args.smooth).mean()
+            )
 
-        mass_center_df = mass_center_df.dropna()
+            mass_center_df = mass_center_df.dropna()
 
         mass_center_df.to_csv(
             sim_path
@@ -84,7 +85,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--data-path", type=Path, required=True, help="path to simulation data"
     )
-    parser.add_argument("--smooth", type=int, default=8, help="smoothing factor")
+    parser.add_argument("--smooth", type=int, default=None, help="smoothing factor")
     main_args = parser.parse_args()
 
     mass_center(main_args)

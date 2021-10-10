@@ -39,7 +39,9 @@ def worker(inputs):
     )
 
     plt.figure()
-    plt.plot(mean_msd["time"], mean_msd[["x", "y", "z"]], label=["x", "y", "z"])
+    plt.plot(mean_msd["time"], mean_msd["x"], label="x")
+    plt.plot(mean_msd["time"], mean_msd["y"], label="y")
+    plt.plot(mean_msd["time"], mean_msd["z"], label="z")
 
     plt.xlabel("time [ps]")
     plt.ylabel("MSD [au]")

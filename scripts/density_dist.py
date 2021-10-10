@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
@@ -30,41 +31,38 @@ def density_dist(args):
             sim_frames_path
         )
 
-        x_positions = simulation_frames["x"].unique()
-        x_positions.sort()
+        ions_dd = []  # ions density distribution
+        for time_index, time_chunk in simulation_frames.groupby("time_index"):
+            ions_density = np.zeros((int(conf.size["x"]) * 2, int(conf.size["y"]) * 2, int(conf.size["z"]) * 2))
 
-        ions_dd = {"time": [], "x": [], "y": []}  # ions density distribution
-        for time_index, chunk in simulation_frames.groupby("time_index"):
-            for x_step in x_positions:
-                ions_count = len(chunk.loc[x_step == chunk["x"]])
+            model = time_chunk[["x", "y", "z"]]
 
-                ions_dd["time"].append(field_data["time"][time_index])
-                ions_dd["x"].append(x_step)
-                ions_dd["y"].append(ions_count / num_atoms)
+            for pos_index, pos_chunk in model.iterrows():
+                x = int(pos_chunk["x"]) - 1
+                y = int(pos_chunk["y"]) - 1
+                z = int(pos_chunk["z"]) - 1
 
-        ions_dd = pd.DataFrame(ions_dd)
-        ions_dd.to_csv(
-            sim_path / "ions_density_distribution" / "ions_density_distribution.csv",
-            index=False,
-        )
+                ions_density[x][y][z] = 1
+
+            ions_density = ions_density.sum(axis=1)
+            ions_density = ions_density.sum(axis=1)
+            ions_dd.append(ions_density / num_atoms)
 
         last_points = []
-        for time, chunk in ions_dd.groupby("time"):
-            chunk["y"] = chunk["y"].rolling(args.smooth).sum()
-            last_points.append(chunk["y"].iloc[-2])
+        for time_index, chunk in enumerate(ions_dd):
+            last_points.append(chunk[-2])
 
             if args.x_mean_plots:
                 plt.figure()
-                plt.plot(chunk["x"], chunk["y"])
+                plt.plot(chunk)
                 plt.xlabel("x")
                 plt.ylabel("Ions density")
                 plt.savefig(
                     sim_path
                     / "ions_density_distribution"
                     / "x_mean_plots"
-                    / f"time_{time:.2e}.png"
+                    / f"time_{field_data['time'][time_index]:.2e}.png"
                 )
-                plt.close()
 
         last_points = last_points[1:]
         field_data = field_data[: len(last_points)]
