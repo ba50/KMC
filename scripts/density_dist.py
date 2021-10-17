@@ -11,7 +11,7 @@ from KMC.GenerateModel import GenerateModel
 
 
 def density_dist(args):
-    sim_path_list = args.data_path.glob("*")
+    sim_path_list = args.data_path.glob("*_10_a*")
     sim_path_list = [i for i in sim_path_list if i.is_dir()]
 
     output_mean_last_points = []
@@ -37,20 +37,23 @@ def density_dist(args):
 
             model = time_chunk[["x", "y", "z"]]
 
-            for pos_index, pos_chunk in model.iterrows():
+            for _, pos_chunk in model.iterrows():
                 x = int(pos_chunk["x"]) - 1
                 y = int(pos_chunk["y"]) - 1
                 z = int(pos_chunk["z"]) - 1
 
                 ions_density[x][y][z] = 1
+            ions_density = ions_density.sum(axis=(1,2))
+            ions_density /= num_atoms
+            ions_density = pd.DataFrame({'mean': ions_density})
 
-            ions_density = ions_density.sum(axis=1)
-            ions_density = ions_density.sum(axis=1)
-            ions_dd.append(ions_density / num_atoms)
+            ions_density = ions_density.rolling(args.smooth).mean()
+
+            ions_dd.append(ions_density)
 
         last_points = []
         for time_index, chunk in enumerate(ions_dd):
-            last_points.append(chunk[-2])
+            last_points.append(chunk.iloc[-2])
 
             if args.x_mean_plots:
                 plt.figure()
@@ -61,11 +64,9 @@ def density_dist(args):
                     sim_path
                     / "ions_density_distribution"
                     / "x_mean_plots"
-                    / f"time_{field_data['time'][time_index]:.2e}.png"
+                    / f"{time_index:03d}.png"
                 )
-
-        last_points = last_points[1:]
-        field_data = field_data[: len(last_points)]
+                plt.close()
 
         field_data["last_points"] = last_points
         field_data.to_csv(
