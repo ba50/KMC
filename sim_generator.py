@@ -33,12 +33,21 @@ def main(args):
     simulations["contact_switch_right"] = args.contact_switch_right
     simulations["contact_left"] = args.contact_left
     simulations["contact_right"] = args.contact_right
-    simulations["amplitude"] = args.amplitude
     simulations["energy_base"] = args.energy_base
-
     simulations["periods"] = simulations["frequency"].map(
-        lambda freq: np.clip(freq / freq_list[0] * args.base_periods, 0, 2.5)
+        lambda freq: freq / freq_list[0] * args.base_periods
     )
+
+    amp_tmp = []
+    freq_tmp = []
+    for freq in freq_list:
+        for amp in args.amplitudes:
+            amp_tmp.append(amp)
+            freq_tmp.append(freq)
+
+    amp_df = pd.DataFrame({'frequency': freq_tmp, 'amplitude': amp_tmp})
+
+    simulations = simulations.merge(amp_df)
 
     start_stop = {
         "time_start": [],
@@ -170,7 +179,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--contact-left", type=float, default=1.0)
     parser.add_argument("--contact-right", type=float, default=1.0)
-    parser.add_argument("--amplitude", type=float, default=0.01)
+    parser.add_argument("--amplitudes", type=float, nargs="+", default=[0.01])
     parser.add_argument("--energy-base", type=float, default=0.0)
     parser.add_argument("--temperature-scale", type=float, nargs="+", default=[1.0])
     parser.add_argument("--version", type=str, nargs="+", default=["a"])
