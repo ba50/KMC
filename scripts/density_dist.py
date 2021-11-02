@@ -11,7 +11,7 @@ from KMC.GenerateModel import GenerateModel
 
 
 def density_dist(args):
-    sim_path_list = args.data_path.glob("*_10_a*")
+    sim_path_list = args.data_path.glob("*")
     sim_path_list = [i for i in sim_path_list if i.is_dir()]
 
     output_mean_last_points = []
