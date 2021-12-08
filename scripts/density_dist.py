@@ -33,7 +33,13 @@ def density_dist(args):
 
         ions_dd = []  # ions density distribution
         for time_index, time_chunk in simulation_frames.groupby("time_index"):
-            ions_density = np.zeros((int(conf.size["x"]) * 2, int(conf.size["y"]) * 2, int(conf.size["z"]) * 2))
+            ions_density = np.zeros(
+                (
+                    int(conf.size["x"]) * 2,
+                    int(conf.size["y"]) * 2,
+                    int(conf.size["z"]) * 2,
+                )
+            )
 
             model = time_chunk[["x", "y", "z"]]
 
@@ -43,9 +49,9 @@ def density_dist(args):
                 z = int(pos_chunk["z"]) - 1
 
                 ions_density[x][y][z] = 1
-            ions_density = ions_density.sum(axis=(1,2))
+            ions_density = ions_density.sum(axis=(1, 2))
             ions_density /= num_atoms
-            ions_density = pd.DataFrame({'mean': ions_density})
+            ions_density = pd.DataFrame({"mean": ions_density})
 
             ions_density = ions_density.rolling(args.smooth).mean()
 

@@ -13,10 +13,7 @@ from KMC.Config import Config
 
 def remove_line_function(fitting_function, signal):
     params, _ = optimize.curve_fit(
-        fitting_function.sin_with_line,
-        signal["time"],
-        signal["y"],
-        p0=[0, 0, 0, 0],
+        fitting_function.sin_with_line, signal["time"], signal["y"], p0=[0, 0, 0, 0],
     )
     params = {
         "sine_amp": params[0],
@@ -25,19 +22,23 @@ def remove_line_function(fitting_function, signal):
         "line_b": params[3],
     }
 
+    y = []
     for index in range(len(signal)):
-        signal["y"].iloc[index] -= fitting_function.line(
-            signal["time"].iloc[index], params["line_a"], params["line_b"]
+        y.append(
+            signal["y"].iloc[index]
+            - fitting_function.line(
+                signal["time"].iloc[index], params["line_a"], params["line_b"]
+            )
         )
+
+    signal["y"] = y
+
     return signal
 
 
 def fit_curve_signal(fitting_function, sim_signal):
     params, _ = optimize.curve_fit(
-        fitting_function.sin,
-        sim_signal["time"],
-        sim_signal["y"],
-        p0=[0, 0],
+        fitting_function.sin, sim_signal["time"], sim_signal["y"], p0=[0, 0],
     )
     params = {"sine_amp": params[0], "sine_phi": abs(params[1])}
 
@@ -84,12 +85,12 @@ class Function:
         return amp * np.exp(-x / tau)
 
 
-def generate_phi(sim_path):
+def get_phi(sim_path):
     config = Config.load(sim_path / "input.kmc")
     field_data = pd.read_csv(sim_path / "field_data.csv")
 
     outputs = {}
-    for df_type in ["msd", "mass_center"]:
+    for df_type in ["mass_center"]:
         input_path = list((sim_path / df_type).glob("*.csv"))
         assert len(input_path) == 1, f"in {sim_path}: {input_path}"
         data = pd.read_csv(input_path[0], sep=",")
@@ -145,18 +146,15 @@ def generate_phi(sim_path):
 def fit_function(args):
     sim_path_list = [sim for sim in args.data_path.glob("*") if sim.is_dir()]
     with Pool(args.workers) as p:
-        data_out = p.map(generate_phi, sim_path_list)
+        data_out = p.map(get_phi, sim_path_list)
 
-    msd_df = []
     mass_center_df = []
     for chunk in data_out:
-        msd_df.append(chunk["msd"])
         mass_center_df.append(chunk["mass_center"])
 
-    msd_df = pd.DataFrame(msd_df)
     mass_center_df = pd.DataFrame(mass_center_df)
 
-    data_out = {"msd": msd_df, "mass_center": mass_center_df}
+    data_out = {"mass_center": mass_center_df}
 
     for df_type in data_out:
         data_out[df_type] = data_out[df_type].sort_values(["frequency", "version"])

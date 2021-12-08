@@ -45,7 +45,7 @@ def main(args):
             amp_tmp.append(amp)
             freq_tmp.append(freq)
 
-    amp_df = pd.DataFrame({'frequency': freq_tmp, 'amplitude': amp_tmp})
+    amp_df = pd.DataFrame({"frequency": freq_tmp, "amplitude": amp_tmp})
 
     simulations = simulations.merge(amp_df)
 
