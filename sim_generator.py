@@ -27,7 +27,6 @@ def main(args):
 
     simulations["cell_type"] = args.cell_type
     simulations["thermalization_time"] = args.thermalization_time
-    simulations["window"] = args.window
     simulations["window_epsilon"] = args.window_epsilon
     simulations["contact_switch_left"] = args.contact_switch_left
     simulations["contact_switch_right"] = args.contact_switch_right
@@ -155,21 +154,19 @@ if __name__ == "__main__":
     parser.add_argument(
         "--base-periods", type=float, help="base sin period", default=0.5
     )
-    parser.add_argument(
-        "--window-points", type=int, help="points in window", default=200
-    )
     parser.add_argument("--low-freq", type=int, help="low freq, pow of 10", default=5)
     parser.add_argument("--high-freq", type=int, help="high freq, pow of 10", default=8)
     parser.add_argument(
         "--num-per-decade", type=int, help="number of point per decade", default=5
     )
-
     parser.add_argument(
         "--cell-type", choices=["random", "sphere", "plane"], default="random"
     )
     parser.add_argument("--model-size", type=int, nargs="+", default=[5, 3, 3])
     parser.add_argument("--thermalization-time", type=int, default=200)
-    parser.add_argument("--window", type=int, default=100)
+    parser.add_argument(
+        "--window-points", type=int, help="points in window", default=256
+    )
     parser.add_argument("--window-epsilon", type=float, default=8.0)
     parser.add_argument(
         "--contact-switch-left", type=int, default=0, help="0-off, 2-on"
