@@ -189,7 +189,7 @@ class GenerateModel:
         with data_path.open("r") as f_in:
             n_atoms = int(f_in.readline())
 
-        data_in = pd.read_table(data_path, names=["atom", "x", "y", "z"])
+        data_in = pd.read_table(data_path, names=["atom", "x", "y", "z"],)
         index_list = data_in[data_in["x"].isnull()].index
 
         frame = data_in[1 : n_atoms + 1].reset_index(drop=True)
@@ -211,6 +211,10 @@ class GenerateModel:
 
         frames["atom_ids"] = frames.index
         frames = frames.reset_index(drop=True)
+
+        frames["x"] = frames["x"].astype(int)
+        frames["y"] = frames["y"].astype(int)
+        frames["z"] = frames["z"].astype(int)
 
         return n_atoms, frames
 
