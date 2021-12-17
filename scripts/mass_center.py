@@ -8,6 +8,7 @@ from tqdm import tqdm
 from KMC.Config import Config
 from KMC.GenerateModel import GenerateModel
 from scripts.fit_function import FindPhi
+from KMC.filters import high_pass
 
 
 def mass_center(args):
@@ -31,6 +32,20 @@ def mass_center(args):
 
         mass_center_df = pd.DataFrame(mass_center_df)
 
+        plt.figure()
+        plt.plot(mass_center_df["time"], mass_center_df["x"])
+        plt.xlabel("time [ps]")
+        plt.ylabel("Ions mass center")
+        plt.savefig(
+            sim_path
+            / "mass_center"
+            / f"ions_mass_center_x_original_freq_{conf.frequency:.2e}.png"
+        )
+        plt.close()
+
+        if args.high_pass:
+            mass_center_df["x"] = high_pass(mass_center_df["x"], 1, 200)
+
         if args.one_period:
             mass_center_df = FindPhi.reduce_periods(mass_center_df, conf.frequency)
 
@@ -44,7 +59,7 @@ def mass_center(args):
         mass_center_df.to_csv(
             sim_path
             / "mass_center"
-            / f"ions_mass_center_smooth_{args.smooth}_freq_{conf.frequency:.2e}.csv",
+            / f"ions_mass_center_freq_{conf.frequency:.2e}.csv",
             index=False,
         )
 
@@ -68,6 +83,9 @@ if __name__ == "__main__":
     parser.add_argument("--smooth", type=int, default=None, help="smoothing factor")
     parser.add_argument(
         "--one-period", action="store_true", help="Stack data points to one period"
+    )
+    parser.add_argument(
+        "--high-pass", action="store_true", help="Apply high pass filter"
     )
     main_args = parser.parse_args()
 

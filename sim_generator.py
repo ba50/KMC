@@ -176,7 +176,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--contact-left", type=float, default=1.0)
     parser.add_argument("--contact-right", type=float, default=1.0)
-    parser.add_argument("--amplitudes", type=float, nargs="+", default=[0.01])
+    parser.add_argument("--amplitudes", type=float, nargs="+", default=[0.0])
     parser.add_argument("--energy-base", type=float, default=0.0)
     parser.add_argument("--temperature-scale", type=float, nargs="+", default=[1.0])
     parser.add_argument("--version", type=str, nargs="+", default=["a"])

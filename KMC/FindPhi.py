@@ -19,6 +19,9 @@ class Functions:
     def sin_with_line(self, x, amp, phi, a, b):
         return self.sin(x, amp, phi) + Functions.line(x, a, b)
 
+    def sin_with_const(self, x, amp, phi, a):
+        return self.sin(x, amp, phi) + a
+
     def sin(self, x, amp, phi):
         return amp * np.sin(2 * np.pi * self.freq * x + phi)
 
@@ -44,8 +47,9 @@ class Functions:
 
 
 class FindPhi:
-    def __init__(self, one_period):
+    def __init__(self, one_period, df_type):
         self.one_period = one_period
+        self.df_type = df_type
 
     def run(self, sim_path: Path):
         config = Config.load(sim_path / "input.kmc")
@@ -54,32 +58,27 @@ class FindPhi:
         if self.one_period:
             field_data = self.reduce_periods(field_data, config.frequency)
 
-        outputs = {}
-        for df_type in ["mass_center"]:
-            input_path = list((sim_path / df_type).glob("*.csv"))
-            assert len(input_path) == 1, f"in {sim_path}: {input_path}"
-            data = pd.read_csv(input_path[0], sep=",")
+        input_path = list((sim_path / self.df_type).glob("*.csv"))
+        assert len(input_path) == 1, f"in {sim_path}: {input_path}"
+        data = pd.read_csv(input_path[0], sep=",")
 
-            fitting_function = Functions(config.frequency * 10 ** -12)
-            signal = pd.DataFrame({"time": data["time"], "y": data["x"]})
-            signal = FindPhi.remove_line_function(fitting_function, signal)
-            params, fit_signal = FindPhi.fit_curve_signal(fitting_function, signal)
+        fitting_function = Functions(config.frequency * 10 ** -12)
+        signal = pd.DataFrame({"time": data["time"], "y": data["x"]})
 
-            FindPhi._save_plots(
-                sim_path, df_type, config.frequency, signal, fit_signal, field_data
-            )
+        params, fit_signal = FindPhi.fit_curve_signal(fitting_function.cubic_spline, signal)
 
-            direction_dict = {
-                "phi_rad": params["sine_phi"],
-                "phi_deg": params["sine_phi"] * 180 / np.pi,
-                "path": sim_path,
-                "version": (lambda split: split[5])(sim_path.name.split("_")),
-                "temperature_scale": config.temperature_scale,
-                "frequency": config.frequency,
-            }
-            outputs[df_type] = direction_dict
+        FindPhi._save_plots(
+            sim_path, self.df_type, config.frequency, signal, fit_signal, field_data
+        )
 
-        return outputs
+        return {
+            "phi_rad": params[1],
+            "path": sim_path,
+            "version": (lambda split: split[5])(sim_path.name.split("_")),
+            "temperature_scale": config.temperature_scale,
+            "frequency": config.frequency,
+            "params": params
+        }
 
     @staticmethod
     def _save_plots(sim_path, df_type, frequency, signal, fit_signal, field_data):
@@ -129,39 +128,11 @@ class FindPhi:
         return df
 
     @staticmethod
-    def remove_line_function(fitting_function, signal):
-        params, _ = optimize.curve_fit(
-            fitting_function.sin_with_line,
-            signal["time"],
-            signal["y"],
-            p0=[0, 0, 0, 0],
-        )
-        params = {
-            "sine_amp": params[0],
-            "sine_phi": params[1],
-            "line_a": params[2],
-            "line_b": params[3],
-        }
-
-        y = []
-        for index in range(len(signal)):
-            y.append(
-                signal["y"].iloc[index]
-                - fitting_function.line(
-                    signal["time"].iloc[index], params["line_a"], params["line_b"]
-                )
-            )
-
-        signal["y"] = y
-
-        return signal
-
-    @staticmethod
     def fit_curve_signal(fitting_function, sim_signal):
+
         params, _ = optimize.curve_fit(
-            fitting_function.sin, sim_signal["time"], sim_signal["y"], p0=[0, 0],
+            fitting_function, sim_signal["time"], sim_signal["y"],
         )
-        params = {"sine_amp": params[0], "sine_phi": params[1]}
 
         fit_y = []
         fit_signal = pd.DataFrame(
@@ -175,7 +146,7 @@ class FindPhi:
         )
         for step in fit_signal["time"]:
             fit_y.append(
-                fitting_function.sin(step, params["sine_amp"], params["sine_phi"])
+                fitting_function(step, *params)
             )
         fit_signal["y"] = np.array(fit_y)
         return params, fit_signal

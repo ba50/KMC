@@ -8,13 +8,28 @@ from KMC.FindPhi import FindPhi
 
 
 def fit_function(args):
-    find_phi = FindPhi(args.one_period)
+    find_phi = FindPhi(args.one_period, "mass_center")
 
     sim_path_list = [
         sim for sim in args.data_path.glob("*") if sim.is_dir()
     ]
     with Pool(args.workers) as p:
         data_out = p.map(find_phi.run, sim_path_list)
+
+    df_params = {f"param_{i}": [] for i in range(len(data_out[0]["params"]))}
+
+    for item in data_out:
+        for index, j in enumerate(item["params"]):
+            df_params[f"param_{index}"].append(j)
+
+    df_params = pd.DataFrame(df_params)
+
+    print("mean:\n", df_params.mean())
+    print("std:\n", df_params.std())
+
+    for item in data_out:
+        for index, j in enumerate(item["params"]):
+            df_params[f"param_{index}"].append(j)
 
     mass_center_df = []
     for chunk in data_out:
