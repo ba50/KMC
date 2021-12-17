@@ -1,16 +1,16 @@
+import argparse
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 import torch
+from KMC.FindPhi import Functions
+from tensorboardX import SummaryWriter
 from torch import nn
 from torch import optim
-import numpy as np
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from torch.utils.data import DataLoader
-from torch.utils.tensorboard import SummaryWriter
-
-from KMC.FindPhi import Functions
 from FindPhiModel.GenerateData import GenerateData
 
 
@@ -64,45 +64,40 @@ class FindPhi(torch.nn.Module):
         return out
 
 
-def main():
-    log_dir = Path("E:/KMC_data/runs-2021-12-17")
-    num_workers = 0
-    batch_size = 512
-    train_ds_len = 2**18
+def main(args):
+    print("Save at: ", args.log_dir)
 
-    lr = 1e-5
-    max_epochs = 250
-    freq = 1e7
-
-    freq *= 1e-12  # cast to [ps]
-    func = Functions(freq).sin_with_cubic_spline
+    args.freq *= 1e-12  # cast to [ps]
+    func = Functions(args.freq).sin_with_cubic_spline
 
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     print("Train on:", device)
 
-    train_ds = GenerateData(func, 256, train_ds_len)
-    valid_ds = GenerateData(func, 256,  256)
+    train_ds = GenerateData(func, 256, args.train_ds_len)
+    valid_ds = GenerateData(func, 256, 256)
 
-    train_dataloader = DataLoader(train_ds, num_workers=num_workers, batch_size=batch_size)
+    train_dataloader = DataLoader(
+        train_ds, num_workers=args.num_workers, batch_size=args.batch_size
+    )
     valid_dataloader = DataLoader(valid_ds, batch_size=1)
 
     model = FindPhi(6).to(device)
-    optimizer = optim.Adam(model.parameters(), lr=lr)
+    optimizer = optim.Adam(model.parameters(), lr=args.lr)
     criterion = nn.MSELoss(reduction="mean")
 
-    writer = SummaryWriter(log_dir)
+    writer = SummaryWriter(args.log_dir)
 
-    valid_plots_dir = Path(writer.get_logdir(),  "valid_plots")
+    valid_plots_dir = Path(args.log_dir, "valid_plots")
     valid_plots_dir.mkdir()
 
-    save_path = Path(writer.get_logdir(),  "saved_models")
+    save_path = Path(args.log_dir, "saved_models")
     save_path.mkdir()
 
     best_loss = float("inf")
 
     # training loop
-    for epoch in range(1, max_epochs+1):
-        print(f"\nepoch {epoch} / {max_epochs}")
+    for epoch in range(1, args.max_epochs + 1):
+        print(f"\nepoch {epoch} / {args.max_epochs}")
         model.train()
         # training loop
         train_loss_list = list()
@@ -144,8 +139,10 @@ def main():
         average_valid_loss = np.average(valid_loss_list)
 
         writer.add_scalar("train/loss", np.average(train_loss_list), epoch)
-        writer.add_scalar("train/lr", optimizer.state_dict()['param_groups'][0]['lr'], epoch)
-        writer.add_scalar("valid/loss",  average_valid_loss, epoch)
+        writer.add_scalar(
+            "train/lr", optimizer.state_dict()["param_groups"][0]["lr"], epoch
+        )
+        writer.add_scalar("valid/loss", average_valid_loss, epoch)
         writer.flush()
 
         if best_loss > average_valid_loss:
@@ -156,8 +153,13 @@ def main():
             x = x.cpu().detach().numpy()[0]
             y = y.cpu().detach().numpy()[0]
 
-            params = [params[0, i].cpu().detach().numpy() for i in range(params.shape[1])]
-            parmas_pred = [params_pred[0, i].cpu().detach().numpy() for i in range(params_pred.shape[1])]
+            params = [
+                params[0, i].cpu().detach().numpy() for i in range(params.shape[1])
+            ]
+            parmas_pred = [
+                params_pred[0, i].cpu().detach().numpy()
+                for i in range(params_pred.shape[1])
+            ]
 
             y_pred = func(x, *parmas_pred)
 
@@ -169,4 +171,14 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--log-dir", type=Path, required=True, help="")
+    parser.add_argument("--num-workers", type=int, required=True, help="")
+    parser.add_argument("--batch-size", type=int, required=True, help="")
+    parser.add_argument("--train-ds-len", type=int, required=True, help="")
+    parser.add_argument("--lr", type=float, required=True, help="")
+    parser.add_argument("--max-epochs", type=int, required=True, help="")
+    parser.add_argument("--freq", type=float, required=True, help="")
+
+    main_args = parser.parse_args()
+    main(main_args)
