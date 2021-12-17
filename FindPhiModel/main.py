@@ -145,7 +145,7 @@ def main(args):
         writer.add_scalar("valid/loss", average_valid_loss, epoch)
         writer.flush()
 
-        if best_loss > average_valid_loss:
+        if best_loss > average_valid_loss and average_valid_loss < 100:
             print(f"\nSave best model at:", average_valid_loss)
             best_loss = np.average(valid_loss_list)
             torch.save(model.state_dict(), save_path / f"model_{epoch}.pth")
