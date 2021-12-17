@@ -28,7 +28,7 @@ class GenerateData(Dataset):
             np.float32
         )  # add noise
 
-        params = np.stack([amp, phi, a, b, c, c]).astype(np.float32)
+        params = np.stack([amp, phi, a, b, c, d]).astype(np.float32)
 
         return x, y, params
 
