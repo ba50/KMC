@@ -19,7 +19,7 @@ class GenerateData(Dataset):
         c = np.random.normal(loc=1.411618e-04, scale=3.683428e-04)
         d = np.random.normal(loc=4.617189e01, scale=1.224945e01)
 
-        time = np.array(np.random.uniform(1e5, 50e5)).astype(np.float32)
+        time = np.array(5e5).astype(np.float32)
         x = np.random.uniform(0, time, self.n_points).astype(np.float32)
         x.sort()
 
