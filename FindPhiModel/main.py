@@ -19,44 +19,60 @@ class FindPhi(torch.nn.Module):
         super(FindPhi, self).__init__()
         self.fc_1_x_branch = nn.Linear(256, 1024)
         self.fc_2_x_branch = nn.Linear(1024, 2048)
-        self.fc_3_x_branch = nn.Linear(2048, 512)
-        self.fc_4_x_branch = nn.Linear(512, 32)
-        self.fc_out_x_branch = nn.Linear(32, output_size)
+        self.fc_3_x_branch = nn.Linear(2048, 1024)
+        self.fc_4_x_branch = nn.Linear(1024, 512)
+        self.fc_5_x_branch = nn.Linear(512, 512)
+        self.fc_6_x_branch = nn.Linear(512, 256)
+        self.fc_out_x_branch = nn.Linear(256, output_size)
 
         self.fc_1_y_branch = nn.Linear(256, 1024)
         self.fc_2_y_branch = nn.Linear(1024, 2048)
-        self.fc_3_y_branch = nn.Linear(2048, 512)
-        self.fc_4_y_branch = nn.Linear(512, 32)
-        self.fc_out_y_branch = nn.Linear(32, output_size)
+        self.fc_3_y_branch = nn.Linear(2048, 1024)
+        self.fc_4_y_branch = nn.Linear(1024, 512)
+        self.fc_5_y_branch = nn.Linear(512, 512)
+        self.fc_6_y_branch = nn.Linear(512, 256)
+        self.fc_out_y_branch = nn.Linear(256, output_size)
 
-        self.elu = nn.ELU(inplace=True)
+        self.activation = nn.Tanh()
 
     def forward(self, x_in, y_in):
         x = self.fc_1_x_branch(x_in)
-        x = self.elu(x)
+        x = self.activation(x)
 
         x = self.fc_2_x_branch(x)
-        x = self.elu(x)
+        x = self.activation(x)
 
         x = self.fc_3_x_branch(x)
-        x = self.elu(x)
+        x = self.activation(x)
 
         x = self.fc_4_x_branch(x)
-        x = self.elu(x)
+        x = self.activation(x)
+
+        x = self.fc_5_x_branch(x)
+        x = self.activation(x)
+
+        x = self.fc_6_x_branch(x)
+        x = self.activation(x)
 
         x = self.fc_out_x_branch(x)
 
         y = self.fc_1_y_branch(y_in)
-        y = self.elu(y)
+        y = self.activation(y)
 
         y = self.fc_2_y_branch(y)
-        y = self.elu(y)
+        y = self.activation(y)
 
         y = self.fc_3_y_branch(y)
-        y = self.elu(y)
+        y = self.activation(y)
 
         y = self.fc_4_y_branch(y)
-        y = self.elu(y)
+        y = self.activation(y)
+
+        y = self.fc_5_y_branch(y)
+        y = self.activation(y)
+
+        y = self.fc_6_y_branch(y)
+        y = self.activation(y)
 
         y = self.fc_out_y_branch(y)
 
@@ -145,7 +161,7 @@ def main(args):
         writer.add_scalar("valid/loss", average_valid_loss, epoch)
         writer.flush()
 
-        if best_loss > average_valid_loss and average_valid_loss < 100:
+        if best_loss > average_valid_loss and average_valid_loss < args.valid_min:
             print(f"\nSave best model at:", average_valid_loss)
             best_loss = np.average(valid_loss_list)
             torch.save(model.state_dict(), save_path / f"model_{epoch}.pth")
@@ -179,6 +195,7 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, required=True, help="")
     parser.add_argument("--max-epochs", type=int, required=True, help="")
     parser.add_argument("--freq", type=float, required=True, help="")
+    parser.add_argument("--valid-min", type=int, required=True, help="")
 
     main_args = parser.parse_args()
     main(main_args)
