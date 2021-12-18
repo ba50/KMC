@@ -17,23 +17,25 @@ from FindPhiModel.GenerateData import GenerateData
 class FindPhi(torch.nn.Module):
     def __init__(self, output_size):
         super(FindPhi, self).__init__()
-        self.fc_1_x_branch = nn.Linear(2048, 2048)
-        self.fc_2_x_branch = nn.Linear(2048, 4096)
-        self.fc_3_x_branch = nn.Linear(4096, 2048)
-        self.fc_4_x_branch = nn.Linear(2048, 1024)
-        self.fc_5_x_branch = nn.Linear(1024, 512)
-        self.fc_6_x_branch = nn.Linear(512, 256)
-        self.fc_out_x_branch = nn.Linear(256, output_size)
+        self.fc_1_x_branch = nn.Linear(2048, 1024)
+        self.fc_2_x_branch = nn.Linear(1024, 512)
+        self.fc_3_x_branch = nn.Linear(512, 256)
+        self.fc_4_x_branch = nn.Linear(256, 128)
+        self.fc_5_x_branch = nn.Linear(128, 64)
+        self.fc_6_x_branch = nn.Linear(64, 32)
+        self.fc_out_x_branch = nn.Linear(32, output_size)
 
-        self.fc_1_y_branch = nn.Linear(2048, 2048)
-        self.fc_2_y_branch = nn.Linear(2048, 4096)
-        self.fc_3_y_branch = nn.Linear(4096, 2048)
-        self.fc_4_y_branch = nn.Linear(2048, 1024)
-        self.fc_5_y_branch = nn.Linear(1024, 512)
-        self.fc_6_y_branch = nn.Linear(512, 256)
-        self.fc_out_y_branch = nn.Linear(256, output_size)
+        self.fc_1_y_branch = nn.Linear(2048, 1024)
+        self.fc_2_y_branch = nn.Linear(1024, 512)
+        self.fc_3_y_branch = nn.Linear(512, 256)
+        self.fc_4_y_branch = nn.Linear(256, 128)
+        self.fc_5_y_branch = nn.Linear(128, 64)
+        self.fc_6_y_branch = nn.Linear(64, 32)
+        self.fc_out_y_branch = nn.Linear(32, output_size)
 
         self.activation = nn.Tanh()
+
+        self.drop_out = nn.Dropout(0.05)
 
     def forward(self, x_in, y_in):
         x = self.fc_1_x_branch(x_in)
@@ -51,10 +53,13 @@ class FindPhi(torch.nn.Module):
         x = self.fc_5_x_branch(x)
         x = self.activation(x)
 
+        x = self.drop_out(x)
+
         x = self.fc_6_x_branch(x)
         x = self.activation(x)
 
         x = self.fc_out_x_branch(x)
+        x = self.activation(x)
 
         y = self.fc_1_y_branch(y_in)
         y = self.activation(y)
@@ -71,10 +76,13 @@ class FindPhi(torch.nn.Module):
         y = self.fc_5_y_branch(y)
         y = self.activation(y)
 
+        y = self.drop_out(y)
+
         y = self.fc_6_y_branch(y)
         y = self.activation(y)
 
         y = self.fc_out_y_branch(y)
+        y = self.activation(y)
 
         out = x + y
         return out
