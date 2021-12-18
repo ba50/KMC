@@ -17,19 +17,19 @@ from FindPhiModel.GenerateData import GenerateData
 class FindPhi(torch.nn.Module):
     def __init__(self, output_size):
         super(FindPhi, self).__init__()
-        self.fc_1_x_branch = nn.Linear(256, 1024)
-        self.fc_2_x_branch = nn.Linear(1024, 2048)
-        self.fc_3_x_branch = nn.Linear(2048, 1024)
-        self.fc_4_x_branch = nn.Linear(1024, 512)
-        self.fc_5_x_branch = nn.Linear(512, 512)
+        self.fc_1_x_branch = nn.Linear(2048, 2048)
+        self.fc_2_x_branch = nn.Linear(2048, 4096)
+        self.fc_3_x_branch = nn.Linear(4096, 2048)
+        self.fc_4_x_branch = nn.Linear(2048, 1024)
+        self.fc_5_x_branch = nn.Linear(1024, 512)
         self.fc_6_x_branch = nn.Linear(512, 256)
         self.fc_out_x_branch = nn.Linear(256, output_size)
 
-        self.fc_1_y_branch = nn.Linear(256, 1024)
-        self.fc_2_y_branch = nn.Linear(1024, 2048)
-        self.fc_3_y_branch = nn.Linear(2048, 1024)
-        self.fc_4_y_branch = nn.Linear(1024, 512)
-        self.fc_5_y_branch = nn.Linear(512, 512)
+        self.fc_1_y_branch = nn.Linear(2048, 2048)
+        self.fc_2_y_branch = nn.Linear(2048, 4096)
+        self.fc_3_y_branch = nn.Linear(4096, 2048)
+        self.fc_4_y_branch = nn.Linear(2048, 1024)
+        self.fc_5_y_branch = nn.Linear(1024, 512)
         self.fc_6_y_branch = nn.Linear(512, 256)
         self.fc_out_y_branch = nn.Linear(256, output_size)
 
@@ -89,17 +89,21 @@ def main(args):
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     print("Train on:", device)
 
-    train_ds = GenerateData(func, 256, args.train_ds_len)
-    valid_ds = GenerateData(func, 256, 256)
+    train_ds = GenerateData(func, 2048, args.train_ds_len)
+    valid_ds = GenerateData(func, 2048, 256)
 
     train_dataloader = DataLoader(
         train_ds, num_workers=args.num_workers, batch_size=args.batch_size
     )
-    valid_dataloader = DataLoader(valid_ds, batch_size=1)
+    valid_dataloader = DataLoader(valid_ds, batch_size=64)
 
     model = FindPhi(6).to(device)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     criterion = nn.MSELoss(reduction="mean")
+
+    if args.load_path:
+        print("Load model from:", args.load_path)
+        model.load_state_dict(torch.load(args.load_path))
 
     writer = SummaryWriter(args.log_dir)
 
@@ -169,15 +173,12 @@ def main(args):
             x = x.cpu().detach().numpy()[0]
             y = y.cpu().detach().numpy()[0]
 
-            params = [
-                params[0, i].cpu().detach().numpy() for i in range(params.shape[1])
-            ]
-            parmas_pred = [
+            params_pred = [
                 params_pred[0, i].cpu().detach().numpy()
                 for i in range(params_pred.shape[1])
             ]
 
-            y_pred = func(x, *parmas_pred)
+            y_pred = func(x, *params_pred)
 
             plt.figure()
             plt.plot(x, y)
@@ -196,6 +197,7 @@ if __name__ == "__main__":
     parser.add_argument("--max-epochs", type=int, required=True, help="")
     parser.add_argument("--freq", type=float, required=True, help="")
     parser.add_argument("--valid-min", type=int, required=True, help="")
+    parser.add_argument("--load-path", type=Path, default=None, help="")
 
     main_args = parser.parse_args()
     main(main_args)
