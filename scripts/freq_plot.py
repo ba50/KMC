@@ -13,8 +13,6 @@ def freq_plot(args):
         "frequency": [],
         "phi_rad_mean": [],
         "phi_rad_sem": [],
-        "phi_deg_mean": [],
-        "phi_deg_sem": [],
     }
 
     for freq, chunk in delta_phi_data.groupby("frequency"):
@@ -22,9 +20,6 @@ def freq_plot(args):
 
         plot_data["phi_rad_mean"].append(chunk["phi_rad"].mean())
         plot_data["phi_rad_sem"].append(chunk["phi_rad"].std() / np.sqrt(len(chunk)))
-
-        plot_data["phi_deg_mean"].append(chunk["phi_deg"].mean())
-        plot_data["phi_deg_sem"].append(chunk["phi_deg"].std() / np.sqrt(len(chunk)))
 
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(111)

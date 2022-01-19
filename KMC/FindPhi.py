@@ -26,6 +26,10 @@ class Functions:
         return amp * np.sin(2 * np.pi * self.freq * x + phi)
 
     @staticmethod
+    def arcsin(y):
+        return np.arcsin(y)
+
+    @staticmethod
     def cubic_spline(x, a, b, c, d):
         return a * x ** 3 + b * x ** 2 + c * x + d
 
@@ -59,13 +63,19 @@ class FindPhi:
             field_data = self.reduce_periods(field_data, config.frequency)
 
         input_path = list((sim_path / self.df_type).glob("*.csv"))
-        assert len(input_path) == 1, f"in {sim_path}: {input_path}"
+        assert len(input_path) == 1, f"No mass center in {sim_path}!"
         data = pd.read_csv(input_path[0], sep=",")
 
         fitting_function = Functions(config.frequency * 10 ** -12)
         signal = pd.DataFrame({"time": data["time"], "y": data["x"]})
 
-        params, fit_signal = FindPhi.fit_curve_signal(fitting_function.cubic_spline, signal)
+        params, fit_signal = FindPhi.fit_curve_signal(fitting_function.sin_with_const, signal)
+
+        pi_count = np.floor(abs(params[1]) / (2*np.pi))*2*np.pi
+        if params[1] > 0:
+            params[1] -= pi_count
+        else:
+            params[1] += pi_count
 
         FindPhi._save_plots(
             sim_path, self.df_type, config.frequency, signal, fit_signal, field_data
@@ -149,4 +159,5 @@ class FindPhi:
                 fitting_function(step, *params)
             )
         fit_signal["y"] = np.array(fit_y)
+        
         return params, fit_signal

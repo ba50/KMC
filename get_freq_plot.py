@@ -3,20 +3,21 @@ from pathlib import Path
 
 from scripts.fit_function import fit_function
 from scripts.freq_plot import freq_plot
-from scripts.density_dist import density_dist
+from scripts.mass_center import mass_center
 
 
 def main(args):
     for data_path in args.data_paths:
 
-        get_ions_dd_args = argparse.Namespace(data_path=data_path)
-        fit_sin_args = argparse.Namespace(data_path=data_path, workers=args.workers)
+        get_mass_center_args = argparse.Namespace(data_path=data_path, high_pass=False, one_period=False, smooth=None)
+        fit_sin_args = argparse.Namespace(data_path=data_path, one_period=False, workers=args.workers)
         freq_plot_args = argparse.Namespace(
-            delta_phi=data_path / ("delta_phi_" + data_path.name + ".csv")
+            delta_phi=data_path / ("delta_phi_mass_center_x_" + data_path.name + ".csv"),
+            suffix="mass_center"
         )
 
-        if args.ions_dd:
-            density_dist(get_ions_dd_args)
+        if args.mass_center:
+            mass_center(get_mass_center_args)
 
         if args.fit_sin:
             fit_function(fit_sin_args)
@@ -35,8 +36,8 @@ if __name__ == "__main__":
         help="list of paths to simulation data",
     )
     parser.add_argument("--smooth", type=int, default=None, help="smoothing factor")
-    parser.add_argument("--workers", type=int, help="number of workers", default=4)
-    parser.add_argument("--ions-dd", action="store_true")
+    parser.add_argument("--workers", type=int, help="number of workers", default=1)
+    parser.add_argument("--mass-center", action="store_true")
     parser.add_argument("--fit-sin", action="store_true")
     parser.add_argument("--freq-plot", action="store_true")
 

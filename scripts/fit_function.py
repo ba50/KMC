@@ -13,38 +13,18 @@ def fit_function(args):
     sim_path_list = [
         sim for sim in args.data_path.glob("*") if sim.is_dir()
     ]
+    print("Read:")
+    print(sim_path_list)
     with Pool(args.workers) as p:
         data_out = p.map(find_phi.run, sim_path_list)
 
-    df_params = {f"param_{i}": [] for i in range(len(data_out[0]["params"]))}
+    mass_center_df = pd.DataFrame(data_out)
 
-    for item in data_out:
-        for index, j in enumerate(item["params"]):
-            df_params[f"param_{index}"].append(j)
-
-    df_params = pd.DataFrame(df_params)
-
-    print("mean:\n", df_params.mean())
-    print("std:\n", df_params.std())
-
-    for item in data_out:
-        for index, j in enumerate(item["params"]):
-            df_params[f"param_{index}"].append(j)
-
-    mass_center_df = []
-    for chunk in data_out:
-        mass_center_df.append(chunk["mass_center"])
-
-    mass_center_df = pd.DataFrame(mass_center_df)
-
-    data_out = {"mass_center": mass_center_df}
-
-    for df_type in data_out:
-        data_out[df_type] = data_out[df_type].sort_values(["frequency", "version"])
-        data_out[df_type].to_csv(
-            args.data_path / f"delta_phi_{df_type}_x_{args.data_path.name}.csv",
-            index=False,
-        )
+    mass_center_df = mass_center_df.sort_values(["frequency", "version"])
+    mass_center_df.to_csv(
+        args.data_path / f"delta_phi_mass_center_x_{args.data_path.name}.csv",
+        index=False,
+    )
 
 
 if __name__ == "__main__":
