@@ -69,13 +69,19 @@ class FindPhi:
         fitting_function = Functions(config.frequency * 10 ** -12)
         signal = pd.DataFrame({"time": data["time"], "y": data["x"]})
 
-        params, fit_signal = FindPhi.fit_curve_signal(fitting_function.sin_with_const, signal)
+        params, fit_signal = FindPhi.fit_curve_signal(
+            fitting_function.sin_with_const, signal, sim_path
+        )
 
-        pi_count = np.floor(abs(params[1]) / (2*np.pi))*2*np.pi
-        if params[1] > 0:
-            params[1] -= pi_count
-        else:
-            params[1] += pi_count
+        if params is None:
+            return {
+                "phi_rad": None,
+                "path": sim_path,
+                "version": (lambda split: split[5])(sim_path.name.split("_")),
+                "temperature_scale": config.temperature_scale,
+                "frequency": config.frequency,
+                "params": None,
+            }
 
         FindPhi._save_plots(
             sim_path, self.df_type, config.frequency, signal, fit_signal, field_data
@@ -87,7 +93,7 @@ class FindPhi:
             "version": (lambda split: split[5])(sim_path.name.split("_")),
             "temperature_scale": config.temperature_scale,
             "frequency": config.frequency,
-            "params": params
+            "params": params,
         }
 
     @staticmethod
@@ -138,11 +144,23 @@ class FindPhi:
         return df
 
     @staticmethod
-    def fit_curve_signal(fitting_function, sim_signal):
+    def fit_curve_signal(fitting_function, sim_signal, sim_path):
 
-        params, _ = optimize.curve_fit(
-            fitting_function, sim_signal["time"], sim_signal["y"],
-        )
+        params = None
+        try:
+            params, _ = optimize.curve_fit(
+                fitting_function,
+                sim_signal["time"],
+                sim_signal["y"],
+                bounds=([-np.inf, -2 * np.pi, -np.inf], [np.inf, 0, np.inf]),
+                method="dogbox",
+            )
+        except Exception as e:
+            print(e)
+
+        if params is None:
+            print(sim_path)
+            return None, None
 
         fit_y = []
         fit_signal = pd.DataFrame(
@@ -155,9 +173,7 @@ class FindPhi:
             }
         )
         for step in fit_signal["time"]:
-            fit_y.append(
-                fitting_function(step, *params)
-            )
+            fit_y.append(fitting_function(step, *params))
         fit_signal["y"] = np.array(fit_y)
-        
+
         return params, fit_signal

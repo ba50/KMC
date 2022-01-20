@@ -10,9 +10,7 @@ from KMC.FindPhi import FindPhi
 def fit_function(args):
     find_phi = FindPhi(args.one_period, "mass_center")
 
-    sim_path_list = [
-        sim for sim in args.data_path.glob("*") if sim.is_dir()
-    ]
+    sim_path_list = [sim for sim in args.data_path.glob("*") if sim.is_dir()]
     print("Read:")
     print(sim_path_list)
     with Pool(args.workers) as p:

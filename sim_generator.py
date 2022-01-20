@@ -77,10 +77,10 @@ def main(args):
 
     freq_list = simulations["frequency"]
     simulations = simulations.loc[
-        np.repeat(simulations.index.values, len(args.version))
+        np.repeat(simulations.index.values, args.versions)
     ].reset_index()
     simulations["version"] = np.array(
-        [[x for x in args.version] for _ in range(len(freq_list))]
+        [[x for x in range(args.versions)] for _ in range(len(freq_list))]
     ).flatten()
     freq_list = set(simulations["frequency"])
 
@@ -115,7 +115,7 @@ def main(args):
                 str(x[2]),
                 x[3],
                 str(x[4]),
-                x[5],
+                str(x[5]),
                 str(x[6]),
                 str(x[7]),
             ]
@@ -179,7 +179,7 @@ if __name__ == "__main__":
     parser.add_argument("--amplitudes", type=float, nargs="+", default=[0.0])
     parser.add_argument("--energy-base", type=float, default=0.0)
     parser.add_argument("--temperature-scale", type=float, nargs="+", default=[1.0])
-    parser.add_argument("--version", type=str, nargs="+", default=["a"])
+    parser.add_argument("--versions", type=int, default=1)
     main_args = parser.parse_args()
 
     main_args.save_path = Path(main_args.save_path)

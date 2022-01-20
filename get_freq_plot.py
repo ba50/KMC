@@ -9,11 +9,16 @@ from scripts.mass_center import mass_center
 def main(args):
     for data_path in args.data_paths:
 
-        get_mass_center_args = argparse.Namespace(data_path=data_path, high_pass=False, one_period=False, smooth=None)
-        fit_sin_args = argparse.Namespace(data_path=data_path, one_period=False, workers=args.workers)
+        get_mass_center_args = argparse.Namespace(
+            data_path=data_path, high_pass=False, one_period=False, smooth=None
+        )
+        fit_sin_args = argparse.Namespace(
+            data_path=data_path, one_period=False, workers=args.workers
+        )
         freq_plot_args = argparse.Namespace(
-            delta_phi=data_path / ("delta_phi_mass_center_x_" + data_path.name + ".csv"),
-            suffix="mass_center"
+            delta_phi=data_path
+            / ("delta_phi_mass_center_x_" + data_path.name + ".csv"),
+            suffix="mass_center",
         )
 
         if args.mass_center:
