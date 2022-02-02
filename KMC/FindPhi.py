@@ -26,8 +26,8 @@ class Functions:
         return amp * np.sin(2 * np.pi * self.freq * x + phi)
 
     @staticmethod
-    def arcsin(y):
-        return np.arcsin(y)
+    def arcsin(x):
+        return np.arcsin(x)
 
     @staticmethod
     def cubic_spline(x, a, b, c, d):
@@ -50,6 +50,51 @@ class Functions:
         return amp * np.exp(-x / tau)
 
 
+def get_guess(yy):
+    guess_amp = np.std(yy) * 2.0 ** 0.5
+    guess_offset = np.mean(yy)
+    return np.array([guess_amp, 0.0, guess_offset])
+
+
+def fit_sin(tt, yy):
+    '''Fit sin to the input time sequence, and return fitting parameters "amp", "omega", "phase", "offset", "freq", "period" and "fitfunc"'''
+    tt = np.array(tt)
+    yy = np.array(yy)
+    ff = np.fft.fftfreq(len(tt), (tt[1] - tt[0]))  # assume uniform spacing
+    Fyy = abs(np.fft.fft(yy))
+    guess_freq = abs(
+        ff[np.argmax(Fyy[1:]) + 1]
+    )  # excluding the zero frequency "peak", which is related to offset
+    guess_amp = np.std(yy) * 2.0 ** 0.5
+    guess_offset = np.mean(yy)
+    guess = np.array([guess_amp, 2.0 * np.pi * guess_freq, 0.0, guess_offset])
+
+    def sinfunc(t, A, w, p, c):
+        return A * np.sin(w * t + p) + c
+
+    popt, pcov = optimize.curve_fit(
+        sinfunc,
+        tt,
+        yy,
+        p0=guess,
+    )
+    A, w, p, c = popt
+
+    f = w / (2.0 * np.pi)
+    fitfunc = lambda t: A * np.sin(w * t + p) + c
+    return {
+        "amp": A,
+        "omega": w,
+        "phase": p,
+        "offset": c,
+        "freq": f,
+        "period": 1.0 / f,
+        "fitfunc": fitfunc,
+        "maxcov": np.max(pcov),
+        "rawres": (guess, popt, pcov),
+    }
+
+
 class FindPhi:
     def __init__(self, one_period, df_type):
         self.one_period = one_period
@@ -60,14 +105,47 @@ class FindPhi:
         field_data = pd.read_csv(sim_path / "field_data.csv")
 
         if self.one_period:
-            field_data = self.reduce_periods(field_data, config.frequency)
+            field_data = self.reduce_periods(field_data, 1e12/config.frequency)
 
         input_path = list((sim_path / self.df_type).glob("*.csv"))
         assert len(input_path) == 1, f"No mass center in {sim_path}!"
         data = pd.read_csv(input_path[0], sep=",")
 
         fitting_function = Functions(config.frequency * 10 ** -12)
+
         signal = pd.DataFrame({"time": data["time"], "y": data["x"]})
+
+        """
+        f = 1e6
+
+        signal["time"] = np.linspace(0, 4/f, 256)
+        signal["time"] = 2*np.pi*f*signal["time"]
+        signal["y"] = np.sin(signal["time"]+0.2)
+
+        signal = self.reduce_periods(signal, 2*np.pi)
+        signal["time"] -= np.pi
+
+        signal["x"] -= signal["y"].mean()
+        signal["x"] = signal["y"]/np.abs(signal["y"].max())
+
+        signal["y"] = fitting_function.arcsin(signal["y"])
+        """
+
+        """
+        signal["y"] = fitting_function.arcsin(signal["y"]/amp)
+        """
+
+        signal["y"] -= signal["y"].mean()
+        signal["y"] /= np.abs(signal["y"]).max()
+        """
+        signal["y"] = np.arcsin(signal["y"])
+
+        plt.plot(signal["time"], signal["y"])
+        plt.xlabel("Time [ps]")
+        plt.ylabel("arcsin(y)")
+        plt.show()
+        exit()
+        """
 
         params, fit_signal = FindPhi.fit_curve_signal(
             fitting_function.sin_with_const, signal, sim_path
@@ -93,7 +171,7 @@ class FindPhi:
             "version": (lambda split: split[5])(sim_path.name.split("_")),
             "temperature_scale": config.temperature_scale,
             "frequency": config.frequency,
-            "params": params,
+            "params": params
         }
 
     @staticmethod
@@ -130,30 +208,37 @@ class FindPhi:
         plt.close(_fig)
 
     @staticmethod
-    def reduce_periods(df, frequency: int):
-        time_limit = 1e12 / frequency
-        new_time = df["time"].copy()
-        for index in range(len(new_time)):
-            while new_time.iloc[index] > time_limit:
-                new_time.iloc[index] -= time_limit
-
-        df["time"] = new_time.values
-
-        df = df.sort_values(by="time")
+    def reduce_periods(df, period: float):
+        df["time"] %= period
+        df = df.sort_values(by="time").reset_index(drop=True)
 
         return df
 
     @staticmethod
     def fit_curve_signal(fitting_function, sim_signal, sim_path):
 
+        """
+        plt.figure()
+        plt.plot(sim_signal['time'])
+
+        plt.figure()
+        plt.plot(sim_signal['y'])
+
+        plt.figure()
+        plt.plot(sim_signal["time"], sim_signal["y"])
+        plt.show()
+        exit()
+        """
+
         params = None
         try:
+            #guess = get_guess(sim_signal["y"])
             params, _ = optimize.curve_fit(
                 fitting_function,
                 sim_signal["time"],
                 sim_signal["y"],
-                bounds=([-np.inf, -2 * np.pi, -np.inf], [np.inf, 0, np.inf]),
-                method="dogbox",
+                #p0=guess,
+                #bounds=([-np.inf, 0, -np.inf], [np.inf, 2*np.pi, np.inf])
             )
         except Exception as e:
             print(e)
@@ -162,7 +247,6 @@ class FindPhi:
             print(sim_path)
             return None, None
 
-        fit_y = []
         fit_signal = pd.DataFrame(
             {
                 "time": np.linspace(
@@ -172,8 +256,6 @@ class FindPhi:
                 )
             }
         )
-        for step in fit_signal["time"]:
-            fit_y.append(fitting_function(step, *params))
-        fit_signal["y"] = np.array(fit_y)
+        fit_signal["y"] = fitting_function(fit_signal["time"], *params)
 
         return params, fit_signal

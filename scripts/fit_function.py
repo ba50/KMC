@@ -10,9 +10,8 @@ from KMC.FindPhi import FindPhi
 def fit_function(args):
     find_phi = FindPhi(args.one_period, "mass_center")
 
-    sim_path_list = [sim for sim in args.data_path.glob("*") if sim.is_dir()]
-    print("Read:")
-    print(sim_path_list)
+    sim_path_list = [sim for sim in args.data_path.glob(args.search) if sim.is_dir()]
+    print(f"Read {len(sim_path_list)} folders.")
     with Pool(args.workers) as p:
         data_out = p.map(find_phi.run, sim_path_list)
 
@@ -34,6 +33,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--one-period", action="store_true", help="Stack data points to one period"
     )
+    parser.add_argument("--search", type=str, default="*", help="file search")
     main_args = parser.parse_args()
 
     fit_function(main_args)

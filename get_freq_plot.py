@@ -10,10 +10,10 @@ def main(args):
     for data_path in args.data_paths:
 
         get_mass_center_args = argparse.Namespace(
-            data_path=data_path, high_pass=False, one_period=False, smooth=None
+            data_path=data_path, high_pass=False, one_period=True, smooth=None, fs=170, search=args.search
         )
         fit_sin_args = argparse.Namespace(
-            data_path=data_path, one_period=False, workers=args.workers
+            data_path=data_path, one_period=True, workers=args.workers, search=args.search
         )
         freq_plot_args = argparse.Namespace(
             delta_phi=data_path
@@ -45,6 +45,7 @@ if __name__ == "__main__":
     parser.add_argument("--mass-center", action="store_true")
     parser.add_argument("--fit-sin", action="store_true")
     parser.add_argument("--freq-plot", action="store_true")
+    parser.add_argument("--search", type=str, default="*", help="file search")
 
     main_args = parser.parse_args()
 

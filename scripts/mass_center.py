@@ -12,7 +12,7 @@ from KMC.filters import high_pass
 
 
 def mass_center(args):
-    sim_path_list = args.data_path.glob("*")
+    sim_path_list = args.data_path.glob(args.search)
     sim_path_list = [i for i in sim_path_list if i.is_dir()]
 
     for sim_path in tqdm(sim_path_list):
@@ -44,14 +44,19 @@ def mass_center(args):
         plt.close()
 
         if args.high_pass:
-            mass_center_df["x"] = high_pass(mass_center_df["x"], 1, 200)
+            mass_center_df["x"] = high_pass(
+                y=mass_center_df["x"],
+                high_cut=conf.frequency * 1e-7,
+                fs=args.fs,
+                order=1,
+            )
 
         if args.one_period:
-            mass_center_df = FindPhi.reduce_periods(mass_center_df, conf.frequency)
+            mass_center_df = FindPhi.reduce_periods(mass_center_df, 1e12/conf.frequency)
 
         if args.smooth:
-            mass_center_df[["x", "y", "z"]] = (
-                mass_center_df[["x", "y", "z"]].rolling(args.smooth).mean()
+            mass_center_df["x"] = (
+                mass_center_df["x"].rolling(args.smooth).mean()
             )
 
             mass_center_df = mass_center_df.dropna()
@@ -87,6 +92,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--high-pass", action="store_true", help="Apply high pass filter"
     )
+    parser.add_argument("--fs", type=int, default=170, help="Sampling rate")
+    parser.add_argument("--search", type=str, default="*", help="file search")
     main_args = parser.parse_args()
 
     mass_center(main_args)
