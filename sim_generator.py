@@ -165,7 +165,7 @@ if __name__ == "__main__":
     parser.add_argument("--model-size", type=int, nargs="+", default=[5, 3, 3])
     parser.add_argument("--thermalization-time", type=int, default=200)
     parser.add_argument(
-        "--window-points", type=int, help="points in window", default=256
+        "--window-points", type=int, help="points in window", default=512
     )
     parser.add_argument("--window-epsilon", type=float, default=8.0)
     parser.add_argument(

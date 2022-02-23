@@ -19,7 +19,7 @@ def fit_function(args):
 
     mass_center_df = mass_center_df.sort_values(["frequency", "version"])
     mass_center_df.to_csv(
-        args.data_path / f"delta_phi_mass_center_x_{args.data_path.name}.csv",
+        args.data_path / f"delta_phi_mass_center_x_classic_{args.data_path.name}.csv",
         index=False,
     )
 

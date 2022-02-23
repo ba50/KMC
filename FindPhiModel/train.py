@@ -10,102 +10,32 @@ from torch import nn
 from torch import optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+import uuid
 
 from FindPhiModel.GenerateData import GenerateData
-
-
-class FindPhi(torch.nn.Module):
-    def __init__(self, output_size):
-        super(FindPhi, self).__init__()
-        self.fc_1_x_branch = nn.Linear(2048, 1024)
-        self.fc_2_x_branch = nn.Linear(1024, 512)
-        self.fc_3_x_branch = nn.Linear(512, 256)
-        self.fc_4_x_branch = nn.Linear(256, 128)
-        self.fc_5_x_branch = nn.Linear(128, 64)
-        self.fc_6_x_branch = nn.Linear(64, 32)
-        self.fc_out_x_branch = nn.Linear(32, output_size)
-
-        self.fc_1_y_branch = nn.Linear(2048, 1024)
-        self.fc_2_y_branch = nn.Linear(1024, 512)
-        self.fc_3_y_branch = nn.Linear(512, 256)
-        self.fc_4_y_branch = nn.Linear(256, 128)
-        self.fc_5_y_branch = nn.Linear(128, 64)
-        self.fc_6_y_branch = nn.Linear(64, 32)
-        self.fc_out_y_branch = nn.Linear(32, output_size)
-
-        self.activation = nn.Tanh()
-
-        self.drop_out = nn.Dropout(0.05)
-
-    def forward(self, x_in, y_in):
-        x = self.fc_1_x_branch(x_in)
-        x = self.activation(x)
-
-        x = self.fc_2_x_branch(x)
-        x = self.activation(x)
-
-        x = self.fc_3_x_branch(x)
-        x = self.activation(x)
-
-        x = self.fc_4_x_branch(x)
-        x = self.activation(x)
-
-        x = self.fc_5_x_branch(x)
-        x = self.activation(x)
-
-        x = self.drop_out(x)
-
-        x = self.fc_6_x_branch(x)
-        x = self.activation(x)
-
-        x = self.fc_out_x_branch(x)
-        x = self.activation(x)
-
-        y = self.fc_1_y_branch(y_in)
-        y = self.activation(y)
-
-        y = self.fc_2_y_branch(y)
-        y = self.activation(y)
-
-        y = self.fc_3_y_branch(y)
-        y = self.activation(y)
-
-        y = self.fc_4_y_branch(y)
-        y = self.activation(y)
-
-        y = self.fc_5_y_branch(y)
-        y = self.activation(y)
-
-        y = self.drop_out(y)
-
-        y = self.fc_6_y_branch(y)
-        y = self.activation(y)
-
-        y = self.fc_out_y_branch(y)
-        y = self.activation(y)
-
-        out = x + y
-        return out
+from FindPhiModel.Models import SimpleFC
 
 
 def main(args):
+    model_id = str(uuid.uuid4())[:4]
+    args.log_dir = args.log_dir / model_id
     print("Save at: ", args.log_dir)
 
     args.freq *= 1e-12  # cast to [ps]
-    func = Functions(args.freq).sin_with_cubic_spline
+    func = Functions(args.freq).sin
 
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     print("Train on:", device)
 
-    train_ds = GenerateData(func, 2048, args.train_ds_len)
-    valid_ds = GenerateData(func, 2048, 256)
+    train_ds = GenerateData(func, args.n_points, args.train_ds_len)
+    valid_ds = GenerateData(func, args.n_points, 4096)
 
     train_dataloader = DataLoader(
         train_ds, num_workers=args.num_workers, batch_size=args.batch_size
     )
-    valid_dataloader = DataLoader(valid_ds, batch_size=64)
+    valid_dataloader = DataLoader(valid_ds, batch_size=1)
 
-    model = FindPhi(6).to(device)
+    model = SimpleFC(args.n_points, 1).to(device)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     criterion = nn.MSELoss(reduction="mean")
 
@@ -167,26 +97,20 @@ def main(args):
         average_valid_loss = np.average(valid_loss_list)
 
         writer.add_scalar("train/loss", np.average(train_loss_list), epoch)
-        writer.add_scalar(
-            "train/lr", optimizer.state_dict()["param_groups"][0]["lr"], epoch
-        )
         writer.add_scalar("valid/loss", average_valid_loss, epoch)
         writer.flush()
 
         if best_loss > average_valid_loss and average_valid_loss < args.valid_min:
             print(f"\nSave best model at:", average_valid_loss)
             best_loss = np.average(valid_loss_list)
-            torch.save(model.state_dict(), save_path / f"model_{epoch}.pth")
+            torch.save(model.state_dict(), save_path / f"{model_id}_{epoch}.pth")
 
             x = x.cpu().detach().numpy()[0]
             y = y.cpu().detach().numpy()[0]
 
-            params_pred = [
-                params_pred[0, i].cpu().detach().numpy()
-                for i in range(params_pred.shape[1])
-            ]
+            phi_pred = params_pred[0, 0].cpu().detach().numpy()
 
-            y_pred = func(x, *params_pred)
+            y_pred = func(x, 1.0, phi_pred)
 
             plt.figure()
             plt.plot(x, y)
@@ -206,6 +130,7 @@ if __name__ == "__main__":
     parser.add_argument("--freq", type=float, required=True, help="")
     parser.add_argument("--valid-min", type=int, required=True, help="")
     parser.add_argument("--load-path", type=Path, default=None, help="")
+    parser.add_argument("--n-points", type=int, default=256, help="Number of data points")
 
     main_args = parser.parse_args()
     main(main_args)

@@ -9,47 +9,6 @@ import pandas as pd
 from KMC.Config import Config
 
 
-class Functions:
-    def __init__(self, freq):
-        self.freq = freq
-
-    def sin_with_cubic_spline(self, x, amp, phi, a, b, c, d):
-        return self.sin(x, amp, phi) + Functions.cubic_spline(x, a, b, c, d)
-
-    def sin_with_line(self, x, amp, phi, a, b):
-        return self.sin(x, amp, phi) + Functions.line(x, a, b)
-
-    def sin_with_const(self, x, amp, phi, a):
-        return self.sin(x, amp, phi) + a
-
-    def sin(self, x, amp, phi):
-        return amp * np.sin(2 * np.pi * self.freq * x + phi)
-
-    @staticmethod
-    def arcsin(x):
-        return np.arcsin(x)
-
-    @staticmethod
-    def cubic_spline(x, a, b, c, d):
-        return a * x ** 3 + b * x ** 2 + c * x + d
-
-    @staticmethod
-    def line(x, a, b):
-        return a * x + b
-
-    @staticmethod
-    def mse(y_true, y_pred):
-        return ((y_true - y_pred) ** 2).mean(axis=0)
-
-    @staticmethod
-    def mape(y_true, y_pred):
-        return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
-
-    @staticmethod
-    def exp_decay(x, amp: float = 50, tau: float = 5):
-        return amp * np.exp(-x / tau)
-
-
 def get_guess(yy):
     guess_amp = np.std(yy) * 2.0 ** 0.5
     guess_offset = np.mean(yy)
@@ -93,6 +52,47 @@ def fit_sin(tt, yy):
         "maxcov": np.max(pcov),
         "rawres": (guess, popt, pcov),
     }
+
+
+class Functions:
+    def __init__(self, freq):
+        self.freq = freq
+
+    def sin_with_cubic_spline(self, x, amp, phi, a, b, c, d):
+        return self.sin(x, amp, phi) + Functions.cubic_spline(x, a, b, c, d)
+
+    def sin_with_line(self, x, amp, phi, a, b):
+        return self.sin(x, amp, phi) + Functions.line(x, a, b)
+
+    def sin_with_const(self, x, amp, phi, a):
+        return self.sin(x, amp, phi) + a
+
+    def sin(self, x, amp, phi):
+        return amp * np.sin(2 * np.pi * self.freq * x + phi)
+
+    @staticmethod
+    def arcsin(x):
+        return np.arcsin(x)
+
+    @staticmethod
+    def cubic_spline(x, a, b, c, d):
+        return a * x ** 3 + b * x ** 2 + c * x + d
+
+    @staticmethod
+    def line(x, a, b):
+        return a * x + b
+
+    @staticmethod
+    def mse(y_true, y_pred):
+        return ((y_true - y_pred) ** 2).mean(axis=0)
+
+    @staticmethod
+    def mape(y_true, y_pred):
+        return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
+
+    @staticmethod
+    def exp_decay(x, amp: float = 50, tau: float = 5):
+        return amp * np.exp(-x / tau)
 
 
 class FindPhi:
@@ -232,12 +232,12 @@ class FindPhi:
 
         params = None
         try:
-            #guess = get_guess(sim_signal["y"])
+            guess = get_guess(sim_signal["y"])
             params, _ = optimize.curve_fit(
                 fitting_function,
                 sim_signal["time"],
                 sim_signal["y"],
-                #p0=guess,
+                p0=guess,
                 #bounds=([-np.inf, 0, -np.inf], [np.inf, 2*np.pi, np.inf])
             )
         except Exception as e:
