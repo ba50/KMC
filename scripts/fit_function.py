@@ -11,6 +11,7 @@ def fit_function(args):
     find_phi = FindPhi(args.one_period, "mass_center")
 
     sim_path_list = [sim for sim in args.data_path.glob(args.search) if sim.is_dir()]
+    assert len(sim_path_list) != 0, f"No data at: {args.data_path}"
     print(f"Read {len(sim_path_list)} folders.")
     with Pool(args.workers) as p:
         data_out = p.map(find_phi.run, sim_path_list)

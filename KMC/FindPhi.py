@@ -3,8 +3,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 import numpy as np
-from scipy import optimize
 import pandas as pd
+from scipy import optimize
 
 from KMC.Config import Config
 
@@ -105,7 +105,7 @@ class FindPhi:
         field_data = pd.read_csv(sim_path / "field_data.csv")
 
         if self.one_period:
-            field_data = self.reduce_periods(field_data, 1e12/config.frequency)
+            field_data = self.reduce_periods(field_data, 1e12 / config.frequency)
 
         input_path = list((sim_path / self.df_type).glob("*.csv"))
         assert len(input_path) == 1, f"No mass center in {sim_path}!"
@@ -171,7 +171,7 @@ class FindPhi:
             "version": (lambda split: split[5])(sim_path.name.split("_")),
             "temperature_scale": config.temperature_scale,
             "frequency": config.frequency,
-            "params": params
+            "params": params,
         }
 
     @staticmethod
@@ -230,20 +230,17 @@ class FindPhi:
         exit()
         """
 
-        params = None
         try:
-            guess = get_guess(sim_signal["y"])
+            # guess = get_guess(sim_signal["y"])
             params, _ = optimize.curve_fit(
                 fitting_function,
                 sim_signal["time"],
                 sim_signal["y"],
-                p0=guess,
-                #bounds=([-np.inf, 0, -np.inf], [np.inf, 2*np.pi, np.inf])
+                # p0=guess,
+                # bounds=([-np.inf, 0, -np.inf], [np.inf, 2*np.pi, np.inf])
             )
         except Exception as e:
             print(e)
-
-        if params is None:
             print(sim_path)
             return None, None
 

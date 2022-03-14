@@ -2,8 +2,8 @@ import argparse
 from pathlib import Path
 
 import numpy as np
-import torch
 import pandas as pd
+import torch
 
 from FindPhiModel.Models import SimpleFC
 from KMC.Config import Config
@@ -39,14 +39,16 @@ def main(args):
         phi_pred = model(time, x)
         phi_pred = phi_pred.cpu().detach().numpy()[0][0]
 
-        data_out.append({
-            "phi_rad": phi_pred,
-            "path": sim_path,
-            "version": (lambda split: split[5])(sim_path.name.split("_")),
-            "temperature_scale": config.temperature_scale,
-            "frequency": config.frequency,
-            "params": phi_pred
-        })
+        data_out.append(
+            {
+                "phi_rad": phi_pred,
+                "path": sim_path,
+                "version": (lambda split: split[5])(sim_path.name.split("_")),
+                "temperature_scale": config.temperature_scale,
+                "frequency": config.frequency,
+                "params": phi_pred,
+            }
+        )
 
     mass_center_df = pd.DataFrame(data_out)
 
@@ -54,7 +56,7 @@ def main(args):
     mass_center_df.to_csv(
         args.data_path / f"delta_phi_mass_center_x_dnn_{args.data_path.name}.csv",
         index=False,
-        )
+    )
 
 
 if __name__ == "__main__":

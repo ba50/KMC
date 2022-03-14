@@ -1,19 +1,19 @@
 import argparse
+import uuid
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from KMC.FindPhi import Functions
 from tensorboardX import SummaryWriter
 from torch import nn
 from torch import optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-import uuid
 
 from FindPhiModel.GenerateData import GenerateData
 from FindPhiModel.Models import SimpleFC
+from KMC.FindPhi import Functions
 
 
 def main(args):
@@ -130,7 +130,9 @@ if __name__ == "__main__":
     parser.add_argument("--freq", type=float, required=True, help="")
     parser.add_argument("--valid-min", type=int, required=True, help="")
     parser.add_argument("--load-path", type=Path, default=None, help="")
-    parser.add_argument("--n-points", type=int, default=256, help="Number of data points")
+    parser.add_argument(
+        "--n-points", type=int, default=256, help="Number of data points"
+    )
 
     main_args = parser.parse_args()
     main(main_args)

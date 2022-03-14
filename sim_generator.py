@@ -129,20 +129,23 @@ def main(args):
 
     simulations.to_csv(save_path / "simulations.csv", index=False)
 
+    structure = GenerateModel(
+        (simulations["size_x"][0], simulations["size_y"][0], simulations["size_z"][0])
+    )
+    if args.cell_type == "random":
+        structure.generate_random()
+    elif args.cell_type == "sphere":
+        structure.generate_sphere(11)
+    elif args.cell_type == "plane":
+        structure.generate_plane(3)
+    else:
+        print("wrong cell type")
+
     for _, row in simulations.iterrows():
         sim_path = save_path / row["sim_name"]
         sim_path.mkdir(parents=True, exist_ok=True)
         Config(row).save(sim_path)
 
-        structure = GenerateModel((row["size_x"], row["size_y"], row["size_z"]))
-        if args.cell_type == "random":
-            structure.generate_random()
-        elif args.cell_type == "sphere":
-            structure.generate_sphere(11)
-        elif args.cell_type == "plane":
-            structure.generate_plane(3)
-        else:
-            print("wrong cell type")
         structure.save_positions(sim_path / "model.xyz")
 
 

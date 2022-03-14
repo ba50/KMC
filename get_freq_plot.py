@@ -10,14 +10,22 @@ def main(args):
     for data_path in args.data_paths:
 
         get_mass_center_args = argparse.Namespace(
-            data_path=data_path, high_pass=False, one_period=True, smooth=None, fs=170, search=args.search
+            data_path=data_path,
+            high_pass=False,
+            one_period=True,
+            smooth=None,
+            fs=170,
+            search=args.search,
         )
         fit_sin_args = argparse.Namespace(
-            data_path=data_path, one_period=True, workers=args.workers, search=args.search
+            data_path=data_path,
+            one_period=True,
+            workers=args.workers,
+            search=args.search,
         )
         freq_plot_args = argparse.Namespace(
             delta_phi=data_path
-            / ("delta_phi_mass_center_x_" + data_path.name + ".csv"),
+            / ("delta_phi_mass_center_x_classic_" + data_path.name + ".csv"),
             suffix="mass_center",
         )
 

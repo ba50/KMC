@@ -6,9 +6,9 @@ import pandas as pd
 from tqdm import tqdm
 
 from KMC.Config import Config
+from KMC.filters import high_pass
 from KMC.GenerateModel import GenerateModel
 from scripts.fit_function import FindPhi
-from KMC.filters import high_pass
 
 
 def mass_center(args):
@@ -19,65 +19,68 @@ def mass_center(args):
         conf = Config.load(sim_path / "input.kmc")
         sim_frames_path = sim_path / "simulation_frames_inf.xyz"
         field_data = pd.read_csv(sim_path / "field_data.csv")
-        (sim_path / "mass_center").mkdir(parents=True, exist_ok=True)
+        mass_center_path = sim_path / "mass_center"
 
-        _, simulation_frames = GenerateModel.read_frames_dataframe(sim_frames_path)
+        if not mass_center_path.exists():
+            mass_center_path.mkdir(parents=True)
 
-        mass_center_df = {"time": [], "x": []}
-        for time_index, chunk in simulation_frames.groupby("time_index"):
-            mass_center_df["time"].append(field_data["time"][time_index])
-            mean_position = chunk[["x"]].mean()
+            _, simulation_frames = GenerateModel.read_frames_dataframe(sim_frames_path)
 
-            mass_center_df["x"].append(mean_position["x"])
+            mass_center_df = {"time": [], "x": []}
+            for time_index, chunk in simulation_frames.groupby("time_index"):
+                mass_center_df["time"].append(field_data["time"][time_index])
+                mean_position = chunk[["x"]].mean()
 
-        mass_center_df = pd.DataFrame(mass_center_df)
+                mass_center_df["x"].append(mean_position["x"])
 
-        plt.figure()
-        plt.plot(mass_center_df["time"], mass_center_df["x"])
-        plt.xlabel("time [ps]")
-        plt.ylabel("Ions mass center")
-        plt.savefig(
-            sim_path
-            / "mass_center"
-            / f"ions_mass_center_x_original_freq_{conf.frequency:.2e}.png"
-        )
-        plt.close()
+            mass_center_df = pd.DataFrame(mass_center_df)
 
-        if args.high_pass:
-            mass_center_df["x"] = high_pass(
-                y=mass_center_df["x"],
-                high_cut=conf.frequency * 1e-7,
-                fs=args.fs,
-                order=1,
+            plt.figure()
+            plt.plot(mass_center_df["time"], mass_center_df["x"])
+            plt.xlabel("time [ps]")
+            plt.ylabel("Ions mass center")
+            plt.savefig(
+                sim_path
+                / "mass_center"
+                / f"ions_mass_center_x_original_freq_{conf.frequency:.2e}.png"
+            )
+            plt.close()
+
+            if args.high_pass:
+                mass_center_df["x"] = high_pass(
+                    y=mass_center_df["x"],
+                    high_cut=conf.frequency * 1e-7,
+                    fs=args.fs,
+                    order=1,
+                )
+
+            if args.one_period:
+                mass_center_df = FindPhi.reduce_periods(
+                    mass_center_df, 1e12 / conf.frequency
+                )
+
+            if args.smooth:
+                mass_center_df["x"] = mass_center_df["x"].rolling(args.smooth).mean()
+
+                mass_center_df = mass_center_df.dropna()
+
+            mass_center_df.to_csv(
+                sim_path
+                / "mass_center"
+                / f"ions_mass_center_freq_{conf.frequency:.2e}.csv",
+                index=False,
             )
 
-        if args.one_period:
-            mass_center_df = FindPhi.reduce_periods(mass_center_df, 1e12/conf.frequency)
-
-        if args.smooth:
-            mass_center_df["x"] = (
-                mass_center_df["x"].rolling(args.smooth).mean()
+            plt.figure()
+            plt.plot(mass_center_df["time"], mass_center_df["x"])
+            plt.xlabel("time [ps]")
+            plt.ylabel("Ions mass center")
+            plt.savefig(
+                sim_path
+                / "mass_center"
+                / f"ions_mass_center_x_freq_{conf.frequency:.2e}.png"
             )
-
-            mass_center_df = mass_center_df.dropna()
-
-        mass_center_df.to_csv(
-            sim_path
-            / "mass_center"
-            / f"ions_mass_center_freq_{conf.frequency:.2e}.csv",
-            index=False,
-        )
-
-        plt.figure()
-        plt.plot(mass_center_df["time"], mass_center_df["x"])
-        plt.xlabel("time [ps]")
-        plt.ylabel("Ions mass center")
-        plt.savefig(
-            sim_path
-            / "mass_center"
-            / f"ions_mass_center_x_freq_{conf.frequency:.2e}.png"
-        )
-        plt.close()
+            plt.close()
 
 
 if __name__ == "__main__":
