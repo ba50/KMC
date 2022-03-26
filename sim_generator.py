@@ -48,28 +48,13 @@ def main(args):
 
     simulations = simulations.merge(amp_df)
 
-    start_stop = {
-        "time_start": [],
-        "time_end": [],
-        "periods": [],
-        "frequency": [],
-        "split": [],
-    }
+    simulations['time_start'] = 0
+
+    time_end = []
     for _, row in simulations.iterrows():
         total_time = row["periods"] / row["frequency"] * 10 ** 12
-        last_step = 0
-        steps = np.ceil(total_time / args.split).astype(int)
-        for split_step, next_step in enumerate(
-            range(steps, int(total_time) + steps, steps)
-        ):
-            start_stop["time_start"].append(last_step)
-            start_stop["time_end"].append(next_step)
-            start_stop["periods"].append(row["periods"])
-            start_stop["frequency"].append(row["frequency"])
-            start_stop["split"].append(split_step)
-            last_step = next_step
-    start_stop = pd.DataFrame(start_stop)
-    simulations = simulations.merge(start_stop, on=["frequency", "periods"])
+        time_end.append(total_time)
+    simulations["time_end"] = time_end
 
     simulations["window"] = simulations[["periods", "frequency"]].apply(
         lambda x: (x[0] / (x[1] * 10.0 ** -12)) / args.window_points, axis=1
@@ -104,7 +89,6 @@ def main(args):
         "cell_type",
         "index",
         "version",
-        "split",
         "temperature_scale",
     ]
     simulations["sim_name"] = simulations[select_columns].apply(
@@ -117,7 +101,6 @@ def main(args):
                 str(x[4]),
                 str(x[5]),
                 str(x[6]),
-                str(x[7]),
             ]
         ),
         axis=1,
@@ -153,7 +136,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--save-path", required=True, help="path to save models")
 
-    parser.add_argument("--split", type=int, help="number of subparts", default=1)
     parser.add_argument(
         "--base-periods", type=float, help="base sin period", default=0.5
     )
@@ -170,7 +152,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--window-points", type=int, help="points in window", default=512
     )
-    parser.add_argument("--window-epsilon", type=float, default=8.0)
+    parser.add_argument("--window-epsilon", type=float, default=4.0)
     parser.add_argument(
         "--contact-switch-left", type=int, default=0, help="0-off, 2-on"
     )

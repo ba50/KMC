@@ -34,9 +34,11 @@ def mass_center(args):
                 mass_center_df["x"].append(mean_position["x"])
 
             mass_center_df = pd.DataFrame(mass_center_df)
+            mass_center_df['v'] = mass_center_df["x"].diff()/mass_center_df["time"].diff()
+            mass_center_df['dE'] = field_data["delta_energy"]
 
             plt.figure()
-            plt.plot(mass_center_df["time"], mass_center_df["x"])
+            plt.plot(mass_center_df["time"], mass_center_df["v"])
             plt.xlabel("time [ps]")
             plt.ylabel("Ions mass center")
             plt.savefig(
@@ -72,7 +74,7 @@ def mass_center(args):
             )
 
             plt.figure()
-            plt.plot(mass_center_df["time"], mass_center_df["x"])
+            plt.plot(mass_center_df["time"], mass_center_df["v"])
             plt.xlabel("time [ps]")
             plt.ylabel("Ions mass center")
             plt.savefig(

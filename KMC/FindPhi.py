@@ -113,7 +113,7 @@ class FindPhi:
 
         fitting_function = Functions(config.frequency * 10 ** -12)
 
-        signal = pd.DataFrame({"time": data["time"], "y": data["x"]})
+        signal = pd.DataFrame({"time": data["time"][1:], "y": data["v"][1:]})
 
         """
         f = 1e6
@@ -135,8 +135,11 @@ class FindPhi:
         signal["y"] = fitting_function.arcsin(signal["y"]/amp)
         """
 
+        """
         signal["y"] -= signal["y"].mean()
         signal["y"] /= np.abs(signal["y"]).max()
+        """
+
         """
         signal["y"] = np.arcsin(signal["y"])
 
@@ -148,7 +151,7 @@ class FindPhi:
         """
 
         params, fit_signal = FindPhi.fit_curve_signal(
-            fitting_function.sin_with_const, signal, sim_path
+            fitting_function.sin, signal, sim_path
         )
 
         if params is None:

@@ -164,7 +164,7 @@ public:
 
 		residence_time_ = { 9.0, 16.0, 22.0, 33.0, 48.0 };
 		for (size_t i = 0; i < residence_time_.size(); ++i) {
-			residence_time_[i] *= temperature_scale;
+			residence_time_[i] /= temperature_scale;
 		}
 
 		for (size_t z = 0; z < residence_time_array_size_[2]; z++) {
