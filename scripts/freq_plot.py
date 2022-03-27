@@ -21,6 +21,9 @@ def freq_plot(args):
         plot_data["phi_rad_mean"].append(chunk["phi_rad"].mean())
         plot_data["phi_rad_sem"].append(chunk["phi_rad"].std() / np.sqrt(len(chunk)))
 
+    plot_data = pd.DataFrame(plot_data)
+
+    # Delta phi
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(111)
     ax.errorbar(
@@ -38,14 +41,40 @@ def freq_plot(args):
         / f"delta_phi_rad_vs_freq_{args.delta_phi.parent.name}_{args.suffix}.png",
         dpi=1000,
         bbox_inches="tight",
+        )
+    plt.close(fig)
+
+    # Nyqiust plot
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_subplot(111)
+    ax.scatter(
+        args.u/args.i*np.cos(plot_data["phi_rad_mean"]),
+        args.u/args.i*np.sin(plot_data["phi_rad_mean"]),
+    )
+    ax.set_xlabel("Re")
+    ax.set_ylabel("Im")
+
+    plt.savefig(
+        args.delta_phi.parent
+        / f"nyquist_plot_{args.delta_phi.parent.name}_{args.suffix}.png",
+        dpi=1000,
+        bbox_inches="tight",
     )
     plt.close(fig)
+
+
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--delta-phi", type=Path, required=True, help="path to delta phi csv"
+    )
+    parser.add_argument(
+        "-u", type=float, required=True, help="Initial U0"
+    )
+    parser.add_argument(
+        "-i", type=float, required=True, help="Initial I0"
     )
     parser.add_argument("--suffix", type=str, required=True)
     main_args = parser.parse_args()
