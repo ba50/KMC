@@ -24,7 +24,9 @@ def mass_center(args):
         if not mass_center_path.exists():
             mass_center_path.mkdir(parents=True)
 
-            _, simulation_frames = GenerateModel.read_frames_dataframe(sim_frames_path)
+            n_atoms, simulation_frames = GenerateModel.read_frames_dataframe(
+                sim_frames_path
+            )
 
             mass_center_df = {"time": [], "x": []}
             for time_index, chunk in simulation_frames.groupby("time_index"):
@@ -34,11 +36,14 @@ def mass_center(args):
                 mass_center_df["x"].append(mean_position["x"])
 
             mass_center_df = pd.DataFrame(mass_center_df)
-            mass_center_df['v'] = mass_center_df["x"].diff()/mass_center_df["time"].diff()
-            mass_center_df['dE'] = field_data["delta_energy"]
+            mass_center_df["v"] = (
+                mass_center_df["x"].diff() / mass_center_df["time"].diff()
+            )
+            mass_center_df["dE"] = field_data["delta_energy"]
+            mass_center_df["i"] = 2 * n_atoms / mass_center_df["time"].diff()
 
             plt.figure()
-            plt.plot(mass_center_df["time"], mass_center_df["v"])
+            plt.plot(mass_center_df["time"], mass_center_df["x"])
             plt.xlabel("time [ps]")
             plt.ylabel("Ions mass center")
             plt.savefig(
@@ -63,7 +68,6 @@ def mass_center(args):
 
             if args.smooth:
                 mass_center_df["x"] = mass_center_df["x"].rolling(args.smooth).mean()
-
                 mass_center_df = mass_center_df.dropna()
 
             mass_center_df.to_csv(
@@ -74,7 +78,7 @@ def mass_center(args):
             )
 
             plt.figure()
-            plt.plot(mass_center_df["time"], mass_center_df["v"])
+            plt.plot(mass_center_df["time"], mass_center_df["x"])
             plt.xlabel("time [ps]")
             plt.ylabel("Ions mass center")
             plt.savefig(

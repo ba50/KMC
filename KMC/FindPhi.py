@@ -110,45 +110,14 @@ class FindPhi:
         input_path = list((sim_path / self.df_type).glob("*.csv"))
         assert len(input_path) == 1, f"No mass center in {sim_path}!"
         data = pd.read_csv(input_path[0], sep=",")
+        data.dropna(inplace=True)
 
         fitting_function = Functions(config.frequency * 10 ** -12)
 
-        signal = pd.DataFrame({"time": data["time"][1:], "y": data["v"][1:]})
+        signal = pd.DataFrame({"time": data["time"], "y": data["x"]})
 
-        """
-        f = 1e6
-
-        signal["time"] = np.linspace(0, 4/f, 256)
-        signal["time"] = 2*np.pi*f*signal["time"]
-        signal["y"] = np.sin(signal["time"]+0.2)
-
-        signal = self.reduce_periods(signal, 2*np.pi)
-        signal["time"] -= np.pi
-
-        signal["x"] -= signal["y"].mean()
-        signal["x"] = signal["y"]/np.abs(signal["y"].max())
-
-        signal["y"] = fitting_function.arcsin(signal["y"])
-        """
-
-        """
-        signal["y"] = fitting_function.arcsin(signal["y"]/amp)
-        """
-
-        """
         signal["y"] -= signal["y"].mean()
         signal["y"] /= np.abs(signal["y"]).max()
-        """
-
-        """
-        signal["y"] = np.arcsin(signal["y"])
-
-        plt.plot(signal["time"], signal["y"])
-        plt.xlabel("Time [ps]")
-        plt.ylabel("arcsin(y)")
-        plt.show()
-        exit()
-        """
 
         params, fit_signal = FindPhi.fit_curve_signal(
             fitting_function.sin, signal, sim_path
@@ -161,6 +130,8 @@ class FindPhi:
                 "version": (lambda split: split[5])(sim_path.name.split("_")),
                 "temperature_scale": config.temperature_scale,
                 "frequency": config.frequency,
+                "u0": np.max(data["dE"]),
+                "i0": np.mean(data["i"]),
                 "params": None,
             }
 
@@ -174,6 +145,8 @@ class FindPhi:
             "version": (lambda split: split[5])(sim_path.name.split("_")),
             "temperature_scale": config.temperature_scale,
             "frequency": config.frequency,
+            "u0": np.max(data["dE"]),
+            "i0": np.mean(data["i"]),
             "params": params,
         }
 
@@ -220,27 +193,11 @@ class FindPhi:
     @staticmethod
     def fit_curve_signal(fitting_function, sim_signal, sim_path):
 
-        """
-        plt.figure()
-        plt.plot(sim_signal['time'])
-
-        plt.figure()
-        plt.plot(sim_signal['y'])
-
-        plt.figure()
-        plt.plot(sim_signal["time"], sim_signal["y"])
-        plt.show()
-        exit()
-        """
-
         try:
-            # guess = get_guess(sim_signal["y"])
             params, _ = optimize.curve_fit(
                 fitting_function,
                 sim_signal["time"],
                 sim_signal["y"],
-                # p0=guess,
-                # bounds=([-np.inf, 0, -np.inf], [np.inf, 2*np.pi, np.inf])
             )
         except Exception as e:
             print(e)

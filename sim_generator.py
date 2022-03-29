@@ -48,7 +48,7 @@ def main(args):
 
     simulations = simulations.merge(amp_df)
 
-    simulations['time_start'] = 0
+    simulations["time_start"] = 0
 
     time_end = []
     for _, row in simulations.iterrows():

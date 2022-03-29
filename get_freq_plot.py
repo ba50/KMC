@@ -26,6 +26,8 @@ def main(args):
         freq_plot_args = argparse.Namespace(
             delta_phi=data_path
             / ("delta_phi_mass_center_x_classic_" + data_path.name + ".csv"),
+            u=0.02,
+            i=0.02,
             suffix="mass_center",
         )
 
