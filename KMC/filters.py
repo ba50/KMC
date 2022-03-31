@@ -8,6 +8,6 @@ def high_pass(y, high_cut, fs, order=5):
 
     nyq = 0.5 * fs
     normal_cutoff = high_cut / nyq
-    b, a = butter(order, normal_cutoff, btype="highpass")
+    b, a = butter(order, normal_cutoff, btype="high")
 
     return lfilter(b, a, y) + y_0

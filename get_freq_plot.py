@@ -2,8 +2,8 @@ import argparse
 from pathlib import Path
 
 from scripts.fit_function import fit_function
-from scripts.freq_plot import freq_plot
 from scripts.mass_center import mass_center
+from scripts.nyquist_plot import nyquist_plot
 
 
 def main(args):
@@ -14,7 +14,7 @@ def main(args):
             high_pass=False,
             one_period=True,
             smooth=None,
-            fs=170,
+            fs=21,
             search=args.search,
         )
         fit_sin_args = argparse.Namespace(
@@ -23,11 +23,9 @@ def main(args):
             workers=args.workers,
             search=args.search,
         )
-        freq_plot_args = argparse.Namespace(
+        nyquist_plot_args = argparse.Namespace(
             delta_phi=data_path
-            / ("delta_phi_mass_center_x_classic_" + data_path.name + ".csv"),
-            u=0.02,
-            i=0.02,
+            / ("delta_phi_mass_center_vel_" + data_path.name + ".csv"),
             suffix="mass_center",
         )
 
@@ -37,8 +35,8 @@ def main(args):
         if args.fit_sin:
             fit_function(fit_sin_args)
 
-        if args.freq_plot:
-            freq_plot(freq_plot_args)
+        if args.nyquist_plot:
+            nyquist_plot(nyquist_plot_args)
 
 
 if __name__ == "__main__":
@@ -54,7 +52,7 @@ if __name__ == "__main__":
     parser.add_argument("--workers", type=int, help="number of workers", default=1)
     parser.add_argument("--mass-center", action="store_true")
     parser.add_argument("--fit-sin", action="store_true")
-    parser.add_argument("--freq-plot", action="store_true")
+    parser.add_argument("--nyquist-plot", action="store_true")
     parser.add_argument("--search", type=str, default="*", help="file search")
 
     main_args = parser.parse_args()

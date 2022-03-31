@@ -2,7 +2,15 @@ import matplotlib.pyplot as plt
 
 
 def plot_line(
-    save_file, x_list, y_list, label_list, x_label, y_label, x_size=8, y_size=6, dpi=100
+    save_file,
+    x_list,
+    y_list,
+    label_list,
+    x_label,
+    y_label,
+    x_size=8,
+    y_size=6,
+    dpi=100,
 ):
     _fig = plt.figure(figsize=(x_size, y_size))
     _ax = _fig.add_subplot(111)
@@ -17,10 +25,19 @@ def plot_line(
     if all(label_list):
         plt.legend()
     plt.savefig(save_file, dpi=dpi, bbox_inches="tight")
+    plt.close(_fig)
 
 
 def plot_log(
-    save_file, x_list, y_list, label_list, x_label, y_label, x_size=8, y_size=6, dpi=100
+    save_file,
+    x_list,
+    y_list,
+    label_list,
+    x_label,
+    y_label,
+    x_size=8,
+    y_size=6,
+    dpi=1000,
 ):
     _fig = plt.figure(figsize=(x_size, y_size))
     _ax = _fig.add_subplot(111)
@@ -35,3 +52,4 @@ def plot_log(
     if all(label_list):
         plt.legend()
     plt.savefig(save_file, dpi=dpi, bbox_inches="tight")
+    plt.close(_fig)

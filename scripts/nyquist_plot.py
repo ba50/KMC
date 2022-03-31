@@ -1,12 +1,15 @@
 import argparse
 from pathlib import Path
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+matplotlib.use("Agg")
 
-def freq_plot(args):
+
+def nyquist_plot(args):
     delta_phi_data = pd.read_csv(args.delta_phi)
 
     plot_data = {
@@ -27,6 +30,9 @@ def freq_plot(args):
         plot_data["i0"].append(chunk["i0"].mean())
 
     plot_data = pd.DataFrame(plot_data)
+
+    # because of electrons have a negative charge
+    plot_data["phi_rad_mean"] = np.abs(plot_data["phi_rad_mean"])
 
     # Delta phi
     fig = plt.figure(figsize=(8, 6))
@@ -59,9 +65,12 @@ def freq_plot(args):
     # Nyqiust plot
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(111)
-    ax.scatter(plot_data["Re"], plot_data["Im"])
-    ax.set_xlabel("Re")
-    ax.set_ylabel("Im")
+    ax.plot(plot_data["Re"], plot_data["Im"], "o--")
+    ax.set_xlabel("Re [Ω]")
+    ax.set_ylabel("Im [Ω]")
+
+    for _, row in plot_data.iterrows():
+        ax.text(row["Re"], row["Im"]+0.5, f"{row['frequency']:.2e}")
 
     plt.savefig(
         args.delta_phi.parent
@@ -85,4 +94,4 @@ if __name__ == "__main__":
     parser.add_argument("--suffix", type=str, required=True)
     main_args = parser.parse_args()
 
-    freq_plot(main_args)
+    nyquist_plot(main_args)

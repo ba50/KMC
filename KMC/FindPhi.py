@@ -9,51 +9,6 @@ from scipy import optimize
 from KMC.Config import Config
 
 
-def get_guess(yy):
-    guess_amp = np.std(yy) * 2.0 ** 0.5
-    guess_offset = np.mean(yy)
-    return np.array([guess_amp, 0.0, guess_offset])
-
-
-def fit_sin(tt, yy):
-    '''Fit sin to the input time sequence, and return fitting parameters "amp", "omega", "phase", "offset", "freq", "period" and "fitfunc"'''
-    tt = np.array(tt)
-    yy = np.array(yy)
-    ff = np.fft.fftfreq(len(tt), (tt[1] - tt[0]))  # assume uniform spacing
-    Fyy = abs(np.fft.fft(yy))
-    guess_freq = abs(
-        ff[np.argmax(Fyy[1:]) + 1]
-    )  # excluding the zero frequency "peak", which is related to offset
-    guess_amp = np.std(yy) * 2.0 ** 0.5
-    guess_offset = np.mean(yy)
-    guess = np.array([guess_amp, 2.0 * np.pi * guess_freq, 0.0, guess_offset])
-
-    def sinfunc(t, A, w, p, c):
-        return A * np.sin(w * t + p) + c
-
-    popt, pcov = optimize.curve_fit(
-        sinfunc,
-        tt,
-        yy,
-        p0=guess,
-    )
-    A, w, p, c = popt
-
-    f = w / (2.0 * np.pi)
-    fitfunc = lambda t: A * np.sin(w * t + p) + c
-    return {
-        "amp": A,
-        "omega": w,
-        "phase": p,
-        "offset": c,
-        "freq": f,
-        "period": 1.0 / f,
-        "fitfunc": fitfunc,
-        "maxcov": np.max(pcov),
-        "rawres": (guess, popt, pcov),
-    }
-
-
 class Functions:
     def __init__(self, freq):
         self.freq = freq
@@ -96,16 +51,11 @@ class Functions:
 
 
 class FindPhi:
-    def __init__(self, one_period, df_type):
-        self.one_period = one_period
+    def __init__(self, df_type):
         self.df_type = df_type
 
     def run(self, sim_path: Path):
         config = Config.load(sim_path / "input.kmc")
-        field_data = pd.read_csv(sim_path / "field_data.csv")
-
-        if self.one_period:
-            field_data = self.reduce_periods(field_data, 1e12 / config.frequency)
 
         input_path = list((sim_path / self.df_type).glob("*.csv"))
         assert len(input_path) == 1, f"No mass center in {sim_path}!"
@@ -114,10 +64,7 @@ class FindPhi:
 
         fitting_function = Functions(config.frequency * 10 ** -12)
 
-        signal = pd.DataFrame({"time": data["time"], "y": data["x"]})
-
-        signal["y"] -= signal["y"].mean()
-        signal["y"] /= np.abs(signal["y"]).max()
+        signal = pd.DataFrame({"t": data["t"], "y": data["vel"]})
 
         params, fit_signal = FindPhi.fit_curve_signal(
             fitting_function.sin, signal, sim_path
@@ -125,46 +72,48 @@ class FindPhi:
 
         if params is None:
             return {
+                "amp": None,
                 "phi_rad": None,
                 "path": sim_path,
                 "version": (lambda split: split[5])(sim_path.name.split("_")),
                 "temperature_scale": config.temperature_scale,
                 "frequency": config.frequency,
-                "u0": np.max(data["dE"]),
+                "u0": np.mean(data["u"]),
                 "i0": np.mean(data["i"]),
                 "params": None,
             }
 
         FindPhi._save_plots(
-            sim_path, self.df_type, config.frequency, signal, fit_signal, field_data
+            sim_path, self.df_type, config.frequency, signal, fit_signal, data
         )
 
         return {
+            "amp": params[0],
             "phi_rad": params[1],
             "path": sim_path,
             "version": (lambda split: split[5])(sim_path.name.split("_")),
             "temperature_scale": config.temperature_scale,
             "frequency": config.frequency,
-            "u0": np.max(data["dE"]),
+            "u0": np.mean(data["u"]),
             "i0": np.mean(data["i"]),
             "params": params,
         }
 
     @staticmethod
     def _save_plots(sim_path, df_type, frequency, signal, fit_signal, field_data):
-        _fig, _ax1 = plt.subplots()
+        _fig, _ax1 = plt.subplots(figsize=(8, 6))
         _ax2 = _ax1.twinx()
-        _ax1.scatter(signal["time"], signal["y"], marker=".", color="b")
+        _ax1.scatter(signal["t"], signal["y"], marker=".", color="b")
         _ax1.plot(
-            fit_signal["time"],
+            fit_signal["t"],
             fit_signal["y"],
             color="r",
             linestyle="--",
             label="Fitted func",
         )
         _ax2.plot(
-            field_data["time"],
-            field_data["delta_energy"],
+            field_data["t"],
+            field_data["dE"],
             linestyle="-",
             color="g",
             label="Field",
@@ -172,21 +121,23 @@ class FindPhi:
 
         _ax1.set_xlabel("Time [ps]")
         _ax1.xaxis.set_major_formatter(mtick.FormatStrFormatter("%.1e"))
-        _ax1.set_ylabel("Data", color="b")
+        _ax1.set_ylabel("Ions mass center velocity [au]", color="b")
         _ax2.set_ylabel("Field [eV]", color="g")
 
         _ax1.legend(loc="upper left")
         _ax2.legend(loc="upper right")
 
         plt.savefig(
-            sim_path / df_type / f"fit_sin_{df_type}_x_freq_{frequency:.2e}.png"
+            sim_path / df_type / f"fit_sin_{df_type}_x_freq_{frequency:.2e}.png",
+            dpi=1000,
+            bbox_inches="tight",
         )
         plt.close(_fig)
 
     @staticmethod
     def reduce_periods(df, period: float):
-        df["time"] %= period
-        df = df.sort_values(by="time").reset_index(drop=True)
+        df["t"] %= period
+        df = df.sort_values(by="t").reset_index(drop=True)
 
         return df
 
@@ -196,8 +147,9 @@ class FindPhi:
         try:
             params, _ = optimize.curve_fit(
                 fitting_function,
-                sim_signal["time"],
+                sim_signal["t"],
                 sim_signal["y"],
+                bounds=[[0, -np.pi/2], [np.inf, 0]]
             )
         except Exception as e:
             print(e)
@@ -206,13 +158,13 @@ class FindPhi:
 
         fit_signal = pd.DataFrame(
             {
-                "time": np.linspace(
-                    sim_signal["time"].iloc[0],
-                    sim_signal["time"].iloc[-1],
-                    len(sim_signal["time"]),
+                "t": np.linspace(
+                    sim_signal["t"].iloc[0],
+                    sim_signal["t"].iloc[-1],
+                    len(sim_signal["t"]),
                 )
             }
         )
-        fit_signal["y"] = fitting_function(fit_signal["time"], *params)
+        fit_signal["y"] = fitting_function(fit_signal["t"], *params)
 
         return params, fit_signal
