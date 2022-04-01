@@ -8,6 +8,9 @@ from scipy import optimize
 
 from KMC.Config import Config
 
+# elementary charge
+e = 1.602176634e-19
+
 
 class Functions:
     def __init__(self, freq):
@@ -79,7 +82,7 @@ class FindPhi:
                 "temperature_scale": config.temperature_scale,
                 "frequency": config.frequency,
                 "u0": np.mean(data["u"]),
-                "i0": np.mean(data["i"]),
+                "i0": None,
                 "params": None,
             }
 
@@ -95,7 +98,7 @@ class FindPhi:
             "temperature_scale": config.temperature_scale,
             "frequency": config.frequency,
             "u0": np.mean(data["u"]),
-            "i0": np.mean(data["i"]),
+            "i0": 2*e*params[0]/1e-12,
             "params": params,
         }
 

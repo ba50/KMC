@@ -31,9 +31,6 @@ def nyquist_plot(args):
 
     plot_data = pd.DataFrame(plot_data)
 
-    # because of electrons have a negative charge
-    plot_data["phi_rad_mean"] = np.abs(plot_data["phi_rad_mean"])
-
     # Delta phi
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(111)
@@ -65,12 +62,12 @@ def nyquist_plot(args):
     # Nyqiust plot
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(111)
-    ax.plot(plot_data["Re"], plot_data["Im"], "o--")
-    ax.set_xlabel("Re [Ω]")
-    ax.set_ylabel("Im [Ω]")
+    ax.plot(plot_data["Re"], -plot_data["Im"], "o--")
+    ax.set_xlabel("Z' [Ω]")
+    ax.set_ylabel("-Z'' [Ω]")
 
     for _, row in plot_data.iterrows():
-        ax.text(row["Re"], row["Im"]+0.5, f"{row['frequency']:.2e}")
+        ax.text(row["Re"], -row["Im"]+0.5, f"{row['frequency']:.2e}")
 
     plt.savefig(
         args.delta_phi.parent

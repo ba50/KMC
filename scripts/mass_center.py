@@ -46,8 +46,7 @@ def mass_center(args):
         mass_center_df["dx"] = mass_center_df["x"].diff()
         mass_center_df["dt"] = mass_center_df["t"].diff()
         mass_center_df["vel"] = mass_center_df["dx"] / mass_center_df["dt"]
-        mass_center_df["i"] = (-2 * e * n_atoms) / (mass_center_df["dt"] * 10e-12)
-        mass_center_df["u"] = np.max(mass_center_df["dE"]) / (-2 * n_atoms)
+        mass_center_df["u"] = np.max(mass_center_df["dE"]) / 2
 
         plot_line(
             sim_path
