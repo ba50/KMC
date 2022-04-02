@@ -18,8 +18,8 @@ def main(args):
     save_path.mkdir(parents=True)
 
     freq_list = []
-    for i in range(args.low_freq, args.high_freq):
-        test = np.logspace(i, i + 1, num=args.num_per_decade, endpoint=False)
+    for index, i in enumerate(range(args.low_freq, args.high_freq)):
+        test = np.logspace(i, i + 1, num=args.num_per_decade[index], endpoint=False)
         freq_list.extend(test)
     freq_list.append(pow(10, args.high_freq))
 
@@ -34,7 +34,7 @@ def main(args):
     simulations["contact_right"] = args.contact_right
     simulations["energy_base"] = args.energy_base
     simulations["periods"] = simulations["frequency"].map(
-        lambda freq: freq / freq_list[0] * args.base_periods
+        lambda x: x / freq_list[0] * args.base_periods
     )
 
     amp_tmp = []
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     parser.add_argument("--low-freq", type=int, help="low freq, pow of 10", default=5)
     parser.add_argument("--high-freq", type=int, help="high freq, pow of 10", default=8)
     parser.add_argument(
-        "--num-per-decade", type=int, help="number of point per decade", default=5
+        "--num-per-decade", type=int, nargs="+", help="list of number of point per decade", required=True
     )
     parser.add_argument(
         "--cell-type", choices=["random", "sphere", "plane"], default="random"
