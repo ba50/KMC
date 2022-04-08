@@ -10,7 +10,7 @@ def plot_line(
     y_label,
     x_size=8,
     y_size=6,
-    dpi=100,
+    dpi=250,
 ):
     _fig = plt.figure(figsize=(x_size, y_size))
     _ax = _fig.add_subplot(111)

@@ -142,7 +142,11 @@ if __name__ == "__main__":
     parser.add_argument("--low-freq", type=int, help="low freq, pow of 10", default=5)
     parser.add_argument("--high-freq", type=int, help="high freq, pow of 10", default=8)
     parser.add_argument(
-        "--num-per-decade", type=int, nargs="+", help="list of number of point per decade", required=True
+        "--num-per-decade",
+        type=int,
+        nargs="+",
+        help="list of number of point per decade",
+        required=True,
     )
     parser.add_argument(
         "--cell-type", choices=["random", "sphere", "plane"], default="random"

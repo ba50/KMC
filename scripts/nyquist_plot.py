@@ -47,7 +47,7 @@ def nyquist_plot(args):
     plt.savefig(
         args.delta_phi.parent
         / f"delta_phi_rad_vs_freq_{args.delta_phi.parent.name}_{args.suffix}.png",
-        dpi=1000,
+        dpi=250,
         bbox_inches="tight",
     )
     plt.close(fig)
@@ -67,12 +67,12 @@ def nyquist_plot(args):
     ax.set_ylabel("-Z'' [Ω]")
 
     for _, row in plot_data.iterrows():
-        ax.text(row["Re"], -row["Im"]+0.5, f"{row['frequency']:.2e}")
+        ax.text(row["Re"], -row["Im"] + 0.5, f"{row['frequency']:.2e}")
 
     plt.savefig(
         args.delta_phi.parent
         / f"nyquist_plot_{args.delta_phi.parent.name}_{args.suffix}.png",
-        dpi=1000,
+        dpi=250,
         bbox_inches="tight",
     )
     plt.close(fig)
