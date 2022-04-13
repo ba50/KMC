@@ -118,7 +118,7 @@ def main(args):
     if args.cell_type == "random":
         structure.generate_random()
     elif args.cell_type == "sphere":
-        structure.generate_sphere(11)
+        structure.generate_sphere(3)
     elif args.cell_type == "plane":
         structure.generate_plane(3)
     else:

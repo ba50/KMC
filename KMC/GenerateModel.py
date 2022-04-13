@@ -67,7 +67,7 @@ class GenerateModel:
                 index[2] * self.cell_size + self.cell_size * 0.5,
             )
 
-            if random.uniform(0, 1) > 0.75:
+            if random.uniform(0, 1) < 0.75:
                 self.positions["O"].append(position)
                 self.O += 1
 
@@ -101,7 +101,7 @@ class GenerateModel:
                 self.Y += 1
 
         for index in np.ndindex(self.anions.shape):
-            if random.uniform(0, 1) > 0.75:
+            if random.uniform(0, 1) < 0.75:
                 self.anions[index] = 1
 
         for index, atom in np.ndenumerate(self.anions):
@@ -114,7 +114,7 @@ class GenerateModel:
                 self.positions["O"].append(position)
                 self.O += 1
 
-    def generate_plane(self, thickness):
+    def generate_plane(self, distance):
         center = np.floor(np.array(self.kations.shape) * self.cell_size / 3)
 
         to_change = True
@@ -125,7 +125,7 @@ class GenerateModel:
                 index[2] * self.cell_size,
             )
             if to_change:
-                if not position[0] % 10 == 0:
+                if not position[0] % distance == 0:
                     self.positions["Bi"].append(position)
                     self.Bi += 1
                 else:
@@ -142,7 +142,7 @@ class GenerateModel:
                 index[2] * self.cell_size + self.cell_size * 0.5,
             )
 
-            if random.uniform(0, 1) > 0.75:
+            if random.uniform(0, 1) < 0.75:
                 self.positions["O"].append(position)
                 self.O += 1
 
