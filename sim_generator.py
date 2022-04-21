@@ -120,7 +120,7 @@ def main(args):
     elif args.cell_type == "sphere":
         structure.generate_sphere(3)
     elif args.cell_type == "plane":
-        structure.generate_plane(3)
+        structure.generate_plane(5)
     else:
         print("wrong cell type")
 
@@ -154,9 +154,9 @@ if __name__ == "__main__":
     parser.add_argument("--model-size", type=int, nargs="+", default=[5, 3, 3])
     parser.add_argument("--thermalization-time", type=int, default=200)
     parser.add_argument(
-        "--window-points", type=int, help="points in window", default=512
+        "--window-points", type=int, help="points in window", default=256
     )
-    parser.add_argument("--window-epsilon", type=float, default=4.0)
+    parser.add_argument("--window-epsilon", type=float, default=16.0)
     parser.add_argument(
         "--contact-switch-left", type=int, default=0, help="0-off, 2-on"
     )
