@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -8,6 +9,8 @@ from tqdm import tqdm
 
 from KMC.Config import Config
 from KMC.GenerateModel import GenerateModel
+
+matplotlib.use("Agg")
 
 
 def density_dist(args):
@@ -53,7 +56,8 @@ def density_dist(args):
             ions_density /= num_atoms
             ions_density = pd.DataFrame({"mean": ions_density})
 
-            ions_density = ions_density.rolling(args.smooth).mean()
+            if args.smooth:
+                ions_density = ions_density.rolling(args.smooth).mean()
 
             ions_dd.append(ions_density)
 
@@ -61,7 +65,7 @@ def density_dist(args):
         for time_index, chunk in enumerate(ions_dd):
             last_points.append(chunk.iloc[-2])
 
-            if args.x_mean_plots:
+            if args.x_mean_plots and time_index < 25:
                 plt.figure()
                 plt.plot(chunk)
                 plt.xlabel("x")
@@ -74,13 +78,27 @@ def density_dist(args):
                 )
                 plt.close()
 
+        ions_dd = np.array(ions_dd)
+
+        plt.figure()
+        plt.plot(ions_dd.mean(axis=0))
+        plt.xlabel("x [au]")
+        plt.ylabel("Ions density [au]")
+        plt.savefig(
+            sim_path
+            / "ions_density_distribution"
+            / f"ions_dd_mean_freq_{conf.frequency:.2e}.png"
+        )
+        plt.close()
+
         field_data["last_points"] = last_points
         field_data.to_csv(
             sim_path / "ions_density_distribution" / "time_vs_ion_dd_last_points.csv",
             index=False,
         )
 
-        field_data["last_points"] = field_data["last_points"].rolling(args.smooth).sum()
+        if args.smooth:
+            field_data["last_points"] = field_data["last_points"].rolling(args.smooth).sum()
 
         plt.figure()
         plt.plot(field_data["time"], field_data["last_points"])
@@ -112,7 +130,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--data-path", type=Path, required=True, help="path to simulation data"
     )
-    parser.add_argument("--smooth", type=int, default=8, help="smoothing factor")
+    parser.add_argument("--smooth", type=int, default=None, help="smoothing factor")
     parser.add_argument("--x-mean-plots", action="store_true")
     main_args = parser.parse_args()
 
