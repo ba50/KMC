@@ -16,8 +16,6 @@ def nyquist_plot(args):
         "frequency": [],
         "phi_rad_mean": [],
         "phi_rad_sem": [],
-        "u0": [],
-        "i0": [],
     }
 
     for freq, chunk in delta_phi_data.groupby("frequency"):
@@ -25,9 +23,6 @@ def nyquist_plot(args):
 
         plot_data["phi_rad_mean"].append(chunk["phi_rad"].mean())
         plot_data["phi_rad_sem"].append(chunk["phi_rad"].std() / np.sqrt(len(chunk)))
-
-        plot_data["u0"].append(chunk["u0"].mean())
-        plot_data["i0"].append(chunk["i0"].mean())
 
     plot_data = pd.DataFrame(plot_data)
 
@@ -38,7 +33,7 @@ def nyquist_plot(args):
         plot_data["frequency"],
         plot_data["phi_rad_mean"],
         yerr=plot_data["phi_rad_sem"],
-        fmt="--o",
+        fmt=":",
     )
     ax.set_xlabel("Frequency [Hz]")
     ax.set_ylabel("delta phi [rad]")
@@ -52,22 +47,35 @@ def nyquist_plot(args):
     )
     plt.close(fig)
 
-    plot_data["Re"] = (plot_data["u0"] / plot_data["i0"]) * np.cos(
-        plot_data["phi_rad_mean"]
-    )
-    plot_data["Im"] = (plot_data["u0"] / plot_data["i0"]) * np.sin(
-        plot_data["phi_rad_mean"]
-    )
+    nq_plot = [[], []]
+
+    for version, chunk in delta_phi_data.groupby("version"):
+        nq_plot[0].append((chunk["u0"] / chunk["i0"]) * np.cos(chunk["phi_rad"]))
+        nq_plot[1].append((chunk["u0"] / chunk["i0"]) * np.sin(chunk["phi_rad"]))
+
+    nq_plot = np.array(nq_plot)
+    test = nq_plot[0]
+
+    plot_data["Re"] = nq_plot[0].mean(axis=0)
+    plot_data["Im"] = nq_plot[1].mean(axis=0)
+    plot_data["Re_sem"] = nq_plot[0].std(axis=0) / np.sqrt(nq_plot.shape[1])
+    plot_data["Im_sem"] = nq_plot[1].std(axis=0) / np.sqrt(nq_plot.shape[1])
 
     # Nyqiust plot
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(111)
-    ax.plot(plot_data["Re"], -plot_data["Im"], "o--")
+    ax.errorbar(
+        plot_data["Re"],
+        -plot_data["Im"],
+        xerr=plot_data["Re_sem"],
+        yerr=plot_data["Im_sem"],
+        fmt=" ",
+    )
     ax.set_xlabel("Z' [Ω]")
     ax.set_ylabel("-Z'' [Ω]")
 
     for _, row in plot_data.iterrows():
-        ax.text(row["Re"], -row["Im"] + 0.5, f"{row['frequency']:.2e}")
+        ax.text(row["Re"], -row["Im"] + 0.75, f"{row['frequency']:.2e}")
 
     plt.savefig(
         args.delta_phi.parent

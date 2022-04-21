@@ -152,7 +152,7 @@ class FindPhi:
                 fitting_function,
                 sim_signal["t"],
                 sim_signal["y"],
-                bounds=[[0, -np.pi / 2], [np.inf, 0]],
+                bounds=[[0, -2 * np.pi], [np.inf, 0]],
             )
         except Exception as e:
             print(e)

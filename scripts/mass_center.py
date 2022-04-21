@@ -46,7 +46,7 @@ def mass_center(args):
         mass_center_df["dx"] = mass_center_df["x"].diff()
         mass_center_df["dt"] = mass_center_df["t"].diff()
         mass_center_df["vel"] = mass_center_df["dx"] / mass_center_df["dt"]
-        mass_center_df["u"] = (config.amplitude*config.size["x"]*2) / 2
+        mass_center_df["u"] = (config.amplitude * config.size["x"] * 2) / 2
 
         plot_line(
             sim_path
