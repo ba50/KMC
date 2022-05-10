@@ -9,7 +9,7 @@ import pandas as pd
 matplotlib.use("Agg")
 
 
-def nyquist_plot(args):
+def nyquist(args):
     delta_phi_data = pd.read_csv(args.delta_phi)
 
     plot_data = {
@@ -54,7 +54,6 @@ def nyquist_plot(args):
         nq_plot[1].append((chunk["u0"] / chunk["i0"]) * np.sin(chunk["phi_rad"]))
 
     nq_plot = np.array(nq_plot)
-    test = nq_plot[0]
 
     plot_data["Re"] = nq_plot[0].mean(axis=0)
     plot_data["Im"] = nq_plot[1].mean(axis=0)
@@ -69,7 +68,7 @@ def nyquist_plot(args):
         -plot_data["Im"],
         xerr=plot_data["Re_sem"],
         yerr=plot_data["Im_sem"],
-        fmt=" ",
+        fmt=":",
     )
     ax.set_xlabel("Z' [Ω]")
     ax.set_ylabel("-Z'' [Ω]")
@@ -99,4 +98,4 @@ if __name__ == "__main__":
     parser.add_argument("--suffix", type=str, required=True)
     main_args = parser.parse_args()
 
-    nyquist_plot(main_args)
+    nyquist(main_args)

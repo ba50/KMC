@@ -3,7 +3,7 @@ from pathlib import Path
 
 from scripts.fit_function import fit_function
 from scripts.mass_center import mass_center
-from scripts.nyquist_plot import nyquist_plot
+from scripts.nyquist import nyquist
 
 
 def main(args):
@@ -23,7 +23,7 @@ def main(args):
             workers=args.workers,
             search=args.search,
         )
-        nyquist_plot_args = argparse.Namespace(
+        nyquist_args = argparse.Namespace(
             delta_phi=data_path
             / ("delta_phi_mass_center_vel_" + data_path.name + ".csv"),
             suffix="mass_center",
@@ -36,7 +36,7 @@ def main(args):
             fit_function(fit_sin_args)
 
         if args.nyquist_plot:
-            nyquist_plot(nyquist_plot_args)
+            nyquist(nyquist_args)
 
 
 if __name__ == "__main__":

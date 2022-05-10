@@ -4,6 +4,7 @@ __pycache__/
 Debug/
 x64/
 .DS_Store
+*.png
 
 inputs/
 Makefile

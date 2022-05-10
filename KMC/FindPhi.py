@@ -98,7 +98,7 @@ class FindPhi:
             "temperature_scale": config.temperature_scale,
             "frequency": config.frequency,
             "u0": np.mean(data["u"]),
-            "i0": 2 * e * params[0] / 1e-12,
+            "i0": abs(2 * e * params[0] / 1e-12),
             "params": params,
         }
 
@@ -152,7 +152,7 @@ class FindPhi:
                 fitting_function,
                 sim_signal["t"],
                 sim_signal["y"],
-                bounds=[[0, -2 * np.pi], [np.inf, 0]],
+                bounds=[[0, -np.pi], [np.inf, 0]],
             )
         except Exception as e:
             print(e)
