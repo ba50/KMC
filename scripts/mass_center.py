@@ -16,6 +16,15 @@ matplotlib.use("Agg")
 # elementary charge
 e = 1.602176634e-19
 
+# oxygen mass
+m_oxy = 15.9994 * 1.66053906661e-27
+
+# absolute permittivity
+eps_0 = 8.8541878128e-12
+
+# cell size
+a = 2.52e-10
+
 
 def mass_center(args):
     sim_path_list = args.data_path.glob(args.search)
@@ -41,11 +50,12 @@ def mass_center(args):
             mass_center_df["x"].append(mean_position["x"])
 
         mass_center_df = pd.DataFrame(mass_center_df)
-        mass_center_df["dE"] = field_data["delta_energy"]
+        mass_center_df["dE"] = field_data[field_data.columns[1:]].sum(axis=1)
         mass_center_df["dx"] = mass_center_df["x"].diff()
         mass_center_df["dt"] = mass_center_df["t"].diff()
         mass_center_df["vel"] = mass_center_df["dx"] / mass_center_df["dt"]
-        mass_center_df["u"] = (config.amplitude * config.size["x"] * 2) / 2
+        mass_center_df["u"] = (n_atoms * m_oxy * pow(mass_center_df["vel"], 2)) / (2 * 2 * n_atoms * e)
+        mass_center_df["i"] = pow(2*a, 2)*config.size['y']*config.size['z'] * mass_center_df["vel"] * n_atoms * e
 
         plot_line(
             sim_path

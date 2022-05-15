@@ -61,7 +61,6 @@ public:
 		oxygen_array_size_[1] = 2 * cells[1] + 2;
 		oxygen_array_size_[2] = 2 * cells[2] + 2;
 
-
 		oxygen_array_ = new double**[oxygen_array_size_[2]];
 		for (size_t z = 0; z < oxygen_array_size_[2]; z++)
 			oxygen_array_[z] = new double*[oxygen_array_size_[1]];
@@ -134,7 +133,7 @@ public:
 					}
 				}
 				if (sort_map.first == Type::Y) {
-					for (auto position : sort_map.second) {
+					for (auto &position : sort_map.second) {
 						temp_position = position.GetPosition();
 						temp_site[0] = static_cast<size_t>(floor(temp_position[0]/CELL_SIZE));
 						temp_site[1] = static_cast<size_t>(floor(temp_position[1]/CELL_SIZE));
@@ -265,7 +264,7 @@ public:
 		long double time_end,
 		const long double window,
 		const long double window_epsilon,
-		const double A,
+		const double Amp,
 		const double frequency,
 		const double period,
 		const double delta_energy_base
@@ -285,7 +284,7 @@ public:
 			time_end,
 			window,
 			window_epsilon,
-			A,
+			Amp,
 			frequency,
 			delta_energy_base
 		);
@@ -382,7 +381,7 @@ public:
 		long double time_end,
 		const long double window,
 		const long double window_epsilon,
-		const double A,
+		const double Amp,
 		const double frequency,
 		const double delta_energy_base
 	) {
@@ -417,12 +416,15 @@ public:
 		std::ofstream f_out_oxygen_map_inf(data_path + "/simulation_frames_inf.xyz");
 		std::ofstream field_plot(data_path + "/field_data.csv"); 
 
-		field_plot << "time,delta_energy\n";
+		field_plot << "time,";
+		for (size_t x = 1; x < oxygen_array_size_[0] - 1; x++)
+			field_plot << "delta_energy_" << x << ",";
+		field_plot << "\n";
 
 		while(time < time_end){
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
 
-			delta_energy = A * sin(2 * PI * frequency * pow(10.0, -12) * time) + delta_energy_base;
+			delta_energy = Amp * sin(2 * PI * frequency * pow(10.0, -12) * time) + delta_energy_base;
 
 			for (id = 0; id < jump_rate_vector_.size(); id++) {
 				jump_rate_vector_[id][0] = jump_rate(id, 0, 0, 1, oxygen_array_, oxygen_positions_, residence_time_array_) * exp(delta_energy / kT);
@@ -501,7 +503,10 @@ public:
 											<< oxygen_positions_inf_[x][2] << "\n";
 				}
 
-				field_plot << time << "," << delta_energy << "\n";
+				field_plot << time << ",";
+				for (size_t x = 1; x < oxygen_array_size_[0] - 1; x++)
+					field_plot << x * delta_energy << ",";
+				field_plot << "\n";
 				record_delta = 0.0;
 			}
 			

@@ -98,7 +98,9 @@ def density_dist(args):
         )
 
         if args.smooth:
-            field_data["last_points"] = field_data["last_points"].rolling(args.smooth).sum()
+            field_data["last_points"] = (
+                field_data["last_points"].rolling(args.smooth).sum()
+            )
 
         plt.figure()
         plt.plot(field_data["time"], field_data["last_points"])
