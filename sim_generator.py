@@ -26,13 +26,13 @@ def main(args):
     simulations = pd.DataFrame({"frequency": freq_list})
 
     simulations["cell_type"] = args.cell_type
-    simulations["thermalization_time"] = args.thermalization_time
+    simulations["thermal"] = args.thermal
     simulations["window_epsilon"] = args.window_epsilon
     simulations["contact_switch_left"] = args.contact_switch_left
     simulations["contact_switch_right"] = args.contact_switch_right
     simulations["contact_left"] = args.contact_left
     simulations["contact_right"] = args.contact_right
-    simulations["energy_base"] = args.energy_base
+    simulations["static_potential"] = args.static_potential
     simulations["periods"] = simulations["frequency"].map(
         lambda x: x / freq_list[0] * args.base_periods
     )
@@ -152,7 +152,7 @@ if __name__ == "__main__":
         "--cell-type", choices=["random", "sphere", "plane"], default="random"
     )
     parser.add_argument("--model-size", type=int, nargs="+", default=[5, 3, 3])
-    parser.add_argument("--thermalization-time", type=int, default=200)
+    parser.add_argument("--thermal", type=int, default=200)
     parser.add_argument(
         "--window-points", type=int, help="points in window", default=256
     )
@@ -166,7 +166,7 @@ if __name__ == "__main__":
     parser.add_argument("--contact-left", type=float, default=1.0)
     parser.add_argument("--contact-right", type=float, default=1.0)
     parser.add_argument("--amplitudes", type=float, nargs="+", default=[0.0])
-    parser.add_argument("--energy-base", type=float, default=0.0)
+    parser.add_argument("--static-potential", type=float, default=0.0)
     parser.add_argument("--temperature-scale", type=float, nargs="+", default=[1.0])
     parser.add_argument("--versions", type=int, default=1)
     main_args = parser.parse_args()

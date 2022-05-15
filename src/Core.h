@@ -265,10 +265,10 @@ public:
 		long double time_end,
 		const long double window,
 		const long double window_epsilon,
-		const double A,
+		const double Amp,
 		const double frequency,
 		const double period,
-		const double delta_energy_base
+		const double static_potential
 	){
 		if( remove(std::string(data_path + "time.log").c_str()) != 0 )
 			std::cout<<"Error deleting file: time.log"<<std::endl;
@@ -285,9 +285,9 @@ public:
 			time_end,
 			window,
 			window_epsilon,
-			A,
+			Amp,
 			frequency,
-			delta_energy_base
+			static_potential
 		);
 		std::cout << data_path << ": Core exit.\n";
 		auto end_timer = std::chrono::system_clock::now();
@@ -382,9 +382,9 @@ public:
 		long double time_end,
 		const long double window,
 		const long double window_epsilon,
-		const double A,
+		const double Amp,
 		const double frequency,
-		const double delta_energy_base
+		const double static_potential
 	) {
 		const double PI = 3.141592653589793238463;
 		const double kT{(800.0 * temperature_scale + 273.15) * 8.6173304e-5};
@@ -422,7 +422,9 @@ public:
 		while(time < time_end){
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
 
-			delta_energy = A * sin(2 * PI * frequency * pow(10.0, -12) * time) + delta_energy_base;
+			v_apply = Amp * sin(2 * PI * frequency * pow(10.0, -12) * time) + static_potential;
+
+			v_total = v_elec + v_sc
 
 			for (id = 0; id < jump_rate_vector_.size(); id++) {
 				jump_rate_vector_[id][0] = jump_rate(id, 0, 0, 1, oxygen_array_, oxygen_positions_, residence_time_array_) * exp(delta_energy / kT);

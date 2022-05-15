@@ -116,10 +116,10 @@ int main(int argc, char *argv[]) {
 			std::cerr << "Invalid number " << input_vector[12] << '\n';
 	}
 
-	double A = std::atof(input_vector[13].c_str());
+	double Amp = std::atof(input_vector[13].c_str());
 	double frequency = std::atof(input_vector[14].c_str());
 	double period = std::atof(input_vector[15].c_str());
-	double delta_energy_base = std::atof(input_vector[16].c_str());
+	double static_potential = std::atof(input_vector[16].c_str());
 	double temperature_scale = std::atof(input_vector[17].c_str());
 
 	Load::XYZ(types, positions, data_path);
@@ -132,9 +132,9 @@ int main(int argc, char *argv[]) {
 		time_end,
 		window,
 		window_epsilon,
-		A,
+		Amp,
 		frequency,
 		period,
-		delta_energy_base
+		static_potential
 	);
 }
