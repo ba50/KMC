@@ -34,6 +34,11 @@ class Core {
 	const double temperature_scale;
 	const std::string data_path;
 
+	std::vector<double> v_total;
+	std::vector<double> v_elec;
+	std::vector<double> v_sc;
+	std::vector<double> e_field;
+
 public:
 	long double steps;
 
@@ -228,6 +233,11 @@ public:
 		for (size_t i = 0; i < direction_vector.size()+1; i++) 
 			jumpe_direction_sume_vector_.push_back(0.0);
 
+		v_total = std::vector<double>(cells[0], 0);
+		v_elec = std::vector<double>(cells[0], 0);
+		v_sc = std::vector<double>(cells[0], 0);
+		e_field = std::vector<double>(cells[0], 0);
+
 	}
 
 	~Core() {
@@ -388,6 +398,10 @@ public:
 	) {
 		const double PI = 3.141592653589793238463;
 		const double kT{(800.0 * temperature_scale + 273.15) * 8.6173304e-5};
+		const double alpha{0.5};
+		const double e{1.602176634e-19};
+		const double q = -2 * e;
+
 		double random_for_atom, random_for_direction;
 		double random_for_time;
 
@@ -396,7 +410,7 @@ public:
 
 		size_t id, i;
 		long double time{ time_start }, record_delta{ 0.0 }, d_t{ 0.0 };
-		double delta_energy{ 0.0 };
+		double v_apply{ 0.0 };
 
 		if( remove(std::string(data_path + "/field_data.csv").c_str()) != 0 )
 			std::cout<<"Error deleting file: field_data.csv"<<std::endl;
@@ -424,11 +438,20 @@ public:
 
 			v_apply = Amp * sin(2 * PI * frequency * pow(10.0, -12) * time) + static_potential;
 
-			v_total = v_elec + v_sc
+			for (i = 0; i < e_field.size(); ++i) {
+				oxygen_array_
+			}
+
+			v_total.back() = -v_apply;
+			v_elec.back() = v_total.back() - v_sc.back();
+
+			for (i = 1; i < v_total.size() - 1; ++i)
+				v_elec[i] = i * v_elec.back() / v_total.size();
+				v_total[i] = v_elec[i] + v_sc[i];
 
 			for (id = 0; id < jump_rate_vector_.size(); id++) {
-				jump_rate_vector_[id][0] = jump_rate(id, 0, 0, 1, oxygen_array_, oxygen_positions_, residence_time_array_) * exp(delta_energy / kT);
-				jump_rate_vector_[id][1] = jump_rate(id, 0, 0, -1, oxygen_array_, oxygen_positions_, residence_time_array_) * exp(-delta_energy / kT);
+				jump_rate_vector_[id][0] = jump_rate(id, 0, 0, 1, oxygen_array_, oxygen_positions_, residence_time_array_) * exp(alpha * q * v_total[oxygen_positions_[id][0]] / kT);
+				jump_rate_vector_[id][1] = jump_rate(id, 0, 0, -1, oxygen_array_, oxygen_positions_, residence_time_array_) * exp(-alpha * q * v_total[oxygen_positions_[id][0]] / kT);
 				jump_rate_vector_[id][2] = jump_rate(id, 0, 1, 0, oxygen_array_, oxygen_positions_, residence_time_array_);
 				jump_rate_vector_[id][3] = jump_rate(id, 0, -1, 0, oxygen_array_, oxygen_positions_, residence_time_array_);
 				jump_rate_vector_[id][4] = jump_rate(id, 1, 0, 0, oxygen_array_, oxygen_positions_, residence_time_array_);
@@ -503,7 +526,7 @@ public:
 											<< oxygen_positions_inf_[x][2] << "\n";
 				}
 
-				field_plot << time << "," << delta_energy << "\n";
+				field_plot << time << "," << v_apply << "\n";
 				record_delta = 0.0;
 			}
 			
