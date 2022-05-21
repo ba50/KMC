@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <fstream>
 #include <cmath>
+#include <numeric>
 
 #include "Configuration.h"
 
@@ -82,7 +83,7 @@ public:
 		{
 			std::vector<double> temp_position(3);
 			std::vector<int> temp_site(3);
-			for (auto sort_map : configuration.GetSortMap()) {
+			for (auto& sort_map : configuration.GetSortMap()) {
 				if (sort_map.first == Type::O) {
 					for (auto &position : sort_map.second) {
 						temp_position = position.GetPosition();
@@ -128,7 +129,7 @@ public:
 		{
 			std::vector<double> temp_position(3);
 			std::vector<size_t> temp_site(3);
-			for (auto sort_map : configuration.GetSortMap()) {
+			for (auto& sort_map : configuration.GetSortMap()) {
 				if (sort_map.first == Type::Bi) {
 					for (auto &position : sort_map.second) {
 						temp_position = position.GetPosition();
@@ -139,7 +140,7 @@ public:
 					}
 				}
 				if (sort_map.first == Type::Y) {
-					for (auto position : sort_map.second) {
+					for (auto& position : sort_map.second) {
 						temp_position = position.GetPosition();
 						temp_site[0] = static_cast<size_t>(floor(temp_position[0]/CELL_SIZE));
 						temp_site[1] = static_cast<size_t>(floor(temp_position[1]/CELL_SIZE));
@@ -233,10 +234,10 @@ public:
 		for (size_t i = 0; i < direction_vector.size()+1; i++) 
 			jumpe_direction_sume_vector_.push_back(0.0);
 
-		v_total = std::vector<double>(cells[0], 0);
-		v_elec = std::vector<double>(cells[0], 0);
-		v_sc = std::vector<double>(cells[0], 0);
-		e_field = std::vector<double>(cells[0], 0);
+		v_total = std::vector<double>(2*cells[0] + 1, 0);
+		v_elec = std::vector<double>(2*cells[0], 0);
+		v_sc = std::vector<double>(2*cells[0], 0);
+		e_field = std::vector<double>(2*cells[0], 0);
 
 	}
 
@@ -396,11 +397,14 @@ public:
 		const double frequency,
 		const double static_potential
 	) {
+		const double a = 5.559e-10; // at 1077K in [m]
+		const double epsil_0 = 8.8541878128e-12;
+		const double epsil_r = 40;
 		const double PI = 3.141592653589793238463;
 		const double kT{(800.0 * temperature_scale + 273.15) * 8.6173304e-5};
-		const double alpha{0.5};
+		const double alpha{1e17};
 		const double e{1.602176634e-19};
-		const double q = -2 * e;
+		const double q = 2 * e;
 
 		double random_for_atom, random_for_direction;
 		double random_for_time;
@@ -408,14 +412,34 @@ public:
 		std::vector<double>::iterator selected_atom_temp, selected_direction_temp;
 		size_t selected_atom, seleced_direction;
 
-		size_t id, i;
+		size_t id, i, y, z;
 		long double time{ time_start }, record_delta{ 0.0 }, d_t{ 0.0 };
-		double v_apply{ 0.0 };
+		double v_apply{ 0.0 }, v_shift{ 0.0 }, E_g_sum{ 0.0}, E_h_sum{ 0.0 };
 
-		if( remove(std::string(data_path + "/field_data.csv").c_str()) != 0 )
-			std::cout<<"Error deleting file: field_data.csv"<<std::endl;
+		if( remove(std::string(data_path + "/potentials.csv").c_str()) != 0 )
+			std::cout<<"Error deleting file: potentials.csv"<<std::endl;
 		else
-			std::cout<< "File field_data.csv successfully deleted"<<std::endl;
+			std::cout<< "File potentials.csv successfully deleted"<<std::endl;
+
+		if( remove(std::string(data_path + "/v_total.csv").c_str()) != 0 )
+			std::cout<<"Error deleting file: v_total.csv"<<std::endl;
+		else
+			std::cout<< "File v_total.csv successfully deleted"<<std::endl;
+
+		if( remove(std::string(data_path + "/v_elec.csv").c_str()) != 0 )
+			std::cout<<"Error deleting file: v_elec.csv"<<std::endl;
+		else
+			std::cout<< "File v_elec.csv successfully deleted"<<std::endl;
+
+		if( remove(std::string(data_path + "/v_sc.csv").c_str()) != 0 )
+			std::cout<<"Error deleting file: v_sc.csv"<<std::endl;
+		else
+			std::cout<< "File v_sc.csv successfully deleted"<<std::endl;
+
+		if( remove(std::string(data_path + "/e_field.csv").c_str()) != 0 )
+			std::cout<<"Error deleting file: e_field.csv"<<std::endl;
+		else
+			std::cout<< "File e_field.csv successfully deleted"<<std::endl;
 
 		if( remove(std::string(data_path + "/simulation_frames.xyz").c_str()) != 0 )
 			std::cout<<"Error deleting file: simulation_frames.xyz"<<std::endl;
@@ -429,29 +453,58 @@ public:
 
 		std::ofstream f_out_oxygen_map(data_path + "/simulation_frames.xyz");
 		std::ofstream f_out_oxygen_map_inf(data_path + "/simulation_frames_inf.xyz");
-		std::ofstream field_plot(data_path + "/field_data.csv"); 
+		std::ofstream potentials(data_path + "/potentials.csv"); 
+		potentials << "time,v_total,v_elec,v_sc\n";
 
-		field_plot << "time,delta_energy\n";
+		std::ofstream v_total_fout(data_path + "/v_total.csv"); 
+		std::ofstream v_elec_fout(data_path + "/v_elec.csv"); 
+		std::ofstream v_sc_fout(data_path + "/v_sc.csv"); 
+		std::ofstream e_field_fout(data_path + "/e_field.csv"); 
 
 		while(time < time_end){
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
 
-			v_apply = Amp * sin(2 * PI * frequency * pow(10.0, -12) * time) + static_potential;
+			v_apply = Amp * cos(2 * PI * frequency * pow(10.0, -12) * time) + static_potential;
 
 			for (i = 0; i < e_field.size(); ++i) {
-				oxygen_array_
+				// Get Q
+				e_field[i] = 0.0;
+				for (z = 1; z < oxygen_array_size_[2] - 1; z++) {
+					for (y = 1; y < oxygen_array_size_[1] - 1; y++) {
+						e_field[i] += oxygen_array_[z][y][i];
+					}
+				}
+				e_field[i] *= q;
+
+				// Get rho
+				e_field[i] /= (oxygen_array_size_[1] - 2) * (oxygen_array_size_[2] - 2) * pow(a, 2) / 4;
+
+				// Get E
+				e_field[i] /= 2 * epsil_0 * epsil_r;
+			}
+
+			for (i = 1; i < v_sc.size(); ++i) {
+				E_g_sum = std::accumulate(e_field.begin(), std::next(e_field.begin(), i - 1), 0.0);
+				E_h_sum = std::accumulate(std::next(e_field.begin(), i), e_field.end(), 0.0);
+				v_sc[i] = 0.0;
+				v_sc[i] = v_sc[i - 1] + (-a / 2) * (E_g_sum - E_h_sum);
 			}
 
 			v_total.back() = -v_apply;
 			v_elec.back() = v_total.back() - v_sc.back();
 
-			for (i = 1; i < v_total.size() - 1; ++i)
-				v_elec[i] = i * v_elec.back() / v_total.size();
+			for (i = 1; i < v_total.size() - 1; ++i) {
+				v_elec[i] = i * v_elec.back() / v_elec.size();
 				v_total[i] = v_elec[i] + v_sc[i];
+			}
 
 			for (id = 0; id < jump_rate_vector_.size(); id++) {
-				jump_rate_vector_[id][0] = jump_rate(id, 0, 0, 1, oxygen_array_, oxygen_positions_, residence_time_array_) * exp(alpha * q * v_total[oxygen_positions_[id][0]] / kT);
-				jump_rate_vector_[id][1] = jump_rate(id, 0, 0, -1, oxygen_array_, oxygen_positions_, residence_time_array_) * exp(-alpha * q * v_total[oxygen_positions_[id][0]] / kT);
+				v_shift = v_total[oxygen_positions_[id][0]] - v_total[oxygen_positions_[id][0] - 1];
+				jump_rate_vector_[id][0] = jump_rate(id, 0, 0, 1, oxygen_array_, oxygen_positions_, residence_time_array_) * exp(alpha * q * v_shift / kT);
+
+				v_shift = v_total[oxygen_positions_[id][0] - 1] - v_total[oxygen_positions_[id][0]];
+				jump_rate_vector_[id][1] = jump_rate(id, 0, 0, -1, oxygen_array_, oxygen_positions_, residence_time_array_) * exp(alpha * q * v_shift / kT);
+
 				jump_rate_vector_[id][2] = jump_rate(id, 0, 1, 0, oxygen_array_, oxygen_positions_, residence_time_array_);
 				jump_rate_vector_[id][3] = jump_rate(id, 0, -1, 0, oxygen_array_, oxygen_positions_, residence_time_array_);
 				jump_rate_vector_[id][4] = jump_rate(id, 1, 0, 0, oxygen_array_, oxygen_positions_, residence_time_array_);
@@ -509,7 +562,7 @@ public:
 			///////////////////////////////////////////////////////////////////////////
 			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 0.0;
 
-			if (abs(record_delta - window) < window_epsilon) {
+			if (abs(record_delta - window) < window_epsilon || time == 0) {
 				std::cout << data_path <<": " << time << "/" << time_end << "[ps]" << std::endl;
 
 				f_out_oxygen_map << oxygen_positions_.size() << "\n\n";
@@ -526,7 +579,27 @@ public:
 											<< oxygen_positions_inf_[x][2] << "\n";
 				}
 
-				field_plot << time << "," << v_apply << "\n";
+				potentials << time << "," << v_total.back()  << "," << v_elec.back() << ", " << v_sc.back() << "\n";
+				for (i = 0; i < v_total.size(); i++) {
+					v_total_fout << v_total[i] << ",";
+				}
+				v_total_fout << "\n";
+
+				for (i = 0; i < v_elec.size(); i++) {
+					 v_elec_fout << v_elec[i] << ",";
+				}
+				v_elec_fout << "\n";
+
+				for (i = 0; i < v_sc.size(); i++) {
+					v_sc_fout << v_sc[i] << ",";
+				}
+				v_sc_fout << "\n";
+
+				for (i = 0; i < e_field.size(); i++) {
+					e_field_fout << e_field[i] << ",";
+				}
+				e_field_fout << "\n";
+
 				record_delta = 0.0;
 			}
 			
@@ -538,7 +611,7 @@ public:
 
 		f_out_oxygen_map.close();
 		f_out_oxygen_map_inf.close();
-		field_plot.close();
+		potentials.close();
 		std::cout << std::endl;
 	}
 

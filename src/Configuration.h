@@ -5,6 +5,7 @@
 
 #include "Position.h"
 
+// TODO: need to fix this, heh
 #define CELL_SIZE 1.0
 
 class Configuration

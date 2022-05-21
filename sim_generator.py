@@ -26,8 +26,7 @@ def main(args):
     simulations = pd.DataFrame({"frequency": freq_list})
 
     simulations["cell_type"] = args.cell_type
-    simulations["thermal"] = args.thermal
-    simulations["window_epsilon"] = args.window_epsilon
+    simulations["thermalization_time"] = args.thermal
     simulations["contact_switch_left"] = args.contact_switch_left
     simulations["contact_switch_right"] = args.contact_switch_right
     simulations["contact_left"] = args.contact_left
@@ -56,9 +55,11 @@ def main(args):
         time_end.append(total_time)
     simulations["time_end"] = time_end
 
-    simulations["window"] = simulations[["periods", "frequency"]].apply(
-        lambda x: (x[0] / (x[1] * 10.0 ** -12)) / args.window_points, axis=1
-    )
+    simulations["window"] = simulations["frequency"].map(lambda x: 1e12 / (x * args.window_points))
+    if args.window_epsilon is None:
+        simulations["window_epsilon"] = simulations["window"] * 0.25
+    else:
+        simulations["window_epsilon"] = args.window_epsilon
 
     freq_list = simulations["frequency"]
     simulations = simulations.loc[
@@ -154,9 +155,9 @@ if __name__ == "__main__":
     parser.add_argument("--model-size", type=int, nargs="+", default=[5, 3, 3])
     parser.add_argument("--thermal", type=int, default=200)
     parser.add_argument(
-        "--window-points", type=int, help="points in window", default=256
+        "--window-points", type=int, help="points in window", default=128
     )
-    parser.add_argument("--window-epsilon", type=float, default=16.0)
+    parser.add_argument("--window-epsilon", type=float, default=None)
     parser.add_argument(
         "--contact-switch-left", type=int, default=0, help="0-off, 2-on"
     )

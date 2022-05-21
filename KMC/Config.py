@@ -9,7 +9,7 @@ class Config:
             "y": inputs["size_y"],
             "z": inputs["size_z"],
         }
-        self.thermal = inputs["thermal"]
+        self.thermal = inputs["thermalization_time"]
         self.time_start = inputs["time_start"]
         self.time_end = inputs["time_end"]
         self.window = inputs["window"]

@@ -24,7 +24,7 @@ def mass_center(args):
     for sim_path in tqdm(sim_path_list):
         config = Config.load(sim_path / "input.kmc")
         sim_frames_path = sim_path / "simulation_frames_inf.xyz"
-        field_data = pd.read_csv(sim_path / "field_data.csv")
+        field_data = pd.read_csv(sim_path / "potentials.csv")
         mass_center_path = sim_path / "mass_center"
 
         mass_center_path.mkdir(parents=True, exist_ok=True)
@@ -41,7 +41,7 @@ def mass_center(args):
             mass_center_df["x"].append(mean_position["x"])
 
         mass_center_df = pd.DataFrame(mass_center_df)
-        mass_center_df["dE"] = field_data["delta_energy"]
+        mass_center_df["dE"] = field_data["v_total"]
         mass_center_df["dx"] = mass_center_df["x"].diff()
         mass_center_df["dt"] = mass_center_df["t"].diff()
         mass_center_df["vel"] = mass_center_df["dx"] / mass_center_df["dt"]
