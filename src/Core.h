@@ -401,7 +401,7 @@ public:
 		const double epsil_0 = 8.8541878128e-12;
 		const double epsil_r = 40;
 		const double PI = 3.141592653589793238463;
-		const double kT{(800.0 * temperature_scale + 273.15) * 8.6173304e-5};
+		const double kT{(800.0 * temperature_scale + 273.15) * 8.617333262e-5};
 		const double alpha{1e17};
 		const double e{1.602176634e-19};
 		const double q = 2 * e;
@@ -464,7 +464,7 @@ public:
 		while(time < time_end){
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
 
-			v_apply = Amp * cos(2 * PI * frequency * pow(10.0, -12) * time) + static_potential;
+			v_apply = Amp * sin(2 * PI * frequency * pow(10.0, -12) * time) + static_potential;
 
 			for (i = 0; i < e_field.size(); ++i) {
 				// Get Q
