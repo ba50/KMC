@@ -112,20 +112,20 @@ class FindPhi:
             fit_signal["y"],
             color="r",
             linestyle="--",
-            label="Fitted func",
+            label="Dopasowana funkcja",
         )
         _ax2.plot(
             field_data["t"],
             field_data["dE"],
             linestyle="-",
             color="g",
-            label="Field",
+            label="Pole zew.",
         )
 
-        _ax1.set_xlabel("Time [ps]")
+        _ax1.set_xlabel("Czas [ps]")
         _ax1.xaxis.set_major_formatter(mtick.FormatStrFormatter("%.1e"))
-        _ax1.set_ylabel("Ions mass center velocity [au]", color="b")
-        _ax2.set_ylabel("Field [eV]", color="g")
+        _ax1.set_ylabel("Prędkość jonów [au]", color="b")
+        _ax2.set_ylabel("Pole [eV]", color="g")
 
         _ax1.legend(loc="upper left")
         _ax2.legend(loc="upper right")

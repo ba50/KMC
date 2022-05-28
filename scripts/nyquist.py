@@ -31,12 +31,12 @@ def nyquist(args):
     ax = fig.add_subplot(111)
     ax.errorbar(
         plot_data["frequency"],
-        plot_data["phi_rad_mean"],
+        np.abs(plot_data["phi_rad_mean"]),
         yerr=plot_data["phi_rad_sem"],
-        fmt=":",
+        fmt=":.",
     )
-    ax.set_xlabel("Frequency [Hz]")
-    ax.set_ylabel("delta phi [rad]")
+    ax.set_xlabel("Częstotliwość [Hz]")
+    ax.set_ylabel("|Zmiana phi| [rad]")
 
     plt.xscale("log")
     plt.savefig(
@@ -68,7 +68,7 @@ def nyquist(args):
         -plot_data["Im"],
         xerr=plot_data["Re_sem"],
         yerr=plot_data["Im_sem"],
-        fmt=":",
+        fmt=":.",
     )
     ax.set_xlabel("Z' [Ω]")
     ax.set_ylabel("-Z'' [Ω]")

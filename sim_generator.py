@@ -33,7 +33,7 @@ def main(args):
     simulations["contact_right"] = args.contact_right
     simulations["static_potential"] = args.static_potential
     simulations["periods"] = simulations["frequency"].map(
-        lambda x: x / freq_list[0] * args.base_periods
+        lambda x: np.clip(x / freq_list[0] * args.base_periods, 0, 100)
     )
 
     amp_tmp = []
@@ -118,6 +118,11 @@ def main(args):
     )
     if args.cell_type == "random":
         structure.generate_random()
+        while np.abs(structure.O/structure.Y - 6) > 1e-2:
+            structure = GenerateModel(
+                (simulations["size_x"][0], simulations["size_y"][0], simulations["size_z"][0])
+            )
+            structure.generate_random()
     elif args.cell_type == "sphere":
         structure.generate_sphere(3)
     elif args.cell_type == "plane":

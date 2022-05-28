@@ -41,11 +41,11 @@ def mass_center(args):
             mass_center_df["x"].append(mean_position["x"])
 
         mass_center_df = pd.DataFrame(mass_center_df)
-        mass_center_df["dE"] = field_data["v_total"]
+        mass_center_df["dE"] = field_data["v_shift"]
         mass_center_df["dx"] = mass_center_df["x"].diff()
         mass_center_df["dt"] = mass_center_df["t"].diff()
         mass_center_df["vel"] = mass_center_df["dx"] / mass_center_df["dt"]
-        mass_center_df["u"] = (config.amplitude * config.size["x"] * 2) / 2
+        mass_center_df["u"] = config.amplitude
 
         plot_line(
             sim_path
