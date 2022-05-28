@@ -33,7 +33,7 @@ def main(args):
     simulations["contact_right"] = args.contact_right
     simulations["static_potential"] = args.static_potential
     simulations["periods"] = simulations["frequency"].map(
-        lambda x: x / freq_list[0] * args.base_periods
+        lambda x: np.clip(x / freq_list[0] * args.base_periods, 0, 100)
     )
 
     amp_tmp = []

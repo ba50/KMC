@@ -401,8 +401,8 @@ public:
 		const double epsil_0 = 8.8541878128e-12;
 		const double epsil_r = 40;
 		const double PI = 3.141592653589793238463;
-		const double kT{(800.0 * temperature_scale + 273.15) * 8.617333262e-5};
-		const double alpha{1e17};
+		const double kT{(800.0 * temperature_scale + 273.15) * 1.380649e-23};
+		const double alpha{1e0};
 		const double e{1.602176634e-19};
 		const double q = 2 * e;
 
@@ -471,10 +471,10 @@ public:
 				e_field[i] = 0.0;
 				for (z = 1; z < oxygen_array_size_[2] - 1; z++) {
 					for (y = 1; y < oxygen_array_size_[1] - 1; y++) {
-						e_field[i] += oxygen_array_[z][y][i];
+						e_field[i] += oxygen_array_[z][y][i+1];
 					}
 				}
-				e_field[i] *= q;
+				e_field[i] *= e;
 
 				// Get rho
 				e_field[i] /= (oxygen_array_size_[1] - 2) * (oxygen_array_size_[2] - 2) * pow(a, 2) / 4;
