@@ -55,7 +55,9 @@ def main(args):
         time_end.append(total_time)
     simulations["time_end"] = time_end
 
-    simulations["window"] = simulations["frequency"].map(lambda x: 1e12 / (x * args.window_points))
+    simulations["window"] = simulations["frequency"].map(
+        lambda x: 1e12 / (x * args.window_points)
+    )
     if args.window_epsilon is None:
         simulations["window_epsilon"] = simulations["window"] * 0.25
     else:
@@ -118,6 +120,15 @@ def main(args):
     )
     if args.cell_type == "random":
         structure.generate_random()
+        while np.abs(structure.O / structure.Y - 6) > 1e-2:
+            structure = GenerateModel(
+                (
+                    simulations["size_x"][0],
+                    simulations["size_y"][0],
+                    simulations["size_z"][0],
+                )
+            )
+            structure.generate_random()
     elif args.cell_type == "sphere":
         structure.generate_sphere(3)
     elif args.cell_type == "plane":

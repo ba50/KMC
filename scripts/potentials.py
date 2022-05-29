@@ -8,8 +8,13 @@ import pandas as pd
 from tqdm import tqdm
 
 from KMC.Config import Config
+from scripts.fit_function import FindPhi
 
 matplotlib.use("Agg")
+
+a = 5.559e-10  # at 1077K in [m]
+eps_0 = 8.8541878128e-12
+eps_r = 40
 
 
 def potentials(args):
@@ -23,14 +28,26 @@ def potentials(args):
 
         potentials_path.mkdir(parents=True, exist_ok=True)
 
-        pot_df["I"] = pot_df["v_elec"].diff() / pot_df["time"].diff()
-        pot_df.to_csv(potentials_path / "potentials.csv", index=False)
+        pot_df["I"] = (pot_df["v_elec"].diff() / pot_df["time"].diff()) * (
+            eps_0 * eps_r * config.size["y"] * config.size["z"] * a / config.size["x"]
+        )
 
         fig, ax1 = plt.subplots(figsize=(8, 6))
         ax2 = ax1.twinx()
-        ax1.plot(pot_df["time"], pot_df["v_total"], color="b", label="v_total", marker='.')
-        ax1.plot(pot_df["time"], pot_df["v_elec"], color="r", label="v_elec", linestyle=":", marker='.')
-        ax2.plot(pot_df["time"], pot_df["I"], color="g", label="I", linestyle=":", marker='v')
+        ax1.plot(
+            pot_df["time"], pot_df["v_total"], color="b", label="v_total", marker="."
+        )
+        ax1.plot(
+            pot_df["time"],
+            pot_df["v_elec"],
+            color="r",
+            label="v_elec",
+            linestyle=":",
+            marker=".",
+        )
+        ax2.plot(
+            pot_df["time"], pot_df["I"], color="g", label="I", linestyle=":", marker="v"
+        )
 
         ax1.set_xlabel("Time [ps]")
         ax1.xaxis.set_major_formatter(mtick.FormatStrFormatter("%.1e"))
@@ -41,8 +58,45 @@ def potentials(args):
         ax2.legend(loc="upper right")
 
         plt.savefig(
-            potentials_path
-            / f"potentials_{sim_path.name}.png",
+            potentials_path / f"potentials_original_{sim_path.name}.png",
+            dpi=250,
+            bbox_inches="tight",
+        )
+        plt.close(fig)
+
+        if args.cut_time:
+            pot_df = pot_df[pot_df["time"] > args.cut_time]
+
+        if args.one_period:
+            pot_df = FindPhi.reduce_periods(pot_df, 1e12 / config.frequency)
+
+        if args.smooth:
+            pot_df["I"] = pot_df["I"].rolling(args.smooth).mean()
+            pot_df = pot_df.dropna()
+
+        pot_df.to_csv(
+            potentials_path / f"potentials_{config.frequency:.2e}.csv", index=False
+        )
+
+        fig, ax1 = plt.subplots(figsize=(8, 6))
+        ax2 = ax1.twinx()
+        ax1.plot(
+            pot_df["time"], pot_df["v_total"], color="b", label="v_total", marker="."
+        )
+        ax2.plot(
+            pot_df["time"], pot_df["I"], color="g", label="I", linestyle=":", marker="v"
+        )
+
+        ax1.set_xlabel("Time [ps]")
+        ax1.xaxis.set_major_formatter(mtick.FormatStrFormatter("%.1e"))
+        ax1.set_ylabel("Potential [V]", color="b")
+        ax2.set_ylabel("I [A]", color="g")
+
+        ax1.legend(loc="upper left")
+        ax2.legend(loc="upper right")
+
+        plt.savefig(
+            potentials_path / f"potentials_{config.frequency:.2e}.png",
             dpi=250,
             bbox_inches="tight",
         )
@@ -58,11 +112,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--one-period", action="store_true", help="Stack data points to one period"
     )
-    parser.add_argument(
-        "--high-pass", action="store_true", help="Apply high pass filter"
-    )
-    parser.add_argument("--fs", type=int, default="21", help="Sampling rate")
     parser.add_argument("--search", type=str, default="*", help="Simulation search")
+    parser.add_argument(
+        "--cut-time", type=float, default=None, help="Cut simulation time"
+    )
     main_args = parser.parse_args()
 
     potentials(main_args)

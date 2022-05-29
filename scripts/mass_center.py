@@ -33,9 +33,9 @@ def mass_center(args):
             sim_frames_path
         )
 
-        mass_center_df = {"t": [], "x": []}
+        mass_center_df = {"time": [], "x": []}
         for time_index, chunk in simulation_frames.groupby("time_index"):
-            mass_center_df["t"].append(field_data["time"][time_index])
+            mass_center_df["time"].append(field_data["time"][time_index])
             mean_position = chunk[["x"]].mean()
 
             mass_center_df["x"].append(mean_position["x"])
@@ -43,7 +43,7 @@ def mass_center(args):
         mass_center_df = pd.DataFrame(mass_center_df)
         mass_center_df["dE"] = field_data["v_total"]
         mass_center_df["dx"] = mass_center_df["x"].diff()
-        mass_center_df["dt"] = mass_center_df["t"].diff()
+        mass_center_df["dt"] = mass_center_df["time"].diff()
         mass_center_df["vel"] = mass_center_df["dx"] / mass_center_df["dt"]
         mass_center_df["u"] = (config.amplitude * config.size["x"] * 2) / 2
 

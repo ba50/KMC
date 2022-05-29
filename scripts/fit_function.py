@@ -8,7 +8,7 @@ from KMC.FindPhi import FindPhi
 
 
 def fit_function(args):
-    find_phi = FindPhi("mass_center")
+    find_phi = FindPhi("potentials")
 
     sim_path_list = [sim for sim in args.data_path.glob(args.search) if sim.is_dir()]
     assert len(sim_path_list) != 0, f"No data at: {args.data_path}"

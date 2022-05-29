@@ -67,7 +67,8 @@ class FindPhi:
 
         fitting_function = Functions(config.frequency * 10 ** -12)
 
-        signal = pd.DataFrame({"t": data["t"], "y": data["vel"]})
+        signal = pd.DataFrame({"time": data["time"], "y": data["I"]})
+        signal["y"] /= np.abs(signal["y"]).max()
 
         params, fit_signal = FindPhi.fit_curve_signal(
             fitting_function.sin, signal, sim_path
@@ -81,7 +82,7 @@ class FindPhi:
                 "version": (lambda split: split[5])(sim_path.name.split("_")),
                 "temperature_scale": config.temperature_scale,
                 "frequency": config.frequency,
-                "u0": np.mean(data["u"]),
+                "u0": config.amplitude,
                 "i0": None,
                 "params": None,
             }
@@ -97,8 +98,8 @@ class FindPhi:
             "version": (lambda split: split[5])(sim_path.name.split("_")),
             "temperature_scale": config.temperature_scale,
             "frequency": config.frequency,
-            "u0": np.mean(data["u"]),
-            "i0": abs(2 * e * params[0] / 1e-12),
+            "u0": config.amplitude,
+            "i0": params[0],
             "params": params,
         }
 
@@ -106,17 +107,17 @@ class FindPhi:
     def _save_plots(sim_path, df_type, frequency, signal, fit_signal, field_data):
         _fig, _ax1 = plt.subplots(figsize=(8, 6))
         _ax2 = _ax1.twinx()
-        _ax1.scatter(signal["t"], signal["y"], marker=".", color="b")
+        _ax1.scatter(signal["time"], signal["y"], marker=".", color="b")
         _ax1.plot(
-            fit_signal["t"],
+            fit_signal["time"],
             fit_signal["y"],
             color="r",
             linestyle="--",
             label="Fitted func",
         )
         _ax2.plot(
-            field_data["t"],
-            field_data["dE"],
+            field_data["time"],
+            field_data["v_total"],
             linestyle="-",
             color="g",
             label="Field",
@@ -139,8 +140,8 @@ class FindPhi:
 
     @staticmethod
     def reduce_periods(df, period: float):
-        df["t"] %= period
-        df = df.sort_values(by="t").reset_index(drop=True)
+        df["time"] %= period
+        df = df.sort_values(by="time").reset_index(drop=True)
 
         return df
 
@@ -150,9 +151,9 @@ class FindPhi:
         try:
             params, _ = optimize.curve_fit(
                 fitting_function,
-                sim_signal["t"],
+                sim_signal["time"],
                 sim_signal["y"],
-                bounds=[[0, -np.pi], [np.inf, 0]],
+                # bounds=[[0, -np.pi], [np.inf, 0]],
             )
         except Exception as e:
             print(e)
@@ -161,13 +162,13 @@ class FindPhi:
 
         fit_signal = pd.DataFrame(
             {
-                "t": np.linspace(
-                    sim_signal["t"].iloc[0],
-                    sim_signal["t"].iloc[-1],
-                    len(sim_signal["t"]),
+                "time": np.linspace(
+                    sim_signal["time"].iloc[0],
+                    sim_signal["time"].iloc[-1],
+                    len(sim_signal["time"]),
                 )
             }
         )
-        fit_signal["y"] = fitting_function(fit_signal["t"], *params)
+        fit_signal["y"] = fitting_function(fit_signal["time"], *params)
 
         return params, fit_signal

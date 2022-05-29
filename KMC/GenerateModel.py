@@ -101,7 +101,7 @@ class GenerateModel:
                 self.Y += 1
 
         for index in np.ndindex(self.anions.shape):
-            if random.uniform(0, 1) < 0.75:
+            if random.uniform(0, 1) < 0.85:
                 self.anions[index] = 1
 
         for index, atom in np.ndenumerate(self.anions):
@@ -113,6 +113,11 @@ class GenerateModel:
             if atom == 1:
                 self.positions["O"].append(position)
                 self.O += 1
+
+        print("Bi", self.Bi)
+        print("Y", self.Y)
+        print("O", self.O)
+        print("Bi/Y", self.Bi / self.Y, "O/Y", self.O / self.Y)
 
     def generate_plane(self, distance):
         center = np.floor(np.array(self.kations.shape) * self.cell_size / 3)
