@@ -2,6 +2,8 @@ import argparse
 from pathlib import Path
 
 import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
 import pandas as pd
 from tqdm import tqdm
 
@@ -47,16 +49,34 @@ def mass_center(args):
         mass_center_df["vel"] = mass_center_df["dx"] / mass_center_df["dt"]
         mass_center_df["u"] = config.amplitude
 
-        plot_line(
+        _fig, _ax1 = plt.subplots(figsize=(8, 6))
+        _ax2 = _ax1.twinx()
+        _ax1.plot(
+            mass_center_df["t"],
+            mass_center_df["x"],
+            color="b",
+            linestyle="--",
+        )
+        _ax2.plot(
+            field_data["time"],
+            field_data["v_shift"],
+            linestyle="-",
+            color="g",
+        )
+
+        _ax1.set_xlabel("Czas [ps]")
+        _ax1.xaxis.set_major_formatter(mtick.FormatStrFormatter("%.1e"))
+        _ax1.set_ylabel("Położenie środka masy [au]", color="b")
+        _ax2.set_ylabel("Pole [eV]", color="g")
+
+        plt.savefig(
             sim_path
             / "mass_center"
             / f"ions_mass_center_x_original_freq_{config.frequency:.2e}.png",
-            [mass_center_df["t"]],
-            [mass_center_df["x"]],
-            [None],
-            "Time [ps]",
-            "Ions mass center [au]",
+            dpi=250,
+            bbox_inches="tight",
         )
+        plt.close(_fig)
 
         plot_line(
             sim_path

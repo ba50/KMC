@@ -492,7 +492,7 @@ public:
 			///////////////////////////////////////////////////////////////////////////
 			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 0.0;
 
-			if (abs(record_delta - window) < window_epsilon || time == 0) {
+			if ((window - record_delta) < window_epsilon || time == 0) {
 				std::cout << data_path <<": " << time << "/" << time_end << "[ps]" << std::endl;
 
 				f_out_oxygen_map << oxygen_positions_.size() << "\n\n";

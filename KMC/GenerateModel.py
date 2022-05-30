@@ -117,7 +117,7 @@ class GenerateModel:
         print("Bi", self.Bi)
         print("Y", self.Y)
         print("O", self.O)
-        print("Bi/Y", self.Bi/self.Y, "O/Y", self.O/self.Y)
+        print("Bi/Y", self.Bi / self.Y, "O/Y", self.O / self.Y)
 
     def generate_plane(self, distance):
         center = np.floor(np.array(self.kations.shape) * self.cell_size / 3)

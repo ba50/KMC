@@ -28,9 +28,20 @@ def potentials(args):
 
         fig, ax1 = plt.subplots(figsize=(8, 6))
         ax2 = ax1.twinx()
-        ax1.plot(pot_df["time"], pot_df["v_total"], color="b", label="v_total", marker='.')
-        ax1.plot(pot_df["time"], pot_df["v_elec"], color="r", label="v_elec", linestyle=":", marker='.')
-        ax2.plot(pot_df["time"], pot_df["I"], color="g", label="I", linestyle=":", marker='v')
+        ax1.plot(
+            pot_df["time"], pot_df["v_total"], color="b", label="v_total", marker="."
+        )
+        ax1.plot(
+            pot_df["time"],
+            pot_df["v_elec"],
+            color="r",
+            label="v_elec",
+            linestyle=":",
+            marker=".",
+        )
+        ax2.plot(
+            pot_df["time"], pot_df["I"], color="g", label="I", linestyle=":", marker="v"
+        )
 
         ax1.set_xlabel("Time [ps]")
         ax1.xaxis.set_major_formatter(mtick.FormatStrFormatter("%.1e"))
@@ -41,8 +52,7 @@ def potentials(args):
         ax2.legend(loc="upper right")
 
         plt.savefig(
-            potentials_path
-            / f"potentials_{sim_path.name}.png",
+            potentials_path / f"potentials_{sim_path.name}.png",
             dpi=250,
             bbox_inches="tight",
         )

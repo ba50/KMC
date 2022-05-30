@@ -74,7 +74,7 @@ def nyquist(args):
     ax.set_ylabel("-Z'' [Ω]")
 
     for _, row in plot_data.iterrows():
-        ax.text(row["Re"], -row["Im"] + 0.75, f"{row['frequency']:.2e}")
+        ax.text(row["Re"], -row["Im"], f"{row['frequency']:.2e}")
 
     plt.savefig(
         args.delta_phi.parent
