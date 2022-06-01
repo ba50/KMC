@@ -68,11 +68,14 @@ class FindPhi:
         fitting_function = Functions(config.frequency * 10 ** -12)
 
         signal = pd.DataFrame({"time": data["time"], "y": data["I"]})
-        signal["y"] /= np.abs(signal["y"]).max()
+        signal["y"] *= 1e18
 
         params, fit_signal = FindPhi.fit_curve_signal(
             fitting_function.sin, signal, sim_path
         )
+
+        signal["y"] *= 1e-18
+        fit_signal["y"] *= 1e-18
 
         if params is None:
             return {
@@ -99,7 +102,7 @@ class FindPhi:
             "temperature_scale": config.temperature_scale,
             "frequency": config.frequency,
             "u0": config.amplitude,
-            "i0": params[0],
+            "i0": params[0] * 1e-18,
             "params": params,
         }
 
@@ -113,20 +116,20 @@ class FindPhi:
             fit_signal["y"],
             color="r",
             linestyle="--",
-            label="Fitted func",
+            label="Dopasowana funkcja",
         )
         _ax2.plot(
             field_data["time"],
             field_data["v_total"],
             linestyle="-",
             color="g",
-            label="Field",
+            label="Potencjał",
         )
 
         _ax1.set_xlabel("Time [ps]")
         _ax1.xaxis.set_major_formatter(mtick.FormatStrFormatter("%.1e"))
-        _ax1.set_ylabel("Ions mass center velocity [au]", color="b")
-        _ax2.set_ylabel("Field [eV]", color="g")
+        _ax1.set_ylabel("Prąd [A]", color="b")
+        _ax2.set_ylabel("Potencjał [V]", color="g")
 
         _ax1.legend(loc="upper left")
         _ax2.legend(loc="upper right")
@@ -153,7 +156,7 @@ class FindPhi:
                 fitting_function,
                 sim_signal["time"],
                 sim_signal["y"],
-                # bounds=[[0, -np.pi], [np.inf, 0]],
+                bounds=[[0, -np.pi], [np.inf, 0]],
             )
         except Exception as e:
             print(e)

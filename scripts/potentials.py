@@ -49,10 +49,10 @@ def potentials(args):
             pot_df["time"], pot_df["I"], color="g", label="I", linestyle=":", marker="v"
         )
 
-        ax1.set_xlabel("Time [ps]")
+        ax1.set_xlabel("Czas [ps]")
         ax1.xaxis.set_major_formatter(mtick.FormatStrFormatter("%.1e"))
-        ax1.set_ylabel("Potential [V]", color="b")
-        ax2.set_ylabel("I [A]", color="g")
+        ax1.set_ylabel("Potencjał [V]", color="b")
+        ax2.set_ylabel("Prąd [A]", color="g")
 
         ax1.legend(loc="upper left")
         ax2.legend(loc="upper right")
@@ -87,10 +87,10 @@ def potentials(args):
             pot_df["time"], pot_df["I"], color="g", label="I", linestyle=":", marker="v"
         )
 
-        ax1.set_xlabel("Time [ps]")
+        ax1.set_xlabel("Czas [ps]")
         ax1.xaxis.set_major_formatter(mtick.FormatStrFormatter("%.1e"))
-        ax1.set_ylabel("Potential [V]", color="b")
-        ax2.set_ylabel("I [A]", color="g")
+        ax1.set_ylabel("Potencjał [V]", color="b")
+        ax2.set_ylabel("Prąc [A]", color="g")
 
         ax1.legend(loc="upper left")
         ax2.legend(loc="upper right")

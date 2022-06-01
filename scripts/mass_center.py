@@ -51,7 +51,7 @@ def mass_center(args):
             sim_path
             / "mass_center"
             / f"ions_mass_center_x_original_freq_{config.frequency:.2e}.png",
-            [mass_center_df["t"]],
+            [mass_center_df["time"]],
             [mass_center_df["x"]],
             [None],
             "Time [ps]",
@@ -62,7 +62,7 @@ def mass_center(args):
             sim_path
             / "mass_center"
             / f"ions_mass_center_vel_original_freq_{config.frequency:.2e}.png",
-            [mass_center_df["t"]],
+            [mass_center_df["time"]],
             [mass_center_df["vel"]],
             [None],
             "Time [ps]",
@@ -96,7 +96,7 @@ def mass_center(args):
             sim_path
             / "mass_center"
             / f"ions_mass_center_vel_freq_{config.frequency:.2e}.png",
-            [mass_center_df["t"]],
+            [mass_center_df["time"]],
             [mass_center_df["vel"]],
             [None],
             "Time [ps]",

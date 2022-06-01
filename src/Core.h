@@ -402,7 +402,7 @@ public:
 		const double epsil_r = 40;
 		const double PI = 3.141592653589793238463;
 		const double kT{(800.0 * temperature_scale + 273.15) * 1.380649e-23};
-		const double alpha{1e0};
+		const double alpha{0.5};
 		const double e{1.602176634e-19};
 		const double q = 2 * e;
 
@@ -464,7 +464,7 @@ public:
 		while(time < time_end){
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
 
-			v_apply = Amp * sin(2 * PI * frequency * pow(10.0, -12) * time) + static_potential;
+			v_apply = Amp * cos(2 * PI * frequency * pow(10.0, -12) * time) + static_potential;
 
 			for (i = 0; i < e_field.size(); ++i) {
 				// Get Q
@@ -474,6 +474,7 @@ public:
 						e_field[i] += oxygen_array_[z][y][i+1];
 					}
 				}
+				e_field[i] -= (oxygen_array_size_[2] - 2) * (oxygen_array_size_[1] - 2) / 8;
 				e_field[i] *= e;
 
 				// Get rho
@@ -562,7 +563,7 @@ public:
 			///////////////////////////////////////////////////////////////////////////
 			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 0.0;
 
-			if (abs(record_delta - window) < window_epsilon || time == 0) {
+			if ((window - record_delta) < window_epsilon || time == 0) {
 				std::cout << data_path <<": " << time << "/" << time_end << "[ps]" << std::endl;
 
 				f_out_oxygen_map << oxygen_positions_.size() << "\n\n";
