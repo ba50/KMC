@@ -475,7 +475,12 @@ public:
 					}
 				}
 				e_field[i] -= (oxygen_array_size_[2] - 2) * (oxygen_array_size_[1] - 2) / 8;
-				e_field[i] *= e;
+				if (e_field[i] > 0) {
+					e_field[i] *= e;
+				}
+				else {
+					e_field[i] *= 2 * e;
+				}
 
 				// Get rho
 				e_field[i] /= (oxygen_array_size_[1] - 2) * (oxygen_array_size_[2] - 2) * pow(a, 2) / 4;
