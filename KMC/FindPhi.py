@@ -28,6 +28,9 @@ class Functions:
     def sin(self, x, amp, phi):
         return amp * np.sin(2 * np.pi * self.freq * x + phi)
 
+    def cos(self, x, amp, phi):
+        return amp * np.cos(2 * np.pi * self.freq * x + phi)
+
     @staticmethod
     def arcsin(x):
         return np.arcsin(x)
@@ -156,7 +159,7 @@ class FindPhi:
                 fitting_function,
                 sim_signal["time"],
                 sim_signal["y"],
-                bounds=[[0, -np.pi], [np.inf, 0]],
+                bounds=[[0, -np.inf], [np.inf, np.inf]],
             )
         except Exception as e:
             print(e)

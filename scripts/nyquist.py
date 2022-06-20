@@ -26,6 +26,9 @@ def nyquist(args):
 
     plot_data = pd.DataFrame(plot_data)
 
+    labels_font = {"fontname": "Times New Roman", "size": 24}
+    ticks_font = {"fontname": "Times New Roman", "size": 16}
+
     # Delta phi
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(111)
@@ -33,10 +36,12 @@ def nyquist(args):
         plot_data["frequency"],
         abs(plot_data["phi_rad_mean"]) * 180 / np.pi,
         yerr=plot_data["phi_rad_sem"] * 180 / np.pi,
-        fmt=":",
+        fmt=":.",
     )
-    ax.set_xlabel("Częstotliwość [Hz]")
-    ax.set_ylabel("|ϕ| [stopnie]")
+    ax.set_xlabel("Częstotliwość [Hz]", **labels_font)
+    ax.set_ylabel("|ϕ| [stopnie]", **labels_font)
+    plt.xticks(**ticks_font)
+    plt.yticks(**ticks_font)
 
     plt.xscale("log")
     plt.savefig(
@@ -71,13 +76,17 @@ def nyquist(args):
         -plot_data["Im"],
         xerr=plot_data["Re_sem"],
         yerr=plot_data["Im_sem"],
-        fmt=":",
+        fmt=":.",
     )
-    ax.set_xlabel("Z' [Ω]")
-    ax.set_ylabel("-Z'' [Ω]")
+    ax.set_xlabel("Z' [Ω]", **labels_font)
+    ax.set_ylabel("-Z'' [Ω]", **labels_font)
+    plt.xticks(**ticks_font)
+    plt.yticks(**ticks_font)
 
+    """
     for _, row in plot_data.iterrows():
-        ax.text(row["Re"], -row["Im"] + 0.75, f"{row['frequency']:.2e}")
+        ax.text(row["Re"], -row["Im"], f"{row['frequency']:.2e}")
+    """
 
     plt.savefig(
         args.delta_phi.parent
@@ -100,11 +109,12 @@ def nyquist(args):
         np.log10(plot_data["|Z|"]),
         fmt=":.",
     )
-    ax.set_xlabel("Częstotliwość [Hz]")
-    ax.set_ylabel("Log|Z| [Ω]")
+    ax.set_xlabel("Częstotliwość [Hz]", **labels_font)
+    ax.set_ylabel("Log|Z| [Ω]", **labels_font)
+    plt.xticks(**ticks_font)
+    plt.yticks(**ticks_font)
 
     plt.xscale("log")
-
     plt.savefig(
         args.delta_phi.parent
         / f"abs_z_freq_plot_{args.delta_phi.parent.name}_{args.suffix}.png",
