@@ -9,13 +9,13 @@ from KMC.ChargeCenter import ChargeCenter
 matplotlib.use("Agg")
 
 
-def main(args):
-    charge_center = ChargeCenter(args.high_pass, args.fs, args.one_period, args.smooth)
+def charge_center(args):
+    cc = ChargeCenter(args.high_pass, args.fs, args.one_period, args.smooth)
     sim_path_list = [sim for sim in args.data_path.glob(args.search) if sim.is_dir()]
     assert len(sim_path_list) != 0, f"No data at: {args.data_path}"
     print(f"Read {len(sim_path_list)} folders.")
     with Pool(args.workers) as p:
-        p.map(charge_center.run, sim_path_list)
+        p.map(cc.run, sim_path_list)
 
 
 if __name__ == "__main__":

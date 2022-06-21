@@ -66,12 +66,18 @@ class FindPhi:
 
         fitting_function = Functions(config.frequency * 10 ** -12)
 
-        y = {"charge_center": data["vel"], "potentials": data["i"] * 1e18}
-        signal = pd.DataFrame({"time": data["time"], "y": y[self.data_type]})
+        signal = None
+        if self.data_type == "charge_center":
+            signal = pd.DataFrame({"t": data["time"], "y": data["vel"]})
+        if self.data_type == "potentials":
+            signal = pd.DataFrame({"t": data["time"], "y": data["i"] * 1e18})
 
         params, fit_signal = FindPhi.fit_curve_signal(
             fitting_function.sin, signal, sim_path
         )
+        if self.data_type == "potentials":
+            fit_signal["y"] *= 1e-18
+            params[0] *= 1e-18
 
         if params is None:
             return {
@@ -81,7 +87,7 @@ class FindPhi:
                 "version": (lambda split: split[5])(sim_path.name.split("_")),
                 "temperature_scale": config.temperature_scale,
                 "frequency": config.frequency,
-                "u0": np.mean(data["u"]),
+                "u0": config.amplitude,
                 "i0": None,
                 "params": None,
             }
@@ -90,7 +96,10 @@ class FindPhi:
             sim_path, self.data_type, config.frequency, signal, fit_signal, data
         )
 
-        i_zero = {"charge_center": -2*e*(params[0]*1e-9/1e-12)*pow(a, 2), "potentials": params[0]*1e-18}
+        i_zero = {
+            "charge_center": -2 * e * (params[0] * 1e-9 / 1e-12) * pow(a, 2),
+            "potentials": params[0],
+        }
 
         return {
             "amp": params[0],
@@ -99,13 +108,13 @@ class FindPhi:
             "version": (lambda split: split[5])(sim_path.name.split("_")),
             "temperature_scale": config.temperature_scale,
             "frequency": config.frequency,
-            "u0": np.mean(data["u"]),
+            "u0": config.amplitude,
             "i0": i_zero[self.data_type],
             "params": params,
         }
 
     @staticmethod
-    def _save_plots(sim_path, df_type, frequency, signal, fit_signal, field_data):
+    def _save_plots(sim_path, data_type, frequency, signal, fit_signal, field_data):
         _fig, _ax1 = plt.subplots(figsize=(8, 6))
         _ax2 = _ax1.twinx()
         _ax1.scatter(signal["t"], signal["y"], marker=".", color="b")
@@ -116,13 +125,23 @@ class FindPhi:
             linestyle="--",
             label="Dopasowana funkcja",
         )
-        _ax2.plot(
-            field_data["t"],
-            field_data["dE"],
-            linestyle="-",
-            color="g",
-            label="Pole zew.",
-        )
+
+        if data_type == "potentials":
+            _ax2.plot(
+                field_data["time"],
+                -field_data["v_total"],
+                linestyle="-",
+                color="g",
+                label="Pole zew.",
+            )
+        if data_type == "charge_center":
+            _ax2.plot(
+                field_data["time"],
+                field_data["dE"],
+                linestyle="-",
+                color="g",
+                label="Pole zew.",
+            )
 
         _ax1.set_xlabel("Czas [ps]")
         _ax1.xaxis.set_major_formatter(mtick.FormatStrFormatter("%.1e"))
@@ -133,7 +152,7 @@ class FindPhi:
         _ax2.legend(loc="upper right")
 
         plt.savefig(
-            sim_path / df_type / f"fit_sin_{df_type}_x_freq_{frequency:.2e}.png",
+            sim_path / data_type / f"fit_sin_{data_type}_freq_{frequency:.2e}.png",
             dpi=250,
             bbox_inches="tight",
         )

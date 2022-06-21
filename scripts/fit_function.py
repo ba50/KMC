@@ -20,7 +20,7 @@ def fit_function(args):
 
     delta_phi = delta_phi.sort_values(["frequency", "version"])
     delta_phi.to_csv(
-        args.data_path / f"delta_phi_mass_center_vel_{args.data_path.name}.csv",
+        args.data_path / f"delta_phi_{args.data_type}_{args.data_path.name}.csv",
         index=False,
     )
 
