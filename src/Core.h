@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <chrono>
-#include <ctime> 
+#include <ctime>
 #include <map>
 #include <algorithm>
 #include <fstream>
@@ -16,12 +16,12 @@ class Core {
 	std::vector<Type> types;
 
 	double*** oxygen_array_;
-	std::vector<size_t> oxygen_array_size_; 
+	std::vector<size_t> oxygen_array_size_;
 	std::vector<std::vector<int>> oxygen_positions_;
 	std::vector<std::vector<int>> oxygen_positions_inf_;
 
 	double*** kation_array_;
-	std::vector<size_t> kation_array_size_; 
+	std::vector<size_t> kation_array_size_;
 
 	double*** residence_time_array_;
 	std::vector<size_t> residence_time_array_size_;
@@ -51,14 +51,14 @@ public:
 			const std::vector<unsigned int> contact,
 			const double& temperature_scale,
 			const std::string& data_path):
-		types( types ), 
+		types( types ),
 		temperature_scale( temperature_scale ),
 		data_path( data_path ),
 		steps( 0 )
 	{
 		// Define OXYGENE
 		// with bourdery conditions
-		
+
 		oxygen_array_size_ = std::vector<size_t>(3, 5);
 		kation_array_size_ = std::vector<size_t>(3, 5);
 		residence_time_array_size_ = std::vector<size_t>(3, 5);
@@ -79,7 +79,7 @@ public:
 			for (size_t y = 0; y < oxygen_array_size_[1]; y++)
 				for (size_t x = 0; x < oxygen_array_size_[0]; x++)
 					oxygen_array_[z][y][x] = 1.0;
-		
+
 		{
 			std::vector<double> temp_position(3);
 			std::vector<int> temp_site(3);
@@ -231,7 +231,7 @@ public:
 		direction_vector.push_back(std::vector<int>{ 0, 0, 1});
 		direction_vector.push_back(std::vector<int>{ 0, 0,-1});
 
-		for (size_t i = 0; i < direction_vector.size()+1; i++) 
+		for (size_t i = 0; i < direction_vector.size()+1; i++)
 			jumpe_direction_sume_vector_.push_back(0.0);
 
 		v_total = std::vector<double>(2*cells[0] + 1, 0);
@@ -382,7 +382,7 @@ public:
 			///////////////////////////////////////////////////////////////////////////
 
 			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 0;
-			
+
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
 		}
@@ -453,13 +453,13 @@ public:
 
 		std::ofstream f_out_oxygen_map(data_path + "/simulation_frames.xyz");
 		std::ofstream f_out_oxygen_map_inf(data_path + "/simulation_frames_inf.xyz");
-		std::ofstream potentials(data_path + "/potentials.csv"); 
+		std::ofstream potentials(data_path + "/potentials.csv");
 		potentials << "time,v_total,v_elec,v_sc\n";
 
-		std::ofstream v_total_fout(data_path + "/v_total.csv"); 
-		std::ofstream v_elec_fout(data_path + "/v_elec.csv"); 
-		std::ofstream v_sc_fout(data_path + "/v_sc.csv"); 
-		std::ofstream e_field_fout(data_path + "/e_field.csv"); 
+		std::ofstream v_total_fout(data_path + "/v_total.csv");
+		std::ofstream v_elec_fout(data_path + "/v_elec.csv");
+		std::ofstream v_sc_fout(data_path + "/v_sc.csv");
+		std::ofstream e_field_fout(data_path + "/e_field.csv");
 
 		while(time < time_end){
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
@@ -608,7 +608,7 @@ public:
 
 				record_delta = 0.0;
 			}
-			
+
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			d_t = (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
 			time += d_t;
@@ -662,7 +662,7 @@ public:
 			}
 		}
 	}
-	
+
 	inline double jump_rate(const size_t id, const int shift_z, const int shift_y, const int shift_x, double*** &oxygen_array, std::vector<std::vector<int>> &oxygen_positions, double*** &residence_time_array) {
 		return oxygen_array[oxygen_positions[id][2] + shift_z][oxygen_positions[id][1] + shift_y][oxygen_positions[id][0] + shift_x]
 			/ residence_time_array[oxygen_positions[id][2] - 1][oxygen_positions[id][1] - 1][oxygen_positions[id][0] - 1];

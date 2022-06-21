@@ -1,3 +1,9 @@
 numpy
 pandas
+<<<<<<< HEAD
 tqdm
+=======
+tqdm
+matplotlib
+scipy
+>>>>>>> 81d9b11cd1ebefc9c6646218402fe41c371c569a

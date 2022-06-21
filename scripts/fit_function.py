@@ -8,7 +8,8 @@ from KMC.FindPhi import FindPhi
 
 
 def fit_function(args):
-    find_phi = FindPhi("potentials")
+
+    find_phi = FindPhi(args.data_type)
 
     sim_path_list = [sim for sim in args.data_path.glob(args.search) if sim.is_dir()]
     assert len(sim_path_list) != 0, f"No data at: {args.data_path}"
@@ -20,7 +21,7 @@ def fit_function(args):
 
     delta_phi = delta_phi.sort_values(["frequency", "version"])
     delta_phi.to_csv(
-        args.data_path / f"delta_phi_mass_center_vel_{args.data_path.name}.csv",
+        args.data_path / f"delta_phi_{args.data_type}_{args.data_path.name}.csv",
         index=False,
     )
 
@@ -29,6 +30,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--data-path", type=Path, required=True, help="path to data from simulation"
+    )
+    parser.add_argument(
+        "--data-type", choices=["charge_center", "potentials"], default="charge_center"
     )
     parser.add_argument("--workers", type=int, help="number of workers", default=1)
     parser.add_argument("--search", type=str, default="*", help="file search")

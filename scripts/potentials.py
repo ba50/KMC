@@ -22,12 +22,12 @@ def potentials(args):
     sim_path_list = [i for i in sim_path_list if i.is_dir()]
 
     for sim_path in tqdm(sim_path_list):
-        config = Config.load(sim_path / "input.kmc")
         pot_df = pd.read_csv(sim_path / "potentials.csv")
         potentials_path = sim_path / "potentials"
 
         potentials_path.mkdir(parents=True, exist_ok=True)
 
+<<<<<<< HEAD
         pot_df["i"] = (pot_df["v_elec"].diff() / pot_df["time"].diff()) * (
             eps_0 * eps_r * config.size["y"] * config.size["z"] * a / config.size["x"]
         )
@@ -77,12 +77,18 @@ def potentials(args):
         pot_df.to_csv(
             potentials_path / f"potentials_{config.frequency:.2e}.csv", index=False
         )
+=======
+        pot_df["i"] = pot_df["v_elec"].diff() / pot_df["time"].diff()
+        pot_df.to_csv(potentials_path / "potentials.csv", index=False)
+>>>>>>> 81d9b11cd1ebefc9c6646218402fe41c371c569a
 
+        labels_font = {"fontname": "Times New Roman", "size": 24}
         fig, ax1 = plt.subplots(figsize=(8, 6))
         ax2 = ax1.twinx()
         ax1.plot(
             pot_df["time"], pot_df["v_total"], color="b", label="v_total", marker="."
         )
+<<<<<<< HEAD
         ax2.plot(
             pot_df["time"], pot_df["i"], color="g", label="I", linestyle=":", marker="v"
         )
@@ -91,12 +97,34 @@ def potentials(args):
         ax1.xaxis.set_major_formatter(mtick.FormatStrFormatter("%.1e"))
         ax1.set_ylabel("Potencjał [V]", color="b")
         ax2.set_ylabel("Prąc [A]", color="g")
+=======
+        ax1.plot(
+            pot_df["time"],
+            pot_df["v_elec"],
+            color="r",
+            label="v_elec",
+            linestyle=":",
+            marker=".",
+        )
+        ax2.plot(
+            pot_df["time"], pot_df["I"], color="g", label="I", linestyle=":", marker="v"
+        )
+
+        ax1.set_xlabel("Time [ps]", **labels_font)
+        ax1.xaxis.set_major_formatter(mtick.FormatStrFormatter("%.1e"))
+        ax1.set_ylabel("Potential [V]", color="b", **labels_font)
+        ax2.set_ylabel("I [A]", color="g", **labels_font)
+>>>>>>> 81d9b11cd1ebefc9c6646218402fe41c371c569a
 
         ax1.legend(loc="upper left")
         ax2.legend(loc="upper right")
 
         plt.savefig(
+<<<<<<< HEAD
             potentials_path / f"potentials_{config.frequency:.2e}.png",
+=======
+            potentials_path / f"potentials_{sim_path.name}.png",
+>>>>>>> 81d9b11cd1ebefc9c6646218402fe41c371c569a
             dpi=250,
             bbox_inches="tight",
         )
