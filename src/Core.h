@@ -391,7 +391,6 @@ public:
 		const double frequency,
 		const double static_potential
 	) {
-		const double a = 5.559e-10; // at 1077K in [m]
 		const double PI = 3.141592653589793238463;
 		const double kT{ (800.0 * temperature_scale + 273.15) * 8.6173304e-5 };
 

@@ -215,7 +215,7 @@ class GenerateModel:
             frame_index = [{"time_index": index} for _ in range(n_atoms)]
             frame_index = pd.DataFrame(frame_index)
             frame = pd.concat([frame, frame_index], axis=1)
-            frames = frames.append(frame)
+            frames = pd.concat([frames, frame])
 
         frames["atom_ids"] = frames.index
         frames = frames.reset_index(drop=True)

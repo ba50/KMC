@@ -34,7 +34,7 @@ class Functions:
 
     @staticmethod
     def cubic_spline(x, a, b, c, d):
-        return a * x ** 3 + b * x ** 2 + c * x + d
+        return a * x**3 + b * x**2 + c * x + d
 
     @staticmethod
     def line(x, a, b):
@@ -65,7 +65,7 @@ class FindPhi:
         data = pd.read_csv(input_path[0], sep=",")
         data.dropna(inplace=True)
 
-        fitting_function = Functions(config.frequency * 10 ** -12)
+        fitting_function = Functions(config.frequency * 10**-12)
 
         signal = pd.DataFrame({"t": data["t"], "y": data["vel"]})
 

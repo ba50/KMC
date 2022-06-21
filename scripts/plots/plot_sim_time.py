@@ -19,7 +19,8 @@ plot_data = pd.DataFrame(
     {"x": time.mean(axis=1), "y": n_ions, "x_sem": time.std(axis=1) / time.shape[1]}
 )
 
-print(plot_data)
+labels_font = {'fontname':'Times New Roman', 'size': 24}
+ticks_font = {'fontname':'Times New Roman', 'size': 16}
 
 fig = plt.figure(figsize=(8, 6))
 ax = fig.add_subplot(111)
@@ -29,8 +30,10 @@ ax.errorbar(
     xerr=plot_data["x_sem"],
     fmt="--o",
 )
-ax.set_xlabel("Time [h]")
-ax.set_ylabel("Ions number")
+ax.set_xlabel("Czas [h]", **labels_font)
+ax.set_ylabel("Liczba jonów", **labels_font)
+plt.xticks(**ticks_font)
+plt.yticks(**ticks_font)
 
 plt.xscale("log")
 plt.savefig("dev-plot.png", dpi=250, bbox_inches="tight")

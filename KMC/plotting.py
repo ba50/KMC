@@ -12,10 +12,16 @@ def plot_line(
     y_size=6,
     dpi=250,
 ):
+    labels_font = {'fontname':'Times New Roman', 'size': 24}
+    ticks_font = {'fontname':'Times New Roman', 'size': 16}
+
     _fig = plt.figure(figsize=(x_size, y_size))
     _ax = _fig.add_subplot(111)
-    _ax.set_xlabel(x_label)
-    _ax.set_ylabel(y_label)
+    _ax.set_xlabel(x_label, **labels_font)
+    _ax.set_ylabel(y_label, **labels_font)
+    plt.xticks(**ticks_font)
+    plt.yticks(**ticks_font)
+
     for x, y, label in zip(x_list, y_list, label_list):
         if label:
             _ax.plot(x, y, label=label)
