@@ -28,7 +28,7 @@ def potentials(args):
 
         potentials_path.mkdir(parents=True, exist_ok=True)
 
-        pot_df["I"] = (pot_df["v_elec"].diff() / pot_df["time"].diff()) * (
+        pot_df["i"] = (pot_df["v_elec"].diff() / pot_df["time"].diff()) * (
             eps_0 * eps_r * config.size["y"] * config.size["z"] * a / config.size["x"]
         )
 
@@ -46,7 +46,7 @@ def potentials(args):
             marker=".",
         )
         ax2.plot(
-            pot_df["time"], pot_df["I"], color="g", label="I", linestyle=":", marker="v"
+            pot_df["time"], pot_df["i"], color="g", label="I", linestyle=":", marker="v"
         )
 
         ax1.set_xlabel("Czas [ps]")
@@ -71,7 +71,7 @@ def potentials(args):
             pot_df = FindPhi.reduce_periods(pot_df, 1e12 / config.frequency)
 
         if args.smooth:
-            pot_df["I"] = pot_df["I"].rolling(args.smooth).mean()
+            pot_df["i"] = pot_df["i"].rolling(args.smooth).mean()
             pot_df = pot_df.dropna()
 
         pot_df.to_csv(
@@ -84,7 +84,7 @@ def potentials(args):
             pot_df["time"], pot_df["v_total"], color="b", label="v_total", marker="."
         )
         ax2.plot(
-            pot_df["time"], pot_df["I"], color="g", label="I", linestyle=":", marker="v"
+            pot_df["time"], pot_df["i"], color="g", label="I", linestyle=":", marker="v"
         )
 
         ax1.set_xlabel("Czas [ps]")
