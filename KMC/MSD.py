@@ -73,7 +73,7 @@ class MSD:
 def main(args):
     sim_path_list = [sim for sim in args.data_path.glob("*") if sim.is_dir()]
     sim_path_list = [
-        (index % args.workers, sim, args.ions, 10**3)
+        (index % args.workers, sim, args.ions, 10 ** 3)
         for index, sim in enumerate(sim_path_list)
     ]
 

@@ -12,8 +12,8 @@ def plot_line(
     y_size=6,
     dpi=250,
 ):
-    labels_font = {'fontname':'Times New Roman', 'size': 24}
-    ticks_font = {'fontname':'Times New Roman', 'size': 16}
+    labels_font = {"fontname": "Times New Roman", "size": 24}
+    ticks_font = {"fontname": "Times New Roman", "size": 16}
 
     _fig = plt.figure(figsize=(x_size, y_size))
     _ax = _fig.add_subplot(111)

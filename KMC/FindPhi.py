@@ -7,9 +7,7 @@ import pandas as pd
 from scipy import optimize
 
 from KMC.Config import Config
-
-# elementary charge
-e = 1.602176634e-19
+from KMC.static import *
 
 
 class Functions:
@@ -34,7 +32,7 @@ class Functions:
 
     @staticmethod
     def cubic_spline(x, a, b, c, d):
-        return a * x**3 + b * x**2 + c * x + d
+        return a * x ** 3 + b * x ** 2 + c * x + d
 
     @staticmethod
     def line(x, a, b):
@@ -54,20 +52,22 @@ class Functions:
 
 
 class FindPhi:
-    def __init__(self, df_type):
-        self.df_type = df_type
+    def __init__(self, data_type):
+        self.data_type = data_type
 
     def run(self, sim_path: Path):
         config = Config.load(sim_path / "input.kmc")
 
-        input_path = list((sim_path / self.df_type).glob("*.csv"))
-        assert len(input_path) == 1, f"No mass center in {sim_path}!"
+        input_path = list((sim_path / self.data_type).glob("*.csv"))
+        assert len(input_path) == 1, f"No {self.data_type} in {sim_path}!"
+
         data = pd.read_csv(input_path[0], sep=",")
         data.dropna(inplace=True)
 
-        fitting_function = Functions(config.frequency * 10**-12)
+        fitting_function = Functions(config.frequency * 10 ** -12)
 
-        signal = pd.DataFrame({"t": data["t"], "y": data["vel"]})
+        y = {"charge_center": data["vel"], "potentials": data["i"] * 1e18}
+        signal = pd.DataFrame({"time": data["time"], "y": y[self.data_type]})
 
         params, fit_signal = FindPhi.fit_curve_signal(
             fitting_function.sin, signal, sim_path
@@ -87,8 +87,10 @@ class FindPhi:
             }
 
         FindPhi._save_plots(
-            sim_path, self.df_type, config.frequency, signal, fit_signal, data
+            sim_path, self.data_type, config.frequency, signal, fit_signal, data
         )
+
+        i_zero = {"charge_center": -2*e*(params[0]*1e-9/1e-12)*pow(a, 2), "potentials": params[0]*1e-18}
 
         return {
             "amp": params[0],
@@ -98,7 +100,7 @@ class FindPhi:
             "temperature_scale": config.temperature_scale,
             "frequency": config.frequency,
             "u0": np.mean(data["u"]),
-            "i0": abs(2 * e * params[0] / 1e-12),
+            "i0": i_zero[self.data_type],
             "params": params,
         }
 

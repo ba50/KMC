@@ -17,15 +17,15 @@ def potentials(args):
     sim_path_list = [i for i in sim_path_list if i.is_dir()]
 
     for sim_path in tqdm(sim_path_list):
-        config = Config.load(sim_path / "input.kmc")
         pot_df = pd.read_csv(sim_path / "potentials.csv")
         potentials_path = sim_path / "potentials"
 
         potentials_path.mkdir(parents=True, exist_ok=True)
 
-        pot_df["I"] = pot_df["v_elec"].diff() / pot_df["time"].diff()
+        pot_df["i"] = pot_df["v_elec"].diff() / pot_df["time"].diff()
         pot_df.to_csv(potentials_path / "potentials.csv", index=False)
 
+        labels_font = {"fontname": "Times New Roman", "size": 24}
         fig, ax1 = plt.subplots(figsize=(8, 6))
         ax2 = ax1.twinx()
         ax1.plot(
@@ -43,10 +43,10 @@ def potentials(args):
             pot_df["time"], pot_df["I"], color="g", label="I", linestyle=":", marker="v"
         )
 
-        ax1.set_xlabel("Time [ps]")
+        ax1.set_xlabel("Time [ps]", **labels_font)
         ax1.xaxis.set_major_formatter(mtick.FormatStrFormatter("%.1e"))
-        ax1.set_ylabel("Potential [V]", color="b")
-        ax2.set_ylabel("I [A]", color="g")
+        ax1.set_ylabel("Potential [V]", color="b", **labels_font)
+        ax2.set_ylabel("I [A]", color="g", **labels_font)
 
         ax1.legend(loc="upper left")
         ax2.legend(loc="upper right")

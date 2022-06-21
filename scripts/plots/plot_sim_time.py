@@ -19,8 +19,8 @@ plot_data = pd.DataFrame(
     {"x": time.mean(axis=1), "y": n_ions, "x_sem": time.std(axis=1) / time.shape[1]}
 )
 
-labels_font = {'fontname':'Times New Roman', 'size': 24}
-ticks_font = {'fontname':'Times New Roman', 'size': 16}
+labels_font = {"fontname": "Times New Roman", "size": 24}
+ticks_font = {"fontname": "Times New Roman", "size": 16}
 
 fig = plt.figure(figsize=(8, 6))
 ax = fig.add_subplot(111)
