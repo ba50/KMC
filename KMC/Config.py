@@ -9,7 +9,7 @@ class Config:
             "y": inputs["size_y"],
             "z": inputs["size_z"],
         }
-        self.thermal = inputs["thermal"]
+        self.thermal = inputs["thermalization_time"]
         self.time_start = inputs["time_start"]
         self.time_end = inputs["time_end"]
         self.window = inputs["window"]
@@ -30,9 +30,7 @@ class Config:
             file_out.write("{}\t# size_x\n".format(self.size["x"]))
             file_out.write("{}\t# size_y\n".format(self.size["y"]))
             file_out.write("{}\t# size_z\n".format(self.size["z"]))
-            file_out.write(
-                "{}\t# thermalization_time\n".format(self.thermal)
-            )
+            file_out.write("{}\t# thermalization_time\n".format(self.thermal))
             file_out.write("{}\t# time_start\n".format(self.time_start))
             file_out.write("{}\t# time_end\n".format(self.time_end))
             file_out.write("{}\t# window\n".format(self.window))

@@ -67,13 +67,18 @@ class GenerateModel:
                 index[2] * self.cell_size + self.cell_size * 0.5,
             )
 
-            if random.uniform(0, 1) < 0.75:
+            if random.uniform(0, 1) < 0.85:
                 self.positions["O"].append(position)
                 self.O += 1
         print("Bi", self.Bi)
         print("Y", self.Y)
         print("O", self.O)
         print("Bi/Y", self.Bi/self.Y, "O/Y", self.O/self.Y)
+
+        print("Bi", self.Bi)
+        print("Y", self.Y)
+        print("O", self.O)
+        print("Bi/Y", self.Bi / self.Y, "O/Y", self.O / self.Y)
 
     def generate_random(self):
         to_change = True
@@ -105,7 +110,7 @@ class GenerateModel:
                 self.Y += 1
 
         for index in np.ndindex(self.anions.shape):
-            if random.uniform(0, 1) < 0.75:
+            if random.uniform(0, 1) < 0.85:
                 self.anions[index] = 1
 
         for index, atom in np.ndenumerate(self.anions):
@@ -121,7 +126,7 @@ class GenerateModel:
         print("Bi", self.Bi)
         print("Y", self.Y)
         print("O", self.O)
-        print("Bi/Y", self.Bi/self.Y, "O/Y", self.O/self.Y)
+        print("Bi/Y", self.Bi / self.Y, "O/Y", self.O / self.Y)
 
     def generate_plane(self, distance):
         center = np.floor(np.array(self.kations.shape) * self.cell_size / 3)
@@ -224,7 +229,7 @@ class GenerateModel:
             frame_index = [{"time_index": index} for _ in range(n_atoms)]
             frame_index = pd.DataFrame(frame_index)
             frame = pd.concat([frame, frame_index], axis=1)
-            frames = frames.append(frame)
+            frames = pd.concat([frames, frame])
 
         frames["atom_ids"] = frames.index
         frames = frames.reset_index(drop=True)

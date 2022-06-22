@@ -7,9 +7,7 @@ import pandas as pd
 from scipy import optimize
 
 from KMC.Config import Config
-
-# elementary charge
-e = 1.602176634e-19
+from KMC.static import *
 
 
 class Functions:
@@ -27,6 +25,9 @@ class Functions:
 
     def sin(self, x, amp, phi):
         return amp * np.sin(2 * np.pi * self.freq * x + phi)
+
+    def cos(self, x, amp, phi):
+        return amp * np.cos(2 * np.pi * self.freq * x + phi)
 
     @staticmethod
     def arcsin(x):
@@ -54,56 +55,74 @@ class Functions:
 
 
 class FindPhi:
-    def __init__(self, df_type):
-        self.df_type = df_type
+    def __init__(self, data_type):
+        self.data_type = data_type
 
     def run(self, sim_path: Path):
         config = Config.load(sim_path / "input.kmc")
 
-        input_path = list((sim_path / self.df_type).glob("*.csv"))
-        assert len(input_path) == 1, f"No mass center in {sim_path}!"
+        input_path = list((sim_path / self.data_type).glob("*.csv"))
+        assert len(input_path) == 1, f"No {self.data_type} in {sim_path}!"
+
         data = pd.read_csv(input_path[0], sep=",")
         data.dropna(inplace=True)
 
         fitting_function = Functions(config.frequency * 10 ** -12)
 
-        signal = pd.DataFrame({"t": data["t"], "y": data["vel"]})
+        signal = None
+        if self.data_type == "charge_center":
+            signal = pd.DataFrame({"t": data["time"], "y": data["vel"]})
+        if self.data_type == "potentials":
+            signal = pd.DataFrame({"t": data["time"], "y": data["i"] * 1e18})
 
         params, fit_signal = FindPhi.fit_curve_signal(
             fitting_function.sin, signal, sim_path
         )
+        if self.data_type == "charge_center":
+            fit_signal["y"] = (
+                -2
+                * e
+                * (fit_signal["y"] * 1e-9 / 1e-12)
+                * pow(a * config.size["y"] * config.size["z"], 2)
+            )
+            signal["y"] = (
+                -2
+                * e
+                * (signal["y"] * 1e-9 / 1e-12)
+                * pow(a * config.size["y"] * config.size["z"], 2)
+            )
+            params[0] = (
+                -2
+                * e
+                * (params[0] * 1e-9 / 1e-12)
+                * pow(a * config.size["y"] * config.size["z"], 2)
+            )
 
-        if params is None:
-            return {
-                "amp": None,
-                "phi_rad": None,
-                "path": sim_path,
-                "version": (lambda split: split[5])(sim_path.name.split("_")),
-                "temperature_scale": config.temperature_scale,
-                "frequency": config.frequency,
-                "u0": np.mean(data["u"]),
-                "i0": None,
-                "params": None,
-            }
+        if self.data_type == "potentials":
+            signal["y"] *= 1e-18
+            fit_signal["y"] *= 1e-18
+            params[0] *= 1e-18
+
+        assert params is not None
 
         FindPhi._save_plots(
-            sim_path, self.df_type, config.frequency, signal, fit_signal, data
+            sim_path, self.data_type, config.frequency, signal, fit_signal, data
         )
 
         return {
-            "amp": params[0],
             "phi_rad": params[1],
             "path": sim_path,
             "version": (lambda split: split[5])(sim_path.name.split("_")),
             "temperature_scale": config.temperature_scale,
             "frequency": config.frequency,
-            "u0": np.mean(data["u"]),
-            "i0": 2 * e * params[0] / 1e-12,
+            "u0": config.amplitude,
+            "i0": params[0],
             "params": params,
         }
 
     @staticmethod
-    def _save_plots(sim_path, df_type, frequency, signal, fit_signal, field_data):
+    def _save_plots(sim_path, data_type, frequency, signal, fit_signal, field_data):
+        labels_font = {"fontname": "Times New Roman", "size": 24}
         _fig, _ax1 = plt.subplots(figsize=(8, 6))
         _ax2 = _ax1.twinx()
         _ax1.scatter(signal["t"], signal["y"], marker=".", color="b")
@@ -112,26 +131,39 @@ class FindPhi:
             fit_signal["y"],
             color="r",
             linestyle="--",
-            label="Fitted func",
-        )
-        _ax2.plot(
-            field_data["t"],
-            field_data["dE"],
-            linestyle="-",
-            color="g",
-            label="Field",
+            label="Dopasowana funkcja",
         )
 
-        _ax1.set_xlabel("Time [ps]")
+        if data_type == "potentials":
+            _ax2.plot(
+                field_data["time"],
+                field_data["v_total"],
+                linestyle="-",
+                color="g",
+                label="Pole zew.",
+            )
+        if data_type == "charge_center":
+            _ax2.plot(
+                field_data["time"],
+                field_data["dE"],
+                linestyle="-",
+                color="g",
+                label="Pole zew.",
+            )
+
+        _ax1.set_xlabel("Czas [ps]", **labels_font)
         _ax1.xaxis.set_major_formatter(mtick.FormatStrFormatter("%.1e"))
-        _ax1.set_ylabel("Ions mass center velocity [au]", color="b")
-        _ax2.set_ylabel("Field [eV]", color="g")
+        _ax1.set_ylabel("Prąd [A]", **labels_font)
+        if data_type == "potentials":
+            _ax2.set_ylabel("Potencjał [V]", **labels_font)
+        if data_type == "charge_center":
+            _ax2.set_ylabel("Potencjał [meV]", **labels_font)
 
         _ax1.legend(loc="upper left")
         _ax2.legend(loc="upper right")
 
         plt.savefig(
-            sim_path / df_type / f"fit_sin_{df_type}_x_freq_{frequency:.2e}.png",
+            sim_path / data_type / f"fit_sin_{data_type}_freq_{frequency:.2e}.png",
             dpi=250,
             bbox_inches="tight",
         )
@@ -139,8 +171,8 @@ class FindPhi:
 
     @staticmethod
     def reduce_periods(df, period: float):
-        df["t"] %= period
-        df = df.sort_values(by="t").reset_index(drop=True)
+        df["time"] %= period
+        df = df.sort_values(by="time").reset_index(drop=True)
 
         return df
 
@@ -152,7 +184,7 @@ class FindPhi:
                 fitting_function,
                 sim_signal["t"],
                 sim_signal["y"],
-                #bounds=[[0, 0], [np.inf, np.pi]],
+                bounds=[[0, -np.inf], [np.inf, np.inf]],
             )
         except Exception as e:
             print(e)

@@ -26,15 +26,14 @@ def main(args):
     simulations = pd.DataFrame({"frequency": freq_list})
 
     simulations["cell_type"] = args.cell_type
-    simulations["thermal"] = args.thermal
-    simulations["window_epsilon"] = args.window_epsilon
+    simulations["thermalization_time"] = args.thermal
     simulations["contact_switch_left"] = args.contact_switch_left
     simulations["contact_switch_right"] = args.contact_switch_right
     simulations["contact_left"] = args.contact_left
     simulations["contact_right"] = args.contact_right
     simulations["static_potential"] = args.static_potential
     simulations["periods"] = simulations["frequency"].map(
-        lambda x: np.clip(x / freq_list[0] * args.base_periods, 0, 8)
+        lambda x: np.clip(x / freq_list[0] * args.base_periods, 0, 100)
     )
 
     amp_tmp = []
@@ -56,9 +55,13 @@ def main(args):
         time_end.append(total_time)
     simulations["time_end"] = time_end
 
-    simulations["window"] = simulations[["periods", "frequency"]].apply(
-        lambda x: (x[0] / (x[1] * 10.0 ** -12)) / args.window_points, axis=1
+    simulations["window"] = simulations["frequency"].map(
+        lambda x: 1e12 / (x * args.window_points)
     )
+    if args.window_epsilon is None:
+        simulations["window_epsilon"] = simulations["window"] * 0.25
+    else:
+        simulations["window_epsilon"] = args.window_epsilon
 
     freq_list = simulations["frequency"]
     simulations = simulations.loc[
@@ -117,8 +120,17 @@ def main(args):
     )
     if args.cell_type == "random":
         structure.generate_random()
+        while np.abs(structure.O / structure.Y - 6) > 1e-2:
+            structure = GenerateModel(
+                (
+                    simulations["size_x"][0],
+                    simulations["size_y"][0],
+                    simulations["size_z"][0],
+                )
+            )
+            structure.generate_random()
     elif args.cell_type == "sphere":
-        structure.generate_sphere(21)
+        structure.generate_sphere(11)
     elif args.cell_type == "plane":
         structure.generate_plane(5)
     else:
@@ -153,9 +165,9 @@ if __name__ == "__main__":
     parser.add_argument("--model-size", type=int, nargs="+", default=[5, 3, 3])
     parser.add_argument("--thermal", type=int, default=200)
     parser.add_argument(
-        "--window-points", type=int, help="points in window", default=256
+        "--window-points", type=int, help="points in window", default=128
     )
-    parser.add_argument("--window-epsilon", type=float, default=16.0)
+    parser.add_argument("--window-epsilon", type=float, default=None)
     parser.add_argument(
         "--contact-switch-left", type=int, default=0, help="0-off, 2-on"
     )

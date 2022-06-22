@@ -1,5 +1,5 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 fild = np.array([0.2, 0.5, 2, 5, 8, 10, 20])
 n_atoms = np.array([284, 484, 1324])

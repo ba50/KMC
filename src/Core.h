@@ -2,11 +2,12 @@
 
 #include <iostream>
 #include <chrono>
-#include <ctime> 
+#include <ctime>
 #include <map>
 #include <algorithm>
 #include <fstream>
 #include <cmath>
+#include <numeric>
 
 #include "Configuration.h"
 
@@ -15,12 +16,12 @@ class Core {
 	std::vector<Type> types;
 
 	double*** oxygen_array_;
-	std::vector<size_t> oxygen_array_size_; 
+	std::vector<size_t> oxygen_array_size_;
 	std::vector<std::vector<int>> oxygen_positions_;
 	std::vector<std::vector<int>> oxygen_positions_inf_;
 
 	double*** kation_array_;
-	std::vector<size_t> kation_array_size_; 
+	std::vector<size_t> kation_array_size_;
 
 	double*** residence_time_array_;
 	std::vector<size_t> residence_time_array_size_;
@@ -45,14 +46,14 @@ public:
 			const std::vector<unsigned int> contact,
 			const double& temperature_scale,
 			const std::string& data_path):
-		types( types ), 
+		types( types ),
 		temperature_scale( temperature_scale ),
 		data_path( data_path ),
 		steps( 0 )
 	{
 		// Define OXYGENE
 		// with bourdery conditions
-		
+
 		oxygen_array_size_ = std::vector<size_t>(3, 5);
 		kation_array_size_ = std::vector<size_t>(3, 5);
 		residence_time_array_size_ = std::vector<size_t>(3, 5);
@@ -72,11 +73,11 @@ public:
 			for (size_t y = 0; y < oxygen_array_size_[1]; y++)
 				for (size_t x = 0; x < oxygen_array_size_[0]; x++)
 					oxygen_array_[z][y][x] = 1.0;
-		
+
 		{
 			std::vector<double> temp_position(3);
 			std::vector<int> temp_site(3);
-			for (auto sort_map : configuration.GetSortMap()) {
+			for (auto& sort_map : configuration.GetSortMap()) {
 				if (sort_map.first == Type::O) {
 					for (auto &position : sort_map.second) {
 						temp_position = position.GetPosition();
@@ -122,7 +123,7 @@ public:
 		{
 			std::vector<double> temp_position(3);
 			std::vector<size_t> temp_site(3);
-			for (auto sort_map : configuration.GetSortMap()) {
+			for (auto& sort_map : configuration.GetSortMap()) {
 				if (sort_map.first == Type::Bi) {
 					for (auto &position : sort_map.second) {
 						temp_position = position.GetPosition();
@@ -133,7 +134,7 @@ public:
 					}
 				}
 				if (sort_map.first == Type::Y) {
-					for (auto &position : sort_map.second) {
+					for (auto& position : sort_map.second) {
 						temp_position = position.GetPosition();
 						temp_site[0] = static_cast<size_t>(floor(temp_position[0]/CELL_SIZE));
 						temp_site[1] = static_cast<size_t>(floor(temp_position[1]/CELL_SIZE));
@@ -224,9 +225,8 @@ public:
 		direction_vector.push_back(std::vector<int>{ 0, 0, 1});
 		direction_vector.push_back(std::vector<int>{ 0, 0,-1});
 
-		for (size_t i = 0; i < direction_vector.size()+1; i++) 
+		for (size_t i = 0; i < direction_vector.size()+1; i++)
 			jumpe_direction_sume_vector_.push_back(0.0);
-
 	}
 
 	~Core() {
@@ -267,7 +267,7 @@ public:
 		const double Amp,
 		const double frequency,
 		const double period,
-		const double delta_energy_base
+		const double static_potential
 	){
 		if( remove(std::string(data_path + "time.log").c_str()) != 0 )
 			std::cout<<"Error deleting file: time.log"<<std::endl;
@@ -286,7 +286,7 @@ public:
 			window_epsilon,
 			Amp,
 			frequency,
-			delta_energy_base
+			static_potential
 		);
 		std::cout << data_path << ": Core exit.\n";
 		auto end_timer = std::chrono::system_clock::now();
@@ -370,7 +370,7 @@ public:
 			///////////////////////////////////////////////////////////////////////////
 
 			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 0;
-			
+
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			time += (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
 		}
@@ -383,10 +383,11 @@ public:
 		const long double window_epsilon,
 		const double Amp,
 		const double frequency,
-		const double delta_energy_base
+		const double static_potential
 	) {
 		const double PI = 3.141592653589793238463;
-		const double kT{(800.0 * temperature_scale + 273.15) * 8.6173304e-5};
+		const double kT{ (800.0 * temperature_scale + 273.15) * 8.6173304e-5 };
+
 		double random_for_atom, random_for_direction;
 		double random_for_time;
 
@@ -395,12 +396,12 @@ public:
 
 		size_t id, i;
 		long double time{ time_start }, record_delta{ 0.0 }, d_t{ 0.0 };
-		double delta_energy{ 0.0 };
+		double v_shift{ 0.0 };
 
-		if( remove(std::string(data_path + "/field_data.csv").c_str()) != 0 )
-			std::cout<<"Error deleting file: field_data.csv"<<std::endl;
+		if( remove(std::string(data_path + "/potentials.csv").c_str()) != 0 )
+			std::cout<<"Error deleting file: potentials.csv"<<std::endl;
 		else
-			std::cout<< "File field_data.csv successfully deleted"<<std::endl;
+			std::cout<< "File potentials.csv successfully deleted"<<std::endl;
 
 		if( remove(std::string(data_path + "/simulation_frames.xyz").c_str()) != 0 )
 			std::cout<<"Error deleting file: simulation_frames.xyz"<<std::endl;
@@ -414,21 +415,19 @@ public:
 
 		std::ofstream f_out_oxygen_map(data_path + "/simulation_frames.xyz");
 		std::ofstream f_out_oxygen_map_inf(data_path + "/simulation_frames_inf.xyz");
-		std::ofstream field_plot(data_path + "/field_data.csv"); 
-
-		field_plot << "time,";
-		for (size_t x = 1; x < oxygen_array_size_[0] - 1; x++)
-			field_plot << "delta_energy_" << x << ",";
-		field_plot << "\n";
+		std::ofstream potentials(data_path + "/potentials.csv");
+		potentials << "time,v_shift\n";
 
 		while(time < time_end){
 			BourderyConditions(oxygen_array_, oxygen_array_size_);
 
-			delta_energy = Amp * sin(2 * PI * frequency * pow(10.0, -12) * time) + delta_energy_base;
+			v_shift = Amp * sin(2 * PI * frequency * pow(10.0, -12) * time) + static_potential;
 
 			for (id = 0; id < jump_rate_vector_.size(); id++) {
-				jump_rate_vector_[id][0] = jump_rate(id, 0, 0, 1, oxygen_array_, oxygen_positions_, residence_time_array_) * exp(delta_energy / kT);
-				jump_rate_vector_[id][1] = jump_rate(id, 0, 0, -1, oxygen_array_, oxygen_positions_, residence_time_array_) * exp(-delta_energy / kT);
+				jump_rate_vector_[id][0] = jump_rate(id, 0, 0, 1, oxygen_array_, oxygen_positions_, residence_time_array_) * exp(v_shift / kT);
+
+				jump_rate_vector_[id][1] = jump_rate(id, 0, 0, -1, oxygen_array_, oxygen_positions_, residence_time_array_) * exp(-v_shift / kT);
+
 				jump_rate_vector_[id][2] = jump_rate(id, 0, 1, 0, oxygen_array_, oxygen_positions_, residence_time_array_);
 				jump_rate_vector_[id][3] = jump_rate(id, 0, -1, 0, oxygen_array_, oxygen_positions_, residence_time_array_);
 				jump_rate_vector_[id][4] = jump_rate(id, 1, 0, 0, oxygen_array_, oxygen_positions_, residence_time_array_);
@@ -486,7 +485,7 @@ public:
 			///////////////////////////////////////////////////////////////////////////
 			oxygen_array_[oxygen_positions_[selected_atom][2]][oxygen_positions_[selected_atom][1]][oxygen_positions_[selected_atom][0]] = 0.0;
 
-			if (abs(record_delta - window) < window_epsilon) {
+			if ((window - record_delta) < window_epsilon || time == 0) {
 				std::cout << data_path <<": " << time << "/" << time_end << "[ps]" << std::endl;
 
 				f_out_oxygen_map << oxygen_positions_.size() << "\n\n";
@@ -503,13 +502,11 @@ public:
 											<< oxygen_positions_inf_[x][2] << "\n";
 				}
 
-				field_plot << time << ",";
-				for (size_t x = 1; x < oxygen_array_size_[0] - 1; x++)
-					field_plot << x * delta_energy << ",";
-				field_plot << "\n";
+				potentials << time << "," << v_shift << "\n";
+
 				record_delta = 0.0;
 			}
-			
+
 			random_for_time = std::min(static_cast<double>(rand()) / RAND_MAX + 1.7E-308, 1.0);
 			d_t = (1.0 / jumpe_rate_sume_vector_.back())*log(1.0 / random_for_time);
 			time += d_t;
@@ -518,7 +515,7 @@ public:
 
 		f_out_oxygen_map.close();
 		f_out_oxygen_map_inf.close();
-		field_plot.close();
+		potentials.close();
 		std::cout << std::endl;
 	}
 
@@ -563,7 +560,7 @@ public:
 			}
 		}
 	}
-	
+
 	inline double jump_rate(const size_t id, const int shift_z, const int shift_y, const int shift_x, double*** &oxygen_array, std::vector<std::vector<int>> &oxygen_positions, double*** &residence_time_array) {
 		return oxygen_array[oxygen_positions[id][2] + shift_z][oxygen_positions[id][1] + shift_y][oxygen_positions[id][0] + shift_x]
 			/ residence_time_array[oxygen_positions[id][2] - 1][oxygen_positions[id][1] - 1][oxygen_positions[id][0] - 1];

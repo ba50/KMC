@@ -21,7 +21,7 @@ def density_dist(args):
     for sim_path in tqdm(sim_path_list):
         conf = Config.load(sim_path / "input.kmc")
         sim_frames_path = sim_path / "simulation_frames.xyz"
-        field_data = pd.read_csv(sim_path / "field_data.csv")
+        field_data = pd.read_csv(sim_path / "potentials.csv")
 
         (sim_path / "ions_density_distribution").mkdir(exist_ok=True)
 
@@ -118,7 +118,7 @@ def density_dist(args):
     plt.figure()
     for output_df, freq in output_mean_last_points:
         plt.plot(
-            output_df["delta_energy"], output_df["last_points"], label=f"{freq:.2e}"
+            output_df["v_shift"], output_df["last_points"], label=f"{freq:.2e}"
         )
 
     plt.xlabel("delta_energy [eV]")
