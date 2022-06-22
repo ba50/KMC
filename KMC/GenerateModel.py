@@ -67,9 +67,14 @@ class GenerateModel:
                 index[2] * self.cell_size + self.cell_size * 0.5,
             )
 
-            if random.uniform(0, 1) < 0.75:
+            if random.uniform(0, 1) < 0.85:
                 self.positions["O"].append(position)
                 self.O += 1
+
+        print("Bi", self.Bi)
+        print("Y", self.Y)
+        print("O", self.O)
+        print("Bi/Y", self.Bi / self.Y, "O/Y", self.O / self.Y)
 
     def generate_random(self):
         to_change = True

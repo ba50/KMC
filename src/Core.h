@@ -35,11 +35,6 @@ class Core {
 	const double temperature_scale;
 	const std::string data_path;
 
-	std::vector<double> v_total;
-	std::vector<double> v_elec;
-	std::vector<double> v_sc;
-	std::vector<double> e_field;
-
 public:
 	long double steps;
 
