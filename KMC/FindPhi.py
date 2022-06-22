@@ -79,11 +79,27 @@ class FindPhi:
             fitting_function.sin, signal, sim_path
         )
         if self.data_type == "charge_center":
-            fit_signal["y"] = -2 * e * (fit_signal["y"] * 1e-9 / 1e-12) * pow(a*config.size["y"]*config.size["z"], 2)
-            signal["y"] = -2 * e * (signal["y"] * 1e-9 / 1e-12) * pow(a*config.size["y"]*config.size["z"], 2)
-            params[0] = -2 * e * (params[0] * 1e-9 / 1e-12) * pow(a*config.size["y"]*config.size["z"], 2)
+            fit_signal["y"] = (
+                -2
+                * e
+                * (fit_signal["y"] * 1e-9 / 1e-12)
+                * pow(a * config.size["y"] * config.size["z"], 2)
+            )
+            signal["y"] = (
+                -2
+                * e
+                * (signal["y"] * 1e-9 / 1e-12)
+                * pow(a * config.size["y"] * config.size["z"], 2)
+            )
+            params[0] = (
+                -2
+                * e
+                * (params[0] * 1e-9 / 1e-12)
+                * pow(a * config.size["y"] * config.size["z"], 2)
+            )
 
         if self.data_type == "potentials":
+            signal["y"] *= 1e-18
             fit_signal["y"] *= 1e-18
             params[0] *= 1e-18
 
@@ -106,6 +122,7 @@ class FindPhi:
 
     @staticmethod
     def _save_plots(sim_path, data_type, frequency, signal, fit_signal, field_data):
+        labels_font = {"fontname": "Times New Roman", "size": 24}
         _fig, _ax1 = plt.subplots(figsize=(8, 6))
         _ax2 = _ax1.twinx()
         _ax1.scatter(signal["t"], signal["y"], marker=".", color="b")
@@ -120,7 +137,7 @@ class FindPhi:
         if data_type == "potentials":
             _ax2.plot(
                 field_data["time"],
-                -field_data["v_total"],
+                field_data["v_total"],
                 linestyle="-",
                 color="g",
                 label="Pole zew.",
@@ -134,10 +151,13 @@ class FindPhi:
                 label="Pole zew.",
             )
 
-        _ax1.set_xlabel("Czas [ps]")
+        _ax1.set_xlabel("Czas [ps]", **labels_font)
         _ax1.xaxis.set_major_formatter(mtick.FormatStrFormatter("%.1e"))
-        _ax1.set_ylabel("Prąd [A]", color="b")
-        _ax2.set_ylabel("Potencjał [V]", color="g")
+        _ax1.set_ylabel("Prąd [A]", **labels_font)
+        if data_type == "potentials":
+            _ax2.set_ylabel("Potencjał [V]", **labels_font)
+        if data_type == "charge_center":
+            _ax2.set_ylabel("Potencjał [meV]", **labels_font)
 
         _ax1.legend(loc="upper left")
         _ax2.legend(loc="upper right")
