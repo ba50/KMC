@@ -70,6 +70,10 @@ class GenerateModel:
             if random.uniform(0, 1) < 0.85:
                 self.positions["O"].append(position)
                 self.O += 1
+        print("Bi", self.Bi)
+        print("Y", self.Y)
+        print("O", self.O)
+        print("Bi/Y", self.Bi/self.Y, "O/Y", self.O/self.Y)
 
         print("Bi", self.Bi)
         print("Y", self.Y)
@@ -155,6 +159,11 @@ class GenerateModel:
             if random.uniform(0, 1) < 0.75:
                 self.positions["O"].append(position)
                 self.O += 1
+
+        print("Bi", self.Bi)
+        print("Y", self.Y)
+        print("O", self.O)
+        print("Bi/Y", self.Bi/self.Y, "O/Y", self.O/self.Y)
 
     def generate_from_array(self, bi, y, o):
         for pos in bi:

@@ -96,10 +96,27 @@ def nyquist(args):
     )
     plt.close(fig)
 
-    plot_data.to_csv(
-        args.delta_phi.parent
-        / f"nyquist_data_{args.delta_phi.parent.name}_{args.suffix}.csv"
+    # |Z| plot
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_subplot(111)
+    ax.errorbar(
+        plot_data["frequency"],
+        plot_data["|Z|"],
+        fmt=":.",
     )
+    ax.set_xlabel("Częstotliwość [Hz]")
+    ax.set_ylabel("|Z| [Ω]")
+
+    plt.xscale("log")
+    plt.yscale("log")
+
+    plt.savefig(
+        args.delta_phi.parent
+        / f"abs_z_freq_plot_{args.delta_phi.parent.name}_{args.suffix}.png",
+        dpi=250,
+        bbox_inches="tight",
+        )
+    plt.close(fig)
 
     # |Z| plot
     fig = plt.figure(figsize=(8, 6))

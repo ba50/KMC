@@ -62,7 +62,6 @@ public:
 		oxygen_array_size_[1] = 2 * cells[1] + 2;
 		oxygen_array_size_[2] = 2 * cells[2] + 2;
 
-
 		oxygen_array_ = new double**[oxygen_array_size_[2]];
 		for (size_t z = 0; z < oxygen_array_size_[2]; z++)
 			oxygen_array_[z] = new double*[oxygen_array_size_[1]];
