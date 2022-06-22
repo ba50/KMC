@@ -26,23 +26,14 @@ def main(args):
     simulations = pd.DataFrame({"frequency": freq_list})
 
     simulations["cell_type"] = args.cell_type
-<<<<<<< HEAD
     simulations["thermalization_time"] = args.thermal
-=======
-    simulations["thermal"] = args.thermal
-    simulations["window_epsilon"] = args.window_epsilon
->>>>>>> 9cd86953ffc7290b2efe017a120bb3a52d6c721e
     simulations["contact_switch_left"] = args.contact_switch_left
     simulations["contact_switch_right"] = args.contact_switch_right
     simulations["contact_left"] = args.contact_left
     simulations["contact_right"] = args.contact_right
     simulations["static_potential"] = args.static_potential
     simulations["periods"] = simulations["frequency"].map(
-<<<<<<< HEAD
         lambda x: np.clip(x / freq_list[0] * args.base_periods, 0, 100)
-=======
-        lambda x: np.clip(x / freq_list[0] * args.base_periods, 0, 8)
->>>>>>> 9cd86953ffc7290b2efe017a120bb3a52d6c721e
     )
 
     amp_tmp = []
@@ -139,11 +130,7 @@ def main(args):
             )
             structure.generate_random()
     elif args.cell_type == "sphere":
-<<<<<<< HEAD
         structure.generate_sphere(11)
-=======
-        structure.generate_sphere(21)
->>>>>>> 9cd86953ffc7290b2efe017a120bb3a52d6c721e
     elif args.cell_type == "plane":
         structure.generate_plane(5)
     else:
