@@ -9,6 +9,35 @@ import pandas as pd
 matplotlib.use("Agg")
 
 
+def find_circle(x, y):
+
+    x_m = np.mean(x)
+    y_m = np.mean(y)
+
+    u = x - x_m
+    v = y - y_m
+
+    Suv = sum(u * v)
+    Suu = sum(u**2)
+    Svv = sum(v**2)
+    Suuv = sum(u**2 * v)
+    Suvv = sum(u * v**2)
+    Suuu = sum(u**3)
+    Svvv = sum(v**3)
+
+    A = np.array([[Suu, Suv], [Suv, Svv]])
+    B = np.array([Suuu + Suvv, Svvv + Suuv]) / 2.0
+    uc, vc = np.linalg.solve(A, B)
+
+    xc_1 = x_m + uc
+    yc_1 = y_m + vc
+
+    Ri_1 = np.sqrt((x - xc_1) ** 2 + (y - yc_1) ** 2)
+    R_1 = np.mean(Ri_1)
+
+    return R_1, [xc_1, yc_1]
+
+
 def nyquist(args):
     delta_phi_data = pd.read_csv(args.delta_phi)
 
@@ -68,6 +97,7 @@ def nyquist(args):
         np.power(plot_data["Re"], 2) + np.power(plot_data["Im"], 2)
     )
 
+
     # Nyqiust plot
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(111)
@@ -82,6 +112,11 @@ def nyquist(args):
     ax.set_ylabel("-Z'' [Ω]", **labels_font)
     plt.xticks(**ticks_font)
     plt.yticks(**ticks_font)
+
+    R, R_center = find_circle(plot_data["Re"][:4], plot_data["Im"][:4])
+    t = np.linspace(0, 2*np.pi, 1024, endpoint=True)
+    plt.plot(R*np.cos(t)+R_center[0], R*np.sin(t)+R_center[1])
+    plt.axis("square")
 
     """
     for _, row in plot_data.iterrows():
@@ -115,7 +150,7 @@ def nyquist(args):
         / f"abs_z_freq_plot_{args.delta_phi.parent.name}_{args.suffix}.png",
         dpi=250,
         bbox_inches="tight",
-        )
+    )
     plt.close(fig)
 
     # |Z| plot

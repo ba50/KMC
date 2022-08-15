@@ -117,9 +117,7 @@ def density_dist(args):
 
     plt.figure()
     for output_df, freq in output_mean_last_points:
-        plt.plot(
-            output_df["v_shift"], output_df["last_points"], label=f"{freq:.2e}"
-        )
+        plt.plot(output_df["v_shift"], output_df["last_points"], label=f"{freq:.2e}")
 
     plt.xlabel("delta_energy [eV]")
     plt.ylabel("Ions density last point")

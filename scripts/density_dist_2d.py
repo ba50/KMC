@@ -10,7 +10,7 @@ from tqdm import tqdm
 from KMC.Config import Config
 from KMC.GenerateModel import GenerateModel
 
-#matplotlib.use("Agg")
+# matplotlib.use("Agg")
 
 
 def density_dist(args):
@@ -35,7 +35,9 @@ def density_dist(args):
         )
 
         ions_dd = []  # ions density distribution
-        for time_index, time_chunk in tqdm(simulation_frames.groupby("time_index"), position=1):
+        for time_index, time_chunk in tqdm(
+            simulation_frames.groupby("time_index"), position=1
+        ):
             ions_density = np.zeros(
                 (
                     int(conf.size["x"]) * 2,

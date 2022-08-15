@@ -73,7 +73,7 @@ class GenerateModel:
         print("Bi", self.Bi)
         print("Y", self.Y)
         print("O", self.O)
-        print("Bi/Y", self.Bi/self.Y, "O/Y", self.O/self.Y)
+        print("Bi/Y", self.Bi / self.Y, "O/Y", self.O / self.Y)
 
         print("Bi", self.Bi)
         print("Y", self.Y)
@@ -163,7 +163,7 @@ class GenerateModel:
         print("Bi", self.Bi)
         print("Y", self.Y)
         print("O", self.O)
-        print("Bi/Y", self.Bi/self.Y, "O/Y", self.O/self.Y)
+        print("Bi/Y", self.Bi / self.Y, "O/Y", self.O / self.Y)
 
     def generate_from_array(self, bi, y, o):
         for pos in bi:

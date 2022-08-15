@@ -51,7 +51,7 @@ def main(args):
 
     time_end = []
     for _, row in simulations.iterrows():
-        total_time = row["periods"] / row["frequency"] * 10 ** 12
+        total_time = row["periods"] / row["frequency"] * 10**12
         time_end.append(total_time)
     simulations["time_end"] = time_end
 
