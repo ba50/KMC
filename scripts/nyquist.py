@@ -18,12 +18,12 @@ def find_circle(x, y):
     v = y - y_m
 
     Suv = sum(u * v)
-    Suu = sum(u**2)
-    Svv = sum(v**2)
-    Suuv = sum(u**2 * v)
-    Suvv = sum(u * v**2)
-    Suuu = sum(u**3)
-    Svvv = sum(v**3)
+    Suu = sum(u ** 2)
+    Svv = sum(v ** 2)
+    Suuv = sum(u ** 2 * v)
+    Suvv = sum(u * v ** 2)
+    Suuu = sum(u ** 3)
+    Svvv = sum(v ** 3)
 
     A = np.array([[Suu, Suv], [Suv, Svv]])
     B = np.array([Suuu + Suvv, Svvv + Suuv]) / 2.0
@@ -97,7 +97,6 @@ def nyquist(args):
         np.power(plot_data["Re"], 2) + np.power(plot_data["Im"], 2)
     )
 
-
     # Nyqiust plot
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(111)
@@ -114,8 +113,8 @@ def nyquist(args):
     plt.yticks(**ticks_font)
 
     R, R_center = find_circle(plot_data["Re"][:4], plot_data["Im"][:4])
-    t = np.linspace(0, 2*np.pi, 1024, endpoint=True)
-    plt.plot(R*np.cos(t)+R_center[0], R*np.sin(t)+R_center[1])
+    t = np.linspace(0, 2 * np.pi, 1024, endpoint=True)
+    plt.plot(R * np.cos(t) + R_center[0], R * np.sin(t) + R_center[1])
     plt.axis("square")
 
     """

@@ -9,6 +9,7 @@ from tqdm import tqdm
 
 from KMC.Config import Config
 from KMC.GenerateModel import GenerateModel
+from KMC.static import *
 
 matplotlib.use("Agg")
 
@@ -81,13 +82,15 @@ def density_dist(args):
         ions_dd = np.array(ions_dd)
 
         plt.figure()
-        plt.plot(ions_dd.mean(axis=0))
-        plt.xlabel("x [au]")
-        plt.ylabel("Ions density [au]")
+        plt.plot(np.arange(0, ions_dd.shape[1] * a / 2, a / 2), ions_dd.mean(axis=0))
+        plt.xlabel("x [nm]")
+        plt.ylabel("Gęstość jonów [au]")
         plt.savefig(
             sim_path
             / "ions_density_distribution"
-            / f"ions_dd_mean_freq_{conf.frequency:.2e}.png"
+            / f"ions_dd_mean_freq_{conf.frequency:.2e}.png",
+            dpi=250,
+            bbox_inches="tight",
         )
         plt.close()
 
